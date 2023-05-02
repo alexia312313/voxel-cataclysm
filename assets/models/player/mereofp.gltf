@@ -1,0 +1,280 @@
+{
+	"asset": {
+		"generator": "Khronos glTF Blender I/O v3.5.30",
+		"version": "2.0"
+	},
+	"scene": 0,
+	"scenes": [
+		{
+			"name": "Scene",
+			"nodes": [
+				2
+			]
+		}
+	],
+	"nodes": [
+		{
+			"mesh": 0,
+			"name": "cube",
+			"rotation": [
+				-0.7088534832000732,
+				0.014298691414296627,
+				-0.004839719273149967,
+				0.7051942944526672
+			],
+			"translation": [
+				0,
+				0.32667237520217896,
+				0.023692836984992027
+			]
+		},
+		{
+			"children": [
+				0
+			],
+			"name": "arm",
+			"translation": [
+				0,
+				0.3125,
+				0
+			]
+		},
+		{
+			"children": [
+				1
+			],
+			"name": "Node_2"
+		}
+	],
+	"animations": [
+		{
+			"channels": [
+				{
+					"sampler": 0,
+					"target": {
+						"node": 1,
+						"path": "rotation"
+					}
+				},
+				{
+					"sampler": 1,
+					"target": {
+						"node": 1,
+						"path": "translation"
+					}
+				},
+				{
+					"sampler": 2,
+					"target": {
+						"node": 1,
+						"path": "scale"
+					}
+				}
+			],
+			"name": "use",
+			"samplers": [
+				{
+					"input": 4,
+					"interpolation": "LINEAR",
+					"output": 5
+				},
+				{
+					"input": 4,
+					"interpolation": "LINEAR",
+					"output": 6
+				},
+				{
+					"input": 7,
+					"interpolation": "LINEAR",
+					"output": 8
+				}
+			]
+		}
+	],
+	"materials": [
+		{
+			"alphaCutoff": 0.05000000074505806,
+			"alphaMode": "MASK",
+			"doubleSided": true,
+			"name": "Material_0",
+			"pbrMetallicRoughness": {
+				"baseColorTexture": {
+					"index": 0
+				},
+				"metallicFactor": 0
+			}
+		}
+	],
+	"meshes": [
+		{
+			"name": "Mesh_0",
+			"primitives": [
+				{
+					"attributes": {
+						"POSITION": 0,
+						"TEXCOORD_0": 1,
+						"NORMAL": 2
+					},
+					"indices": 3,
+					"material": 0
+				}
+			]
+		}
+	],
+	"textures": [
+		{
+			"sampler": 0,
+			"source": 0
+		}
+	],
+	"images": [
+		{
+			"mimeType": "image/png",
+			"name": "mereo",
+			"uri": "mereo.png"
+		}
+	],
+	"accessors": [
+		{
+			"bufferView": 0,
+			"componentType": 5126,
+			"count": 24,
+			"max": [
+				0.0625,
+				0.1875,
+				0.0625
+			],
+			"min": [
+				-0.0625,
+				-0.1875,
+				-0.0625
+			],
+			"type": "VEC3"
+		},
+		{
+			"bufferView": 1,
+			"componentType": 5126,
+			"count": 24,
+			"type": "VEC2"
+		},
+		{
+			"bufferView": 2,
+			"componentType": 5126,
+			"count": 24,
+			"type": "VEC3"
+		},
+		{
+			"bufferView": 3,
+			"componentType": 5123,
+			"count": 36,
+			"type": "SCALAR"
+		},
+		{
+			"bufferView": 4,
+			"componentType": 5126,
+			"count": 13,
+			"max": [
+				0.5
+			],
+			"min": [
+				0
+			],
+			"type": "SCALAR"
+		},
+		{
+			"bufferView": 5,
+			"componentType": 5126,
+			"count": 13,
+			"type": "VEC4"
+		},
+		{
+			"bufferView": 6,
+			"componentType": 5126,
+			"count": 13,
+			"type": "VEC3"
+		},
+		{
+			"bufferView": 7,
+			"componentType": 5126,
+			"count": 1,
+			"max": [
+				0
+			],
+			"min": [
+				0
+			],
+			"type": "SCALAR"
+		},
+		{
+			"bufferView": 8,
+			"componentType": 5126,
+			"count": 1,
+			"type": "VEC3"
+		}
+	],
+	"bufferViews": [
+		{
+			"buffer": 0,
+			"byteLength": 288,
+			"byteOffset": 0,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 192,
+			"byteOffset": 288,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 288,
+			"byteOffset": 480,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 72,
+			"byteOffset": 768,
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteLength": 52,
+			"byteOffset": 840
+		},
+		{
+			"buffer": 0,
+			"byteLength": 208,
+			"byteOffset": 892
+		},
+		{
+			"buffer": 0,
+			"byteLength": 156,
+			"byteOffset": 1100
+		},
+		{
+			"buffer": 0,
+			"byteLength": 4,
+			"byteOffset": 1256
+		},
+		{
+			"buffer": 0,
+			"byteLength": 12,
+			"byteOffset": 1260
+		}
+	],
+	"samplers": [
+		{
+			"magFilter": 9728,
+			"minFilter": 9984,
+			"wrapS": 33071,
+			"wrapT": 33071
+		}
+	],
+	"buffers": [
+		{
+			"byteLength": 1272,
+			"uri": "mereofp.bin"
+		}
+	]
+}
