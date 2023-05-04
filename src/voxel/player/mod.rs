@@ -4,18 +4,34 @@ use std::f32::consts::PI;
 
 use bevy::core_pipeline::fxaa::Fxaa;
 
-pub mod player_controller;
+pub mod player_anim;
+pub mod player_mov;
 
 pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugin(player_controller::PlayerControllerPlugin)
+        app.add_plugin(player_anim::PlayerAnimationsHandlePlugin)
+            .add_plugin(player_mov::PlayerControllerPlugin)
             .add_startup_system(setup);
     }
 }
 
-fn setup(mut cmds: Commands) {
+fn setup(mut cmds: Commands, asset: Res<AssetServer>) {
+    // Load player animations
+    cmds.insert_resource(PlayerAnimations(
+        vec![
+            // idle animation
+            asset.load("models/player/mereo.glb#Animation0"),
+            // walk animation
+            asset.load("models/player/mereo.glb#Animation1"),
+            // hit animation
+            asset.load("models/player/mereo.glb#Animation2"),
+        ],
+        HashMap::default(),
+    ));
+
+    // Spawn the player
     cmds.spawn(Camera3dBundle {
         projection: bevy::render::camera::Projection::Perspective(PerspectiveProjection {
             fov: PI / 2.,
@@ -25,12 +41,28 @@ fn setup(mut cmds: Commands) {
         transform: Transform::from_xyz(2.0, 160.0, 2.0).looking_at(Vec3::ZERO, Vec3::Y),
         ..Default::default()
     })
-    .insert(crate::voxel::player_controller::PlayerController::default())
+    .insert(PlayerController::default())
     .insert(Fxaa::default())
     .insert(bevy_atmosphere::plugin::AtmosphereCamera::default());
 
+    // Spawn the sky light
     cmds.insert_resource(AmbientLight {
         color: Color::WHITE,
         brightness: 1.0,
     });
 }
+
+#[derive(Default, Component, Debug)]
+pub struct PlayerController {
+    yaw: f32,
+    pitch: f32,
+    cursor_locked: bool,
+    prev_xyz: Vec3,
+}
+
+#[derive(Resource)]
+pub struct PlayerAnimations(Vec<Handle<AnimationClip>>, Handle<AnimationPlayer>);
+
+#[derive(Hash, Copy, Clone, PartialEq, Eq, Debug, SystemSet)]
+/// Systems related to player controls.
+pub struct PlayerControllerSet;

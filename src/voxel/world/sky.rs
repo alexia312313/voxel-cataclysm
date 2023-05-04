@@ -1,6 +1,6 @@
 use std::f32::consts::PI;
 
-use crate::voxel::player_controller::PlayerController;
+use crate::voxel::PlayerController;
 use bevy::prelude::{
     Color, Commands, Deref, DirectionalLight, DirectionalLightBundle, Entity, ParamSet, Plugin,
     Quat, Query, Res, Resource, Transform, With,

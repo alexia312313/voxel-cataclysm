@@ -3,17 +3,11 @@ use bevy_egui::EguiContexts;
 use std::f32::consts::FRAC_PI_2;
 
 use crate::debug::DebugUISet;
+use crate::voxel::PlayerController;
 
 // Reusing the player controller impl for now.
 
 pub const DEFAULT_CAMERA_SENS: f32 = 0.005;
-
-#[derive(Default, Component)]
-pub struct PlayerController {
-    yaw: f32,
-    pitch: f32,
-    cursor_locked: bool,
-}
 
 pub fn handle_player_mouse_move(
     mut query: Query<(&mut PlayerController, &mut Transform)>,
@@ -110,15 +104,14 @@ pub fn handle_player_input(
         return;
     }
 
+    // Update the previous position
+    controller.prev_xyz = transform.translation;
+
     // hardcoding 0.10 as a factor for now to not go zoomin across the world.
     transform.translation += direction.x * right * acceleration
         + direction.z * forward * acceleration
         + direction.y * Vec3::Y * acceleration;
 }
-
-#[derive(Hash, Copy, Clone, PartialEq, Eq, Debug, SystemSet)]
-/// Systems related to player controls.
-pub struct PlayerControllerSet;
 
 pub struct PlayerControllerPlugin;
 

@@ -9,8 +9,8 @@ use bevy::{
 use float_ord::FloatOrd;
 
 use super::{Chunk, ChunkShape, CHUNK_LENGTH};
-use crate::voxel::player_controller::PlayerController;
 use crate::voxel::storage::ChunkMap;
+use crate::voxel::PlayerController;
 use crate::voxel::Voxel;
 
 /// Updates the current chunk position for the current player.
