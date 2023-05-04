@@ -8,7 +8,8 @@ use bevy::{
 };
 use float_ord::FloatOrd;
 
-use super::{player::PlayerController, Chunk, ChunkShape, CHUNK_LENGTH};
+use super::{Chunk, ChunkShape, CHUNK_LENGTH};
+use crate::voxel::player_controller::PlayerController;
 use crate::voxel::storage::ChunkMap;
 use crate::voxel::Voxel;
 

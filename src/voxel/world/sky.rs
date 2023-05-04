@@ -1,11 +1,10 @@
 use std::f32::consts::PI;
 
+use crate::voxel::player_controller::PlayerController;
 use bevy::prelude::{
     Color, Commands, Deref, DirectionalLight, DirectionalLightBundle, Entity, ParamSet, Plugin,
     Quat, Query, Res, Resource, Transform, With,
 };
-
-use super::player::PlayerController;
 
 #[derive(Resource, Deref)]
 struct SkyLightEntity(Entity);

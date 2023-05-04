@@ -120,9 +120,9 @@ pub fn handle_player_input(
 /// Systems related to player controls.
 pub struct PlayerControllerSet;
 
-pub struct VoxelWorldPlayerControllerPlugin;
+pub struct PlayerControllerPlugin;
 
-impl Plugin for VoxelWorldPlayerControllerPlugin {
+impl Plugin for PlayerControllerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             (handle_player_input, handle_player_mouse_move)

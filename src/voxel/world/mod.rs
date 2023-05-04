@@ -15,7 +15,6 @@ pub use chunks::{
 mod chunks_anim;
 pub mod materials;
 mod meshing;
-pub mod player;
 mod sky;
 mod terrain;
 
@@ -35,7 +34,6 @@ impl Plugin for VoxelWorldPlugin {
             .add_plugin(materials::VoxelWorldBaseMaterialsPlugin)
             .add_plugin(chunks_anim::ChunkAppearanceAnimatorPlugin)
             .add_plugin(bevy_atmosphere::plugin::AtmospherePlugin)
-            .add_plugin(player::VoxelWorldPlayerControllerPlugin)
             .add_plugin(sky::InteractiveSkyboxPlugin);
     }
 }

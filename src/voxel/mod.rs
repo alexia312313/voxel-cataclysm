@@ -5,6 +5,10 @@ pub mod storage;
 mod world;
 pub use world::*;
 
+///! Player controller for voxel worlds.
+mod player;
+pub use player::*;
+
 ///! Terrain generator.
 pub mod terraingen;
 
