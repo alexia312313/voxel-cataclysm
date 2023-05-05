@@ -3,7 +3,7 @@ use bevy::prelude::{
     Query, Res, Resource, Transform, Vec3, With,
 };
 
-use crate::voxel::PlayerController;
+use crate::voxel::CameraMode;
 
 #[derive(Resource, Deref)]
 struct SkyLightEntity(Entity);
@@ -37,10 +37,7 @@ fn setup_sky_lighting(mut cmds: Commands) {
 
 fn update_light_position(
     sky_light_entity: Res<SkyLightEntity>,
-    mut queries: ParamSet<(
-        Query<&mut Transform>,
-        Query<&Transform, With<PlayerController>>,
-    )>,
+    mut queries: ParamSet<(Query<&mut Transform>, Query<&Transform, With<CameraMode>>)>,
 ) {
     let sky_light_entity = **sky_light_entity;
     let player_translation = queries

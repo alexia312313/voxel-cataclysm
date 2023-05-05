@@ -1,75 +1,76 @@
+use crate::debug::DebugUISet;
+use crate::voxel::{Body, CameraMode, Head, Player};
 use bevy::{input::mouse::MouseMotion, prelude::*, window::CursorGrabMode};
 use bevy_egui::EguiContexts;
-use std::f32::consts::FRAC_PI_2;
+use core::f32::consts::FRAC_PI_2;
 
-use crate::debug::DebugUISet;
-use crate::voxel::PlayerController;
+const BODY_ROTATION_SLERP: f32 = 0.5;
+const DEFAULT_CAMERA_SENS: f32 = 0.005;
 
-// Reusing the player controller impl for now.
-
-pub const DEFAULT_CAMERA_SENS: f32 = 0.005;
-
-pub fn handle_player_mouse_move(
-    mut query: Query<(&mut PlayerController, &mut Transform)>,
+fn handle_player_mouse_move(
+    mut head: Query<&mut Transform, With<Head>>,
     mut mouse_motion_event_reader: EventReader<MouseMotion>,
-    mut window: Query<&mut Window>,
+    windows: Query<&Window>,
 ) {
-    let (mut controller, mut transform) = query.single_mut();
+    let window = windows.single();
+    let mut head_transform = head.single_mut();
     let mut delta = Vec2::ZERO;
 
-    if controller.cursor_locked {
-        for mouse_move in mouse_motion_event_reader.iter() {
-            delta += mouse_move.delta;
-        }
+    for mouse_move in mouse_motion_event_reader.iter() {
+        delta -= mouse_move.delta;
     }
 
-    let mut first_win = window.single_mut();
-    first_win.cursor.visible = !controller.cursor_locked;
-    first_win.cursor.grab_mode = if controller.cursor_locked {
-        CursorGrabMode::Locked
-    } else {
-        CursorGrabMode::None
-    };
-
-    if delta == Vec2::ZERO {
+    if !matches!(window.cursor.grab_mode, CursorGrabMode::Locked) {
         return;
     }
 
-    let mut new_pitch = delta.y.mul_add(DEFAULT_CAMERA_SENS, controller.pitch);
-    let new_yaw = delta.x.mul_add(-DEFAULT_CAMERA_SENS, controller.yaw);
-
-    new_pitch = new_pitch.clamp(-FRAC_PI_2, FRAC_PI_2);
-
-    controller.yaw = new_yaw;
-    controller.pitch = new_pitch;
-
-    transform.rotation =
-        Quat::from_axis_angle(Vec3::Y, new_yaw) * Quat::from_axis_angle(-Vec3::X, new_pitch);
+    let (yaw, pitch, _roll) = head_transform.rotation.to_euler(EulerRot::YXZ);
+    let yaw = delta.x.mul_add(DEFAULT_CAMERA_SENS, yaw);
+    let pitch = delta
+        .y
+        .mul_add(-DEFAULT_CAMERA_SENS, pitch)
+        // ensure that the look direction always has a component in the xz plane:
+        .clamp(-FRAC_PI_2 + 1e-5, FRAC_PI_2 - 1e-5);
+    head_transform.rotation = Quat::from_euler(EulerRot::YXZ, yaw, pitch, 0.);
 }
 
-pub fn handle_player_input(
+fn handle_player_keyboard_input(
     mut egui: EguiContexts,
-    mut query: Query<(&mut PlayerController, &mut Transform)>,
+    // mut queries: ParamSet<Query<&mut Transform, With<Body>>>,
+    mut queries: ParamSet<(
+        Query<&mut Transform, With<Player>>,
+        Query<&Transform, With<Body>>,
+    )>,
     keys: Res<Input<KeyCode>>,
     btns: Res<Input<MouseButton>>,
+    mut windows: Query<&mut Window>,
 ) {
-    let (mut controller, mut transform) = query.single_mut();
+    let mut window = windows.single_mut();
 
     // cursor grabbing
-    // @todo: this should prevent cursor grabbing when the user is interacting with a debug UI. Why doesn't this work?
     if btns.just_pressed(MouseButton::Left) && !egui.ctx_mut().wants_pointer_input() {
-        controller.cursor_locked = true;
+        window.cursor.grab_mode = CursorGrabMode::Locked;
+        window.cursor.visible = false;
     }
 
     // cursor ungrabbing
     if keys.just_pressed(KeyCode::Escape) {
-        controller.cursor_locked = false;
+        window.cursor.grab_mode = CursorGrabMode::None;
+        window.cursor.visible = true;
     }
+
+    let (forward, right) = {
+        let body = queries.p1();
+        let body_transform = body.single();
+        let forward = body_transform.rotation.mul_vec3(Vec3::Z).normalize();
+        let right = Vec3::Y.cross(forward); // @todo(meyerzinn): not sure why this is the correct orientation
+        (forward, right)
+    };
+
+    let mut body = queries.p0();
+    let mut body_transform = body.single_mut();
+
     let mut direction = Vec3::ZERO;
-
-    let forward = transform.rotation.mul_vec3(Vec3::Z).normalize() * Vec3::new(1.0, 0., 1.0);
-    let right = transform.rotation.mul_vec3(Vec3::X).normalize();
-
     let mut acceleration = 1.0f32;
 
     if keys.pressed(KeyCode::W) {
@@ -104,13 +105,38 @@ pub fn handle_player_input(
         return;
     }
 
-    // Update the previous position
-    controller.prev_xyz = transform.translation;
-
     // hardcoding 0.10 as a factor for now to not go zoomin across the world.
-    transform.translation += direction.x * right * acceleration
+    body_transform.translation += direction.x * right * acceleration
         + direction.z * forward * acceleration
         + direction.y * Vec3::Y * acceleration;
+}
+
+fn handle_player_change_camera_mode(
+    keys: Res<Input<KeyCode>>,
+    mut cameras: Query<(&mut CameraMode, &mut Transform)>,
+) {
+    if keys.just_pressed(KeyCode::F5) {
+        let (mut mode, mut transform) = cameras.single_mut();
+        *mode = mode.next();
+        transform.translation = mode.translation();
+    }
+}
+
+fn update_player_body_rotation(
+    mut queries: ParamSet<(
+        Query<&mut Transform, With<Body>>,
+        Query<&Transform, With<Head>>,
+    )>,
+) {
+    let yaw = {
+        let head = queries.p1();
+        let (yaw, _pitch, _roll) = head.single().rotation.to_euler(EulerRot::YXZ);
+        yaw
+    };
+    let mut body = queries.p0();
+    let mut body_transform = body.single_mut();
+    let desired = Quat::from_euler(EulerRot::YXZ, yaw, 0., 0.);
+    body_transform.rotation = body_transform.rotation.slerp(desired, BODY_ROTATION_SLERP);
 }
 
 pub struct PlayerControllerPlugin;
@@ -118,7 +144,12 @@ pub struct PlayerControllerPlugin;
 impl Plugin for PlayerControllerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
-            (handle_player_input, handle_player_mouse_move)
+            (
+                handle_player_mouse_move,
+                update_player_body_rotation,
+                handle_player_keyboard_input,
+                handle_player_change_camera_mode,
+            )
                 .chain()
                 .in_base_set(CoreSet::Update)
                 .after(DebugUISet::Display),
