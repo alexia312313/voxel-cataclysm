@@ -21,38 +21,8 @@ pub fn handle_player_movement(
         *done = false;
     }
 }
-
-pub fn set_animations(
-    mut animation_player_query: Query<&mut AnimationPlayer>,
-    mut cmds: Commands,
-    asset: Res<AssetServer>,
-) {
-    let mut index = 0;
-    for animation_entity in query.iter_mut() {
-        index += 1;
-        if let Ok(mut animation_player) = animation_player_query.get_mut(animation_entity.0) {
-            match index {
-                1 => {
-                    cmds.insert_resource(PlayerAnimations(
-                        vec![
-                            // idle animation
-                            asset.load("models/player/mereo.glb#Animation0"),
-                            // walk animation
-                            asset.load("models/player/mereo.glb#Animation1"),
-                            // hit animation
-                            asset.load("models/player/mereo.glb#Animation2"),
-                        ],
-                        animation_player,
-                    ));
-                }
-                2 => print!("TODO slime animations"),
-            }
-        }
-    }
-}
-
+// TODO: handle player actions
 pub fn handle_player_actions() {}
-
 pub struct PlayerAnimationsHandlePlugin;
 
 impl Plugin for PlayerAnimationsHandlePlugin {

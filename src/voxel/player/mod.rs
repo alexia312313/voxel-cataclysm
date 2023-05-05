@@ -13,24 +13,12 @@ impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugin(player_anim::PlayerAnimationsHandlePlugin)
             .add_plugin(player_mov::PlayerControllerPlugin)
+            //.add_plugin(animation_link::AnimationLinkPlugin)
             .add_startup_system(setup);
     }
 }
 
 fn setup(mut cmds: Commands, asset: Res<AssetServer>) {
-    // Load player animations
-    cmds.insert_resource(PlayerAnimations(
-        vec![
-            // idle animation
-            asset.load("models/player/mereo.glb#Animation0"),
-            // walk animation
-            asset.load("models/player/mereo.glb#Animation1"),
-            // hit animation
-            asset.load("models/player/mereo.glb#Animation2"),
-        ],
-        HashMap::default(),
-    ));
-
     // Spawn the player
     cmds.spawn(Camera3dBundle {
         projection: bevy::render::camera::Projection::Perspective(PerspectiveProjection {
@@ -59,9 +47,6 @@ pub struct PlayerController {
     cursor_locked: bool,
     prev_xyz: Vec3,
 }
-
-#[derive(Resource)]
-pub struct PlayerAnimations(Vec<Handle<AnimationClip>>, Handle<AnimationPlayer>);
 
 #[derive(Hash, Copy, Clone, PartialEq, Eq, Debug, SystemSet)]
 /// Systems related to player controls.
