@@ -1,21 +1,21 @@
-///! Storage primitives for storing voxel data
+/// Storage primitives for storing voxel data
 pub mod storage;
 
-///! Utils for managing a voxel world.
+/// Utils for managing a voxel world.
 mod world;
 pub use world::*;
 
-///! Player controller for voxel worlds.
+/// Player controller for voxel worlds.
 mod player;
 pub use player::*;
 
-///! Terrain generator.
+/// Terrain generator.
 pub mod terraingen;
 
-///! Systems and utilities for rendering voxels.
+/// Systems and utilities for rendering voxels.
 pub mod render;
 
-///! Systems for defining voxel materials with physical properties.
+/// Systems for defining voxel materials with physical properties.
 pub mod material;
 
 /// rust ports of signed distance field functions for use in world generation.
