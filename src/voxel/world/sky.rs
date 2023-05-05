@@ -3,7 +3,7 @@ use bevy::prelude::{
     Query, Res, Resource, Transform, Vec3, With,
 };
 
-use super::player::PlayerController;
+use crate::voxel::PlayerController;
 
 #[derive(Resource, Deref)]
 struct SkyLightEntity(Entity);

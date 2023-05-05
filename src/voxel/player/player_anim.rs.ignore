@@ -3,8 +3,6 @@ use crate::voxel::PlayerController;
 use bevy::prelude::*;
 use bevy::utils::HashMap;
 
-use super::PlayerAnimations;
-
 pub fn handle_player_movement(
     query: Query<(&PlayerController, &Transform)>,
     anim_query: Res<PlayerAnimations>,

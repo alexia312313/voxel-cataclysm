@@ -4,14 +4,13 @@ use std::f32::consts::PI;
 
 use bevy::core_pipeline::fxaa::Fxaa;
 
-pub mod player_anim;
 pub mod player_mov;
 
 pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugin(player_anim::PlayerAnimationsHandlePlugin)
+        app //.add_plugin(player_anim::PlayerAnimationsHandlePlugin)
             .add_plugin(player_mov::PlayerControllerPlugin)
             //.add_plugin(animation_link::AnimationLinkPlugin)
             .add_startup_system(setup);
