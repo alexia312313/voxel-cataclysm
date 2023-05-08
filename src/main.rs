@@ -4,8 +4,8 @@
     clippy::module_inception
 )]
 
-use bevy::prelude::*;
-use bevy::window::WindowMode;
+use bevy::{prelude::*, window::WindowMode};
+use bevy_rapier3d::{prelude::{RapierPhysicsPlugin, NoUserData}, render::RapierDebugRenderPlugin};
 
 mod debug;
 mod voxel;
@@ -13,7 +13,6 @@ mod voxel;
 fn main() {
     let mut app = App::default();
     app
-        //
         .add_plugins(DefaultPlugins.set(WindowPlugin {
             primary_window: Some(Window {
                 title: "vx_bevy".into(),
@@ -23,15 +22,18 @@ fn main() {
             ..default()
         }))
         .add_state::<GameState>()
+        .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
+        .add_plugin(RapierDebugRenderPlugin::default())
+        .add_plugin(voxel::loading::LodingHandlerPlugin)
         .add_plugin(voxel::VoxelWorldPlugin)
         .add_plugin(debug::DebugUIPlugins)
-        .add_plugin(voxel::PlayerPlugin)
+        .add_plugin(voxel::player::PlayerPlugin)
         .run();
 }
 
-#[derive(States, Debug, Clone, Copy, Eq, PartialEq, Hash, Default)]
-pub enum GameState {
+#[derive(Clone, Eq, PartialEq, Debug, Hash, Default, States)]
+enum GameState {
     #[default]
-    Loading,
+    AssetLoading,
     Game,
 }

@@ -5,10 +5,10 @@ use super::{
     terrain::TerrainGenSet,
     Chunk, ChunkShape, Voxel, CHUNK_LENGTH,
 };
-use crate::voxel::{
+use crate::{voxel::{
     render::{mesh_buffer, ChunkMaterialSingleton, MeshBuffers},
     storage::ChunkMap,
-};
+}, GameState};
 use bevy::{
     prelude::*,
     render::{primitives::Aabb, render_resource::PrimitiveTopology},
@@ -85,21 +85,12 @@ fn queue_mesh_tasks(
 /// Polls and process the generated chunk meshes
 fn process_mesh_tasks(
     mut meshes: ResMut<Assets<Mesh>>,
-    mut chunk_query: Query<
-        (
-            Entity,
-            &Handle<Mesh>,
-            &mut ChunkMeshingTask,
-            &mut Visibility,
-        ),
-        With<Chunk>,
-    >,
+    mut chunk_query: Query<(Entity, &Handle<Mesh>, &mut ChunkMeshingTask), With<Chunk>>,
     mut commands: Commands,
 ) {
-    chunk_query.for_each_mut(|(entity, handle, mut mesh_task, mut visibility)| {
+    chunk_query.for_each_mut(|(entity, handle, mut mesh_task)| {
         if let Some(mesh) = future::block_on(future::poll_once(&mut mesh_task.0)) {
             *meshes.get_mut(handle).unwrap() = mesh;
-            *visibility = Visibility::Visible;
             commands.entity(entity).remove::<ChunkMeshingTask>();
         }
     });
@@ -116,7 +107,7 @@ impl Plugin for VoxelWorldMeshingPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
         app.configure_set(
             ChunkMeshingSet
-                .in_base_set(CoreSet::Update)
+                .in_set(OnUpdate(GameState::Game))
                 .after(TerrainGenSet)
                 .after(ChunkLoadingSet),
         )

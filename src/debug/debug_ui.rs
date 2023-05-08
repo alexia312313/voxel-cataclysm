@@ -126,7 +126,7 @@ fn display_material_editor(
         // base_color
         ui.label("Base color");
 
-        let selected_mat = materials.get_mut_by_id(ui_state.selected_mat).unwrap();
+        let mut selected_mat = materials.get_mut_by_id(ui_state.selected_mat).unwrap();
 
         let mut editable_color = Rgba::from_rgba_unmultiplied(
             selected_mat.base_color.r(),

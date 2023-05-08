@@ -2,15 +2,15 @@ use super::{
     chunks::{ChunkLoadingSet, DirtyChunks},
     Chunk, ChunkShape,
 };
-use crate::voxel::{
+use crate::{voxel::{
     storage::{ChunkMap, VoxelBuffer},
     terraingen::TERRAIN_GENERATOR,
     Voxel,
-};
+}, GameState};
 use bevy::{
     prelude::{
-        Added, Commands, Component, CoreSet, Entity, IntoSystemConfigs, IntoSystemSetConfig,
-        Plugin, Query, ResMut, SystemSet,
+        Added, Commands, Component, Entity, IntoSystemConfigs, IntoSystemSetConfig,
+        Plugin, Query, ResMut, SystemSet, OnUpdate,
     },
     tasks::{AsyncComputeTaskPool, Task},
 };
@@ -69,7 +69,7 @@ impl Plugin for VoxelWorldTerrainGenPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
         app.configure_set(
             TerrainGenSet
-                .in_base_set(CoreSet::Update)
+                .in_set(OnUpdate(GameState::Game))
                 .after(ChunkLoadingSet),
         )
         .add_systems(

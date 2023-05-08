@@ -1,8 +1,8 @@
-use crate::debug::DebugUISet;
-use crate::voxel::{Body, CameraMode, Head, Player};
+use super::{Body, CameraMode, Head, Player};
+use crate::{debug::DebugUISet, GameState};
 use bevy::{input::mouse::MouseMotion, prelude::*, window::CursorGrabMode};
 use bevy_egui::EguiContexts;
-use core::f32::consts::FRAC_PI_2;
+use std::f32::consts::FRAC_PI_2;
 
 const BODY_ROTATION_SLERP: f32 = 0.5;
 const DEFAULT_CAMERA_SENS: f32 = 0.005;
@@ -139,6 +139,10 @@ fn update_player_body_rotation(
     body_transform.rotation = body_transform.rotation.slerp(desired, BODY_ROTATION_SLERP);
 }
 
+#[derive(Hash, Copy, Clone, PartialEq, Eq, Debug, SystemSet)]
+/// Systems related to player controls.
+pub struct PlayerControllerSet;
+
 pub struct PlayerControllerPlugin;
 
 impl Plugin for PlayerControllerPlugin {
@@ -151,7 +155,7 @@ impl Plugin for PlayerControllerPlugin {
                 handle_player_change_camera_mode,
             )
                 .chain()
-                .in_base_set(CoreSet::Update)
+                .in_set(OnUpdate(GameState::Game))
                 .after(DebugUISet::Display),
         );
     }

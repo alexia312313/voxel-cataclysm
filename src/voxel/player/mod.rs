@@ -1,24 +1,24 @@
-use bevy::core_pipeline::fxaa::Fxaa;
-use bevy::prelude::*;
+use bevy::{core_pipeline::fxaa::Fxaa, prelude::*};
 use std::f32::consts::PI;
 
-pub mod player_mov;
+use crate::GameState;
+
+use super::loading::MyAssets;
+
+pub mod player_controller;
 
 pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
-        app //.add_plugin(player_anim::PlayerAnimationsHandlePlugin)
-            .add_plugin(player_mov::PlayerControllerPlugin)
-            //.add_plugin(animation_link::AnimationLinkPlugin)
-            .add_startup_system(setup);
+        app.add_system(setup.in_schedule(OnEnter(GameState::Game)))
+            .add_plugin(player_controller::PlayerControllerPlugin);
     }
 }
 
 fn setup(
     mut cmds: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
+    _my_assets: Res<MyAssets>
 ) {
     cmds.spawn((
         Player,
@@ -31,17 +31,12 @@ fn setup(
             ..default()
         },
     ))
-    .with_children(|player: &mut ChildBuilder| {
-        player.spawn(Body).insert(MaterialMeshBundle {
-            mesh: meshes.add(Mesh::from(shape::Box::new(0.5, 1.8, 0.5))),
-            material: materials.add(StandardMaterial {
-                base_color: Color::WHITE,
-                ..default()
-            }),
+    .with_children(|player| {
+        player.spawn(Body).insert(SceneBundle {
+            scene: _my_assets.player.clone(),
             transform: Transform::IDENTITY.looking_to(Vec3::Z, Vec3::Y),
             ..default()
         });
-
         player
             .spawn((
                 Head,
@@ -72,16 +67,11 @@ fn setup(
     .insert(Fxaa::default())
     .insert(bevy_atmosphere::plugin::AtmosphereCamera::default());
 
-    // Spawn the sky light
     cmds.insert_resource(AmbientLight {
         color: Color::WHITE,
         brightness: 1.0,
     });
 }
-
-#[derive(Hash, Copy, Clone, PartialEq, Eq, Debug, SystemSet)]
-/// Systems related to player controls.
-pub struct PlayerControllerSet;
 
 #[derive(Component)]
 pub struct Player;

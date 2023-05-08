@@ -1,9 +1,9 @@
 use bevy::prelude::{
     Color, Commands, Deref, DirectionalLight, DirectionalLightBundle, Entity, ParamSet, Plugin,
-    Query, Res, Resource, Transform, Vec3, With,
+    Query, Res, Resource, Transform, Vec3, With, OnEnter, IntoSystemAppConfig, IntoSystemConfig, in_state,
 };
 
-use crate::voxel::CameraMode;
+use crate::{voxel::player::CameraMode, GameState};
 
 #[derive(Resource, Deref)]
 struct SkyLightEntity(Entity);
@@ -17,15 +17,6 @@ fn setup_sky_lighting(mut cmds: Commands) {
             directional_light: DirectionalLight {
                 color: Color::WHITE,
                 shadows_enabled: true,
-                // shadow_projection: OrthographicProjection {
-                //     // left: -SIZE,
-                //     // right: SIZE,
-                //     // bottom: -SIZE,
-                //     // top: SIZE,
-                //     near: -SIZE,
-                //     far: SIZE,
-                //     ..Default::default()
-                // },
                 ..Default::default()
             },
             ..Default::default()
@@ -56,7 +47,7 @@ pub struct InteractiveSkyboxPlugin;
 
 impl Plugin for InteractiveSkyboxPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
-        app.add_startup_system(setup_sky_lighting)
-            .add_system(update_light_position);
+        app.add_system(setup_sky_lighting.in_schedule(OnEnter(GameState::Game)))
+            .add_system(update_light_position.run_if(in_state(GameState::Game)));
     }
 }
