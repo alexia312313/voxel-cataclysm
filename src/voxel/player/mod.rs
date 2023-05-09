@@ -16,12 +16,11 @@ impl Plugin for PlayerPlugin {
     }
 }
 
-fn setup(
-    mut cmds: Commands,
-    _my_assets: Res<MyAssets>
-) {
+fn setup(mut cmds: Commands, _my_assets: Res<MyAssets>) {
     cmds.spawn((
-        Player,
+        Player {
+            direction: Vec3::ZERO,
+        },
         VisibilityBundle {
             visibility: Visibility::Visible,
             ..default()
@@ -71,10 +70,18 @@ fn setup(
         color: Color::WHITE,
         brightness: 1.0,
     });
+
+    cmds.insert_resource(PlayerAnimations(vec![
+        _my_assets.player_animation_hit.clone(),
+        _my_assets.player_animation_walking.clone(),
+        _my_assets.player_animation_idle.clone(),
+    ]));
 }
 
 #[derive(Component)]
-pub struct Player;
+pub struct Player {
+    pub direction: Vec3,
+}
 
 /// Marker component for player body.
 #[derive(Component)]
@@ -82,6 +89,9 @@ pub struct Body;
 
 #[derive(Component)]
 pub struct Head;
+
+#[derive(Resource)]
+pub struct PlayerAnimations(pub Vec<Handle<AnimationClip>>);
 
 #[derive(Component, Debug, Clone, Copy)]
 pub enum CameraMode {

@@ -38,7 +38,7 @@ fn handle_player_keyboard_input(
     mut egui: EguiContexts,
     // mut queries: ParamSet<Query<&mut Transform, With<Body>>>,
     mut queries: ParamSet<(
-        Query<&mut Transform, With<Player>>,
+        Query<(&mut Player, &mut Transform)>,
         Query<&Transform, With<Body>>,
     )>,
     keys: Res<Input<KeyCode>>,
@@ -67,8 +67,8 @@ fn handle_player_keyboard_input(
         (forward, right)
     };
 
-    let mut body = queries.p0();
-    let mut body_transform = body.single_mut();
+    let mut binding = queries.p0();
+    let (mut player, mut body_transform) = binding.single_mut();
 
     let mut direction = Vec3::ZERO;
     let mut acceleration = 1.0f32;
@@ -100,6 +100,8 @@ fn handle_player_keyboard_input(
     if keys.pressed(KeyCode::LControl) {
         acceleration *= 8.0;
     }
+
+    player.direction = direction;
 
     if direction == Vec3::ZERO {
         return;

@@ -1,17 +1,18 @@
 use bevy::{
     math::IVec3,
     prelude::{
-        Changed, Commands, CoreSet, Entity, GlobalTransform, IntoSystemConfig, IntoSystemConfigs,
-        IntoSystemSetConfig, Plugin, Query, Res, ResMut, Resource, SystemSet, With, OnUpdate, in_state,
+        in_state, Changed, Commands, CoreSet, Entity, GlobalTransform, IntoSystemConfig,
+        IntoSystemConfigs, IntoSystemSetConfig, OnUpdate, Plugin, Query, Res, ResMut, Resource,
+        SystemSet, With,
     },
     utils::{HashMap, HashSet},
 };
 use float_ord::FloatOrd;
 
 use super::{Chunk, ChunkShape, CHUNK_LENGTH};
-use crate::{voxel::player, GameState};
 use crate::voxel::storage::ChunkMap;
 use crate::voxel::Voxel;
+use crate::{voxel::player, GameState};
 
 /// Updates the current chunk position for the current player.
 fn update_player_pos(
@@ -212,13 +213,21 @@ impl Plugin for VoxelWorldChunkingPlugin {
         })
         .init_resource::<ChunkCommandQueue>()
         .init_resource::<DirtyChunks>()
-        .configure_set(ChunkLoadingSet.in_set(OnUpdate(GameState::Game)).in_base_set(CoreSet::Update))
+        .configure_set(ChunkLoadingSet.in_set(OnUpdate(GameState::Game)))
         .add_systems(
             (update_player_pos, update_view_chunks, create_chunks)
                 .chain()
                 .in_set(ChunkLoadingSet),
         )
-        .add_system(destroy_chunks.run_if(in_state(GameState::Game)).in_base_set(CoreSet::PostUpdate))
-        .add_system(clear_dirty_chunks.run_if(in_state(GameState::Game)).in_base_set(CoreSet::Last));
+        .add_system(
+            destroy_chunks
+                .run_if(in_state(GameState::Game))
+                .in_base_set(CoreSet::PostUpdate),
+        )
+        .add_system(
+            clear_dirty_chunks
+                .run_if(in_state(GameState::Game))
+                .in_base_set(CoreSet::Last),
+        );
     }
 }

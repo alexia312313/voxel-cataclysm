@@ -8,6 +8,8 @@ pub use world::*;
 /// Terrain generator.
 pub mod terraingen;
 
+pub mod animation;
+
 /// Systems for managing player movement.
 pub mod player;
 
