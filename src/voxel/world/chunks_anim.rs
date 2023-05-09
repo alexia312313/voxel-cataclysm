@@ -1,7 +1,7 @@
 use bevy::{
     prelude::{
-        Commands, Component, CoreSet, Entity, IntoSystemConfigs, IntoSystemSetConfig, Plugin,
-        Query, RemovedComponents, Res, SystemSet, Transform, Visibility, OnUpdate,
+        Commands, Component, CoreSet, Entity, IntoSystemConfigs, IntoSystemSetConfig, OnUpdate,
+        Plugin, Query, RemovedComponents, Res, SystemSet, Transform, Visibility,
     },
     time::Time,
 };
@@ -72,8 +72,7 @@ impl Plugin for ChunkAppearanceAnimatorPlugin {
             ChunkAppearanceAnimatorSet
                 .in_set(OnUpdate(GameState::Game))
                 .after(ChunkMeshingSet)
-                .before(CoreSet::UpdateFlush)
-            ,
+                .before(CoreSet::UpdateFlush),
         )
         .add_systems(
             (step_chunk_animation, attach_chunk_animation).in_set(ChunkAppearanceAnimatorSet),

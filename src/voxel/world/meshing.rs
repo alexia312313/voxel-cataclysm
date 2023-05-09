@@ -5,10 +5,13 @@ use super::{
     terrain::TerrainGenSet,
     Chunk, ChunkShape, Voxel, CHUNK_LENGTH,
 };
-use crate::{voxel::{
-    render::{mesh_buffer, ChunkMaterialSingleton, MeshBuffers},
-    storage::ChunkMap,
-}, GameState};
+use crate::{
+    voxel::{
+        render::{mesh_buffer, ChunkMaterialSingleton, MeshBuffers},
+        storage::ChunkMap,
+    },
+    GameState,
+};
 use bevy::{
     prelude::*,
     render::{primitives::Aabb, render_resource::PrimitiveTopology},

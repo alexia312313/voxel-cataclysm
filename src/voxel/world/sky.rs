@@ -1,6 +1,7 @@
 use bevy::prelude::{
-    Color, Commands, Deref, DirectionalLight, DirectionalLightBundle, Entity, ParamSet, Plugin,
-    Query, Res, Resource, Transform, Vec3, With, OnEnter, IntoSystemAppConfig, IntoSystemConfig, in_state,
+    in_state, Color, Commands, Deref, DirectionalLight, DirectionalLightBundle, Entity,
+    IntoSystemAppConfig, IntoSystemConfig, OnEnter, ParamSet, Plugin, Query, Res, Resource,
+    Transform, Vec3, With,
 };
 
 use crate::{voxel::player::CameraMode, GameState};

@@ -2,15 +2,18 @@ use super::{
     chunks::{ChunkLoadingSet, DirtyChunks},
     Chunk, ChunkShape,
 };
-use crate::{voxel::{
-    storage::{ChunkMap, VoxelBuffer},
-    terraingen::TERRAIN_GENERATOR,
-    Voxel,
-}, GameState};
+use crate::{
+    voxel::{
+        storage::{ChunkMap, VoxelBuffer},
+        terraingen::TERRAIN_GENERATOR,
+        Voxel,
+    },
+    GameState,
+};
 use bevy::{
     prelude::{
-        Added, Commands, Component, Entity, IntoSystemConfigs, IntoSystemSetConfig,
-        Plugin, Query, ResMut, SystemSet, OnUpdate,
+        Added, Commands, Component, Entity, IntoSystemConfigs, IntoSystemSetConfig, OnUpdate,
+        Plugin, Query, ResMut, SystemSet,
     },
     tasks::{AsyncComputeTaskPool, Task},
 };
