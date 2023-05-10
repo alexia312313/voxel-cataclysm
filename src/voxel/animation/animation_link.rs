@@ -5,7 +5,7 @@ use crate::GameState;
 pub fn link_animations(
     player_query: Query<Entity, Added<AnimationPlayer>>,
     parent_query: Query<&Parent>,
-    animations_entity_link_query: Query<&AnimationEntityLink>,
+    animations_entity_link_query: Query<&AnimationController>,
     mut commands: Commands,
 ) {
     // Get all the Animation players which can be deep and hidden in the heirachy
@@ -16,9 +16,10 @@ pub fn link_animations(
         if animations_entity_link_query.get(top_entity).is_ok() {
             warn!("Problem with multiple animationsplayers for the same top parent");
         } else {
-            commands
-                .entity(top_entity)
-                .insert(AnimationEntityLink(entity));
+            commands.entity(top_entity).insert(AnimationController {
+                entity: entity,
+                done: false,
+            });
         }
     }
 }
@@ -39,4 +40,7 @@ impl Plugin for AnimationLinkingPlugin {
 }
 
 #[derive(Component)]
-pub struct AnimationEntityLink(pub Entity);
+pub struct AnimationController {
+    pub done: bool,
+    pub entity: Entity,
+}
