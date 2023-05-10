@@ -1,9 +1,10 @@
-use bevy::{core_pipeline::fxaa::Fxaa, prelude::*};
-use std::f32::consts::PI;
-
+use super::{
+    animation::{AnimationController, Animations},
+    loading::MyAssets,
+};
 use crate::GameState;
-
-use super::loading::MyAssets;
+use bevy::{core_pipeline::fxaa::Fxaa, prelude::*, utils::HashMap};
+use std::f32::consts::PI;
 
 pub mod player_controller;
 
@@ -17,6 +18,11 @@ impl Plugin for PlayerPlugin {
 }
 
 fn setup(mut cmds: Commands, _my_assets: Res<MyAssets>) {
+    let mut map = HashMap::new();
+    map.insert("walk".to_string(), _my_assets.player_animation_walk.clone());
+    map.insert("idle".to_string(), _my_assets.player_animation_idle.clone());
+    map.insert("hit".to_string(), _my_assets.player_animation_hit.clone());
+
     cmds.spawn((
         Player,
         VisibilityBundle {
@@ -62,7 +68,9 @@ fn setup(mut cmds: Commands, _my_assets: Res<MyAssets>) {
             });
     })
     .insert(Fxaa::default())
-    .insert(bevy_atmosphere::plugin::AtmosphereCamera::default());
+    .insert(bevy_atmosphere::plugin::AtmosphereCamera::default())
+    .insert(AnimationController { done: false })
+    .insert(Animations(map));
 
     cmds.insert_resource(AmbientLight {
         color: Color::WHITE,

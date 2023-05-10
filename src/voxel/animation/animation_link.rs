@@ -1,25 +1,22 @@
-use bevy::prelude::*;
-
 use crate::GameState;
+use bevy::prelude::*;
 
 pub fn link_animations(
     player_query: Query<Entity, Added<AnimationPlayer>>,
     parent_query: Query<&Parent>,
-    animations_entity_link_query: Query<&AnimationController>,
+    animations_entity_link_query: Query<&AnimationEntityLink>,
     mut commands: Commands,
 ) {
     // Get all the Animation players which can be deep and hidden in the heirachy
     for entity in player_query.iter() {
         let top_entity = get_top_parent(entity, &parent_query);
-
         // If the top parent has an animation config ref then link the player to the config
         if animations_entity_link_query.get(top_entity).is_ok() {
             warn!("Problem with multiple animationsplayers for the same top parent");
         } else {
-            commands.entity(top_entity).insert(AnimationController {
-                entity: entity,
-                done: false,
-            });
+            commands
+                .entity(top_entity)
+                .insert(AnimationEntityLink(entity));
         }
     }
 }
@@ -40,7 +37,4 @@ impl Plugin for AnimationLinkingPlugin {
 }
 
 #[derive(Component)]
-pub struct AnimationController {
-    pub done: bool,
-    pub entity: Entity,
-}
+pub struct AnimationEntityLink(pub Entity);

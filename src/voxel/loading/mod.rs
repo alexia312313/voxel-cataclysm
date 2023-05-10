@@ -28,7 +28,7 @@ pub struct MyAssets {
     #[asset(path = "models/player/mereo.gltf#Animation0")]
     pub player_animation_hit: Handle<AnimationClip>,
     #[asset(path = "models/player/mereo.gltf#Animation2")]
-    pub player_animation_walking: Handle<AnimationClip>,
+    pub player_animation_walk: Handle<AnimationClip>,
     #[asset(path = "models/player/mereo.gltf#Animation1")]
     pub player_animation_idle: Handle<AnimationClip>,
     // Mobs animations

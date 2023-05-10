@@ -1,37 +1,38 @@
+use super::{animation_link::AnimationEntityLink, AnimationController, Animations};
 use crate::GameState;
 use bevy::prelude::*;
-
-use super::animation_link::AnimationController;
-use super::{HitAnimations, IdleAnimations, WalkAnimations};
 
 // TODO: Separate into multiples systems for each animation type and cleaner code
 pub fn play_animations(
     mut player_query: Query<&mut AnimationPlayer>,
-    mut controller_query: Query<&mut AnimationController>,
-    moving_query: Query<Changed<Transform>>,
+    mut query: Query<(
+        Changed<Transform>,
+        &mut AnimationController,
+        &Animations,
+        &AnimationEntityLink,
+    )>,
     btns: Res<Input<MouseButton>>,
-    walk_animations: ResMut<WalkAnimations>,
-    idle_animations: ResMut<IdleAnimations>,
-    hit_animations: ResMut<HitAnimations>,
 ) {
-    for mut controller in controller_query.iter_mut() {
-        let mut player = player_query.get_mut(controller.entity).unwrap();
-        if moving_query.get(controller.entity).is_ok() {
-            if !controller.done {
-                for animation in walk_animations.0.iter() {
-                    player.play(animation.clone()).repeat();
+    for (is_moving, mut controller, animations, player_entity) in query.iter_mut() {
+        let mut player = player_query.get_mut(player_entity.0).unwrap();
+        let animations = &animations.0;
+        let done = &mut controller.done;
+        if is_moving {
+            if !*done {
+                if let Some(walk) = animations.get("walk") {
+                    player.play(walk.clone()).repeat();
                 }
-                controller.done = true;
+                *done = true;
             }
         } else {
-            for animation in idle_animations.0.iter() {
-                player.play(animation.clone()).repeat();
+            if let Some(idle) = animations.get("idle") {
+                player.play(idle.clone());
+                *done = false;
             }
-            controller.done = false;
         }
-        if btns.just_pressed(MouseButton::Left) {
-            for animation in hit_animations.0.iter() {
-                player.play(animation.clone());
+        if btns.just_pressed(MouseButton::Right) {
+            if let Some(hit) = animations.get("hit") {
+                player.play(hit.clone());
             }
         }
     }
