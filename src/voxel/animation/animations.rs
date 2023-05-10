@@ -25,9 +25,9 @@ pub fn handle_entity_movement(
 }
 // TODO: handle player actions
 pub fn handle_entity_actions() {}
-pub struct AnimationsHandlePlugin;
+pub struct AnimationsHandlerPlugin;
 
-impl Plugin for AnimationsHandlePlugin {
+impl Plugin for AnimationsHandlerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             (handle_entity_movement, handle_entity_actions)

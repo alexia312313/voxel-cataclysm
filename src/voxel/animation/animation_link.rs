@@ -18,18 +18,14 @@ pub fn link_animations(
         } else {
             commands
                 .entity(top_entity)
-                .insert(AnimationEntityLink(entity.clone()));
+                .insert(AnimationEntityLink(entity));
         }
     }
 }
 fn get_top_parent(mut curr_entity: Entity, parent_query: &Query<&Parent>) -> Entity {
     //Loop up all the way to the top parent
-    loop {
-        if let Ok(parent) = parent_query.get(curr_entity) {
-            curr_entity = parent.get();
-        } else {
-            break;
-        }
+    while let Ok(parent) = parent_query.get(curr_entity) {
+        curr_entity = parent.get();
     }
     curr_entity
 }
