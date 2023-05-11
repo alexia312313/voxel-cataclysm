@@ -11,7 +11,10 @@ pub mod terraingen;
 pub mod animation;
 
 /// Systems for managing player movement.
-pub mod input;
+pub mod player;
+
+/// networking systems for voxels.
+pub mod networking;
 
 /// Systems for loading voxel data from disk.
 pub mod loading;

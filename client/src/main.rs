@@ -30,7 +30,7 @@ fn main() {
     .add_plugin(voxel::animation::AnimationsHandlerPlugin)
     .add_plugin(voxel::VoxelWorldPlugin)
     .add_plugin(debug::DebugUIPlugins)
-    .add_plugin(voxel::input::PlayerPlugin)
+    .add_plugin(voxel::player::PlayerPlugin)
     .run();
 }
 

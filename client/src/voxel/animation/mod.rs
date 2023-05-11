@@ -1,14 +1,16 @@
+use self::link::link_animations;
+use crate::GameState;
 use bevy::{prelude::*, utils::HashMap};
 
-mod animation_link;
-mod animation_play;
+mod link;
+mod play;
 
 pub struct AnimationsHandlerPlugin;
 
 impl Plugin for AnimationsHandlerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugin(animation_link::AnimationLinkingPlugin)
-            .add_plugin(animation_play::AnimationsPlayerPlugin);
+        app.add_system(link_animations.in_set(OnUpdate(GameState::Game)))
+            .add_plugin(play::AnimationsPlayerPlugin);
     }
 }
 

@@ -1,4 +1,4 @@
-use super::{animation_link::AnimationEntityLink, AnimationController, Animations};
+use super::{link::AnimationEntityLink, AnimationController, Animations};
 use crate::GameState;
 use bevy::prelude::*;
 

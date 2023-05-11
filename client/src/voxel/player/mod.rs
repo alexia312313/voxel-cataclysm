@@ -6,14 +6,14 @@ use crate::GameState;
 use bevy::{core_pipeline::fxaa::Fxaa, prelude::*, utils::HashMap};
 use std::f32::consts::PI;
 
-pub mod player;
+pub mod player_controller;
 
 pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.add_system(setup.in_schedule(OnEnter(GameState::Game)))
-            .add_plugin(player::PlayerControllerPlugin);
+            .add_plugin(player_controller::PlayerControllerPlugin);
     }
 }
 

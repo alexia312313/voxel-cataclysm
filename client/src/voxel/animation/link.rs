@@ -1,5 +1,7 @@
-use crate::GameState;
 use bevy::prelude::*;
+
+#[derive(Component)]
+pub struct AnimationEntityLink(pub Entity);
 
 pub fn link_animations(
     player_query: Query<Entity, Added<AnimationPlayer>>,
@@ -27,14 +29,3 @@ fn get_top_parent(mut curr_entity: Entity, parent_query: &Query<&Parent>) -> Ent
     }
     curr_entity
 }
-
-pub struct AnimationLinkingPlugin;
-
-impl Plugin for AnimationLinkingPlugin {
-    fn build(&self, app: &mut App) {
-        app.add_system(link_animations.in_set(OnUpdate(GameState::Game)));
-    }
-}
-
-#[derive(Component)]
-pub struct AnimationEntityLink(pub Entity);

@@ -12,11 +12,11 @@ use float_ord::FloatOrd;
 use super::{Chunk, ChunkShape, CHUNK_LENGTH};
 use crate::voxel::storage::ChunkMap;
 use crate::voxel::Voxel;
-use crate::{voxel::input, GameState};
+use crate::{voxel::player, GameState};
 
 /// Updates the current chunk position for the current player.
 fn update_player_pos(
-    player: Query<&GlobalTransform, (With<input::Body>, Changed<GlobalTransform>)>,
+    player: Query<&GlobalTransform, (With<player::Body>, Changed<GlobalTransform>)>,
     mut chunk_pos: ResMut<CurrentLocalPlayerChunk>,
 ) {
     if let Ok(ply) = player.get_single() {

@@ -27,6 +27,3 @@ noise = "0.8.2"
 itertools = "0.10.5"
 bevy_asset_loader = "0.16.0"
 bevy_rapier3d = "0.21.0"
-
-[patch.crates-io]
-ilattice = { git = "https://github.com/Game4all/ilattice-rs", branch = "update-glam" }
