@@ -1083,6 +1083,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "big-brain"
+version = "0.17.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "20da289393d5abee7043d7045bdc50bce06d6bffd29816c89934c6c31d8b8847"
+dependencies = [
+ "bevy",
+ "big-brain-derive",
+]
+
+[[package]]
+name = "big-brain-derive"
+version = "0.17.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2166ff5dd1fae091887288f174ee6aef82f349b1a6edcf983fd379ab6df49c0d"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 1.0.109",
+]
+
+[[package]]
 name = "bincode"
 version = "1.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1307,6 +1328,7 @@ dependencies = [
  "bevy_egui",
  "bevy_rapier3d",
  "bevy_renet",
+ "big-brain",
  "bitflags 2.2.1",
  "block-mesh",
  "common",

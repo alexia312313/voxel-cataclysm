@@ -9,6 +9,7 @@ pub use world::*;
 pub mod terraingen;
 
 pub mod animation;
+pub mod mob;
 
 /// Systems for managing player movement.
 pub mod player;
