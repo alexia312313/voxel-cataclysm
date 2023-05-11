@@ -20,7 +20,6 @@ impl Plugin for PlayerPlugin {
 fn setup(mut cmds: Commands, _my_assets: Res<MyAssets>) {
     let mut map = HashMap::new();
     map.insert("walk".to_string(), _my_assets.player_animation_walk.clone());
-    map.insert("idle".to_string(), _my_assets.player_animation_idle.clone());
     map.insert("hit".to_string(), _my_assets.player_animation_hit.clone());
 
     cmds.spawn((

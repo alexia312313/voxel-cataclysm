@@ -23,8 +23,8 @@ pub fn play_animations(
                 }
                 *done = true;
             }
-        } else if let Some(idle) = animations.get("idle") {
-            player.play(idle.clone());
+        } else {
+            player.stop_repeating();
             *done = false;
         }
     }
