@@ -11,7 +11,6 @@ pub fn play_animations(
         &Animations,
         &AnimationEntityLink,
     )>,
-    btns: Res<Input<MouseButton>>,
 ) {
     for (is_moving, mut controller, animations, player_entity) in query.iter_mut() {
         let mut player = player_query.get_mut(player_entity.0).unwrap();
@@ -27,11 +26,6 @@ pub fn play_animations(
         } else if let Some(idle) = animations.get("idle") {
             player.play(idle.clone());
             *done = false;
-        }
-        if btns.just_pressed(MouseButton::Right) {
-            if let Some(hit) = animations.get("hit") {
-                player.play(hit.clone());
-            }
         }
     }
 }

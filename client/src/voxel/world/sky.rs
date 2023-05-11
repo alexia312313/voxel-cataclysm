@@ -4,7 +4,7 @@ use bevy::prelude::{
     Transform, Vec3, With,
 };
 
-use crate::{voxel::player::CameraMode, GameState};
+use crate::{voxel::input::CameraMode, GameState};
 
 #[derive(Resource, Deref)]
 struct SkyLightEntity(Entity);
