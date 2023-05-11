@@ -12,7 +12,7 @@ pub struct Thirst {
 }
 
 impl Thirst {
-    pub fn new(thirst: f32, per_second: f32) -> Self {
+    pub const fn new(thirst: f32, per_second: f32) -> Self {
         Self { thirst, per_second }
     }
 }
