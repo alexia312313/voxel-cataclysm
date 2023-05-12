@@ -21,43 +21,66 @@ use big_brain::{
     thinker::{ActionSpan, Actor},
 };
 
-use super::components::Thirst;
+use super::components::Aggro;
 
 #[derive(Clone, Component, Debug, ActionBuilder)]
-pub struct Drink {
+pub struct Attack {
     pub(crate) until: f32,
     pub(crate) per_second: f32,
 }
 
 // Action systems execute according to a state machine, where the states are
 // labeled by ActionState.
-pub fn drink_action_system(
+pub fn attack_action_system(
     time: Res<Time>,
-    mut thirsts: Query<&mut Thirst>,
+    mut aggros: Query<(&mut Aggro, Entity)>,
     // We execute actions by querying for their associated Action Component
-    // (Drink in this case). You'll always need both Actor and ActionState.
-    mut query: Query<(&Actor, &mut ActionState, &Drink, &ActionSpan)>,
+    // (Attack in this case). You'll always need both Actor and ActionState.
+    mut query: Query<(&Actor, &mut ActionState, &Attack, &ActionSpan)>,
+    mut transform_query: Query<&mut Transform>,
 ) {
-    for (Actor(actor), mut state, drink, span) in &mut query {
+    for (Actor(actor), mut state, attack, span) in &mut query {
         // This sets up the tracing scope. Any `debug` calls here will be
         // spanned together in the output.
         let _guard = span.span().enter();
 
         // Use the drink_action's actor to look up the corresponding Thirst Component.
-        if let Ok(mut thirst) = thirsts.get_mut(*actor) {
+        if let Ok((mut aggro, actor_entity)) = aggros.get_mut(*actor) {
             match *state {
                 ActionState::Requested => {
-                    debug!("Time to drink some water!");
+                    debug!("hehehe you are ded! player");
                     *state = ActionState::Executing;
                 }
                 ActionState::Executing => {
-                    trace!("Drinking...");
-                    thirst.thirst -=
-                        drink.per_second * (time.delta().as_micros() as f32 / 1_000_000.0);
-                    if thirst.thirst <= drink.until {
+                    trace!("Attacking...");
+                    let target = *transform_query.get(aggro.target).unwrap();
+                    let mut actor = transform_query.get_mut(actor_entity).unwrap();
+                    let mut direction = Vec3::ZERO;
+                    let target_pos = target.translation;
+                    debug!("target: {:?}, actor: {:?}", target_pos, actor.translation);
+                    if target_pos.z < actor.translation.z {
+                        direction -= Vec3::new(0.0, 0.0, 0.1);
+                    }
+                    if target_pos.z > actor.translation.z {
+                        direction += Vec3::new(0.0, 0.0, 0.1);
+                    }
+                    if target_pos.x < actor.translation.x {
+                        direction -= Vec3::new(0.1, 0.0, 0.0);
+                    }
+                    if target_pos.x > actor.translation.x {
+                        direction += Vec3::new(0.1, 0.0, 0.0);
+                    }
+
+                    actor.translation += direction;
+
+                    if target_pos.distance(actor.translation) > 100.0 {
+                        aggro.aggro -=
+                            attack.per_second * (time.delta().as_micros() as f32 / 1_000_000.0);
+                    }
+                    if aggro.aggro <= attack.until {
                         // To "finish" an action, we set its state to Success or
                         // Failure.
-                        debug!("Done drinking water");
+                        debug!("Done attacking player!");
                         *state = ActionState::Success;
                     }
                 }

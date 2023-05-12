@@ -4,23 +4,26 @@
 use bevy::prelude::*;
 use big_brain::{prelude::FirstToScore, thinker::Thinker};
 
-use super::{actions::Drink, components::Thirst, scorers::Thirsty};
+use crate::voxel::mob::Mob;
 
-pub fn init_entities(mut cmd: Commands) {
-    // Create the entity and throw the Thirst component in there. Nothing special here.
-    cmd.spawn((
-        Thirst::new(75.0, 2.0),
-        Thinker::build()
-            .label("My Thinker")
-            .picker(FirstToScore { threshold: 0.8 })
-            // Technically these are supposed to be ActionBuilders and
-            // ScorerBuilders, but our Clone impls simplify our code here.
-            .when(
-                Thirsty,
-                Drink {
-                    until: 70.0,
-                    per_second: 5.0,
-                },
-            ),
-    ));
+use super::{actions::Attack, components::Aggro, scorers::Aggroed};
+
+pub fn init_entities(mut cmd: Commands, query: Query<Entity, Added<Mob>>) {
+    for entity in query.iter() {
+        cmd.entity(entity).insert((
+            Aggro::new(90.0, 2.0, Entity::PLACEHOLDER),
+            Thinker::build()
+                .label("My Thinker")
+                .picker(FirstToScore { threshold: 0.8 })
+                // Technically these are supposed to be ActionBuilders and
+                // ScorerBuilders, but our Clone impls simplify our code here.
+                .when(
+                    Aggroed,
+                    Attack {
+                        until: 70.0,
+                        per_second: 5.0,
+                    },
+                ),
+        ));
+    }
 }

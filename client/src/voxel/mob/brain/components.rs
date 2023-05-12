@@ -5,24 +5,49 @@
 // There's nothing special here. It's a plain old Bevy component.
 use bevy::prelude::*;
 
+use crate::voxel::player::Player;
+
 #[derive(Component, Debug)]
-pub struct Thirst {
+pub struct Aggro {
     pub per_second: f32,
-    pub thirst: f32,
+    pub aggro: f32,
+    pub target: Entity,
 }
 
-impl Thirst {
-    pub const fn new(thirst: f32, per_second: f32) -> Self {
-        Self { thirst, per_second }
+impl Aggro {
+    pub const fn new(aggro: f32, per_second: f32, target: Entity) -> Self {
+        Self {
+            aggro,
+            per_second,
+            target,
+        }
     }
 }
 
-pub fn thirst_system(time: Res<Time>, mut thirsts: Query<&mut Thirst>) {
-    for mut thirst in &mut thirsts {
-        thirst.thirst += thirst.per_second * (time.delta().as_micros() as f32 / 1_000_000.0);
-        if thirst.thirst >= 100.0 {
-            thirst.thirst = 100.0;
+pub fn aggro_system(
+    time: Res<Time>,
+    mut query: Query<(&Transform, &mut Aggro)>,
+    player_query: Query<(&Transform, Entity), With<Player>>,
+) {
+    for (mob_pos, mut aggro) in query.iter_mut() {
+        let mut closest_player = std::f32::MAX;
+        for (player_pos, entity) in player_query.iter() {
+            let distance = mob_pos.translation.distance(player_pos.translation);
+            if closest_player > distance {
+                closest_player = distance;
+                aggro.target = entity;
+            }
+            if distance < 100.0 {
+                aggro.aggro += aggro.per_second * (time.delta().as_micros() as f32 / 1_000_000.0);
+                if aggro.aggro >= 100.0 {
+                    aggro.aggro = 100.0;
+                }
+            }
+            trace!(
+                "Aggro: {}, Targeted Player: {:?}",
+                aggro.aggro,
+                aggro.target
+            );
         }
-        trace!("Thirst: {}", thirst.thirst);
     }
 }

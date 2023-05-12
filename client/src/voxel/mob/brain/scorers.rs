@@ -14,19 +14,19 @@ use big_brain::{
     thinker::{Actor, ScorerSpan},
 };
 
-use super::components::Thirst;
+use super::components::Aggro;
 
 #[derive(Clone, Component, Debug, ScorerBuilder)]
-pub struct Thirsty;
+pub struct Aggroed;
 
 // Looks familiar? It's a lot like Actions!
-pub fn thirsty_scorer_system(
-    thirsts: Query<&Thirst>,
+pub fn aggroed_scorer_system(
+    aggros: Query<&Aggro>,
     // Same dance with the Actor here, but now we use look up Score instead of ActionState.
-    mut query: Query<(&Actor, &mut Score, &ScorerSpan), With<Thirsty>>,
+    mut query: Query<(&Actor, &mut Score, &ScorerSpan), With<Aggroed>>,
 ) {
     for (Actor(actor), mut score, span) in &mut query {
-        if let Ok(thirst) = thirsts.get(*actor) {
+        if let Ok(aggro) = aggros.get(*actor) {
             // This is really what the job of a Scorer is. To calculate a
             // generic "Utility" score that the Big Brain engine will compare
             // against others, over time, and use to make decisions. This is
@@ -34,11 +34,10 @@ pub fn thirsty_scorer_system(
             // line", but that's all configurable using Pickers!
             //
             // The score here must be between 0.0 and 1.0.
-            score.set(thirst.thirst / 100.0);
-            if thirst.thirst >= 80.0 {
-                span.span().in_scope(|| {
-                    debug!("Thirst above threshold! Score: {}", thirst.thirst / 100.0)
-                });
+            score.set(aggro.aggro / 100.0);
+            if aggro.aggro >= 80.0 {
+                span.span()
+                    .in_scope(|| debug!("Aggro above threshold! Score: {}", aggro.aggro / 100.0));
             }
         }
     }
