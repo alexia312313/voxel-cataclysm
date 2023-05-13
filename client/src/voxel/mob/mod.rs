@@ -3,7 +3,10 @@ use crate::GameState;
 use self::brain::BrainHandlerPlugin;
 use bevy::{prelude::*, utils::HashMap};
 
-use super::loading::MyAssets;
+use super::{
+    animation::{AnimationController, Animations},
+    loading::MyAssets,
+};
 
 pub mod brain;
 
@@ -30,7 +33,7 @@ pub fn setup(mut cmds: Commands, _my_assets: Res<MyAssets>) {
             ..default()
         },
         TransformBundle {
-            local: Transform::from_xyz(2.0, 170.0, 2.0).looking_to(Vec3::Z, Vec3::Y),
+            local: Transform::from_xyz(20.0, 170.0, 2.0).looking_to(Vec3::Z, Vec3::Y),
             ..default()
         },
     ))
@@ -40,7 +43,9 @@ pub fn setup(mut cmds: Commands, _my_assets: Res<MyAssets>) {
             transform: Transform::IDENTITY.looking_to(Vec3::Z, Vec3::Y),
             ..default()
         });
-    });
+    })
+    .insert(AnimationController { done: false })
+    .insert(Animations(map));
 }
 
 #[derive(Component)]
