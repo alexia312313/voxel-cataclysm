@@ -53,30 +53,31 @@ pub fn attack_action_system(
                 }
                 ActionState::Executing => {
                     trace!("Attacking...");
+
                     let target = *transform_query.get(aggro.target).unwrap();
                     let mut actor = transform_query.get_mut(actor_entity).unwrap();
-                    let mut direction = Vec3::ZERO;
                     let target_pos = target.translation;
+                    let move_forward = actor.forward();
+                    let distance_to_target = target_pos.distance(actor.translation);
+
                     debug!("target: {:?}, actor: {:?}", target_pos, actor.translation);
-                    if target_pos.z < actor.translation.z {
-                        direction -= Vec3::new(0.0, 0.0, 0.1);
-                    }
-                    if target_pos.z > actor.translation.z {
-                        direction += Vec3::new(0.0, 0.0, 0.1);
-                    }
-                    if target_pos.x < actor.translation.x {
-                        direction -= Vec3::new(0.1, 0.0, 0.0);
-                    }
-                    if target_pos.x > actor.translation.x {
-                        direction += Vec3::new(0.1, 0.0, 0.0);
-                    }
 
-                    actor.translation += direction;
+                    // look at the target
+                    actor.look_at(target_pos, Vec3::Y);
 
-                    if target_pos.distance(actor.translation) > 100.0 {
+                    // if the target is too far away, slowly lose aggro
+                    if distance_to_target > 50.0 {
                         aggro.aggro -=
                             attack.per_second * (time.delta().as_micros() as f32 / 1_000_000.0);
                     }
+
+                    if distance_to_target < 5.0 {
+                        // TODO: land a hit
+                    } else {
+                        // move forward
+                        actor.translation += move_forward * 10.0 * time.delta_seconds();
+                    }
+
                     if aggro.aggro <= attack.until {
                         // To "finish" an action, we set its state to Success or
                         // Failure.
