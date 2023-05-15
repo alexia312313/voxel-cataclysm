@@ -32,7 +32,7 @@ pub fn setup(mut cmds: Commands, _my_assets: Res<MyAssets>) {
 
     cmds.spawn((
         Mob,
-        RigidBody::Dynamic,
+        Collider::cuboid(1.0, 1.0, 1.0),
         Stats {
             hp: 20,
             max_hp: 20,
@@ -57,7 +57,7 @@ pub fn setup(mut cmds: Commands, _my_assets: Res<MyAssets>) {
     })
     .insert(AnimationController { done: false })
     .insert(Animations(map))
-    .insert(Collider::cuboid(1.0, 1.0, 1.0))
+    .insert(RigidBody::Dynamic)
     .insert(GravityScale(0.0))
     .insert(ActiveEvents::COLLISION_EVENTS);
 }

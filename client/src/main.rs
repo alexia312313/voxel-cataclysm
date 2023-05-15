@@ -33,7 +33,6 @@ fn main() {
     .add_plugin(voxel::VoxelWorldPlugin)
     .add_plugin(debug::DebugUIPlugins)
     .add_plugin(voxel::ActorPlugin)
-    //.add_plugin(WorldInspectorPlugin::new())
     .run();
 }
 

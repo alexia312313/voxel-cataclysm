@@ -7,7 +7,7 @@ use crate::{
     GameState,
 };
 use bevy::{core_pipeline::fxaa::Fxaa, prelude::*, utils::HashMap};
-use bevy_rapier3d::prelude::{ActiveEvents, Collider, ExternalForce, KinematicCharacterController};
+use bevy_rapier3d::prelude::{ActiveEvents, Collider, KinematicCharacterController};
 use std::f32::consts::PI;
 
 pub mod player_controller;
@@ -28,6 +28,7 @@ fn setup(mut cmds: Commands, _my_assets: Res<MyAssets>) {
 
     cmds.spawn((
         Player,
+        Collider::cuboid(0.4, 0.8, 0.4),
         Stats {
             hp: 100,
             max_hp: 100,
@@ -49,18 +50,6 @@ fn setup(mut cmds: Commands, _my_assets: Res<MyAssets>) {
             transform: Transform::IDENTITY.looking_to(Vec3::Z, Vec3::Y),
             ..default()
         });
-        player
-            .spawn(Collider::cuboid(0.4, 0.8, 0.4))
-            .insert(KinematicCharacterController::default())
-            .insert(ActiveEvents::COLLISION_EVENTS)
-            .insert(ExternalForce {
-                force: Vec3::ZERO,
-                ..Default::default()
-            })
-            .insert(TransformBundle {
-                local: Transform::from_xyz(0.0, 0.8, 0.0),
-                global: Default::default(),
-            });
         player
             .spawn((
                 Head,
@@ -91,7 +80,9 @@ fn setup(mut cmds: Commands, _my_assets: Res<MyAssets>) {
     .insert(Fxaa::default())
     .insert(bevy_atmosphere::plugin::AtmosphereCamera::default())
     .insert(AnimationController { done: false })
-    .insert(Animations(map));
+    .insert(Animations(map))
+    .insert(KinematicCharacterController::default())
+    .insert(ActiveEvents::COLLISION_EVENTS);
 
     cmds.insert_resource(AmbientLight {
         color: Color::WHITE,

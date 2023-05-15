@@ -1,8 +1,5 @@
 use bevy::prelude::*;
 
-#[derive(Component)]
-pub struct AnimationEntityLink(pub Entity);
-
 pub fn link_animations(
     player_query: Query<Entity, Added<AnimationPlayer>>,
     parent_query: Query<&Parent>,
@@ -29,3 +26,6 @@ fn get_top_parent(mut curr_entity: Entity, parent_query: &Query<&Parent>) -> Ent
     }
     curr_entity
 }
+
+#[derive(Component)]
+pub struct AnimationEntityLink(pub Entity);
