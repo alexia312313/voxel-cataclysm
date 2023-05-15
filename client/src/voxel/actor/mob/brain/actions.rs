@@ -21,6 +21,8 @@ use big_brain::{
     thinker::{ActionSpan, Actor},
 };
 
+use crate::voxel::{Attacked, Stats};
+
 use super::components::Aggro;
 
 #[derive(Clone, Component, Debug, ActionBuilder)]
@@ -33,7 +35,9 @@ pub struct Attack {
 // labeled by ActionState.
 pub fn attack_action_system(
     time: Res<Time>,
+    stats_query: Query<&Stats>,
     mut aggros: Query<(&mut Aggro, Entity)>,
+    mut cmds: Commands,
     // We execute actions by querying for their associated Action Component
     // (Attack in this case). You'll always need both Actor and ActionState.
     mut query: Query<(&Actor, &mut ActionState, &Attack, &ActionSpan)>,
@@ -54,8 +58,10 @@ pub fn attack_action_system(
                 ActionState::Executing => {
                     trace!("Attacking...");
 
-                    let target = *transform_query.get(aggro.target).unwrap();
+                    let target_entity = aggro.target;
+                    let target = *transform_query.get(target_entity).unwrap();
                     let mut actor = transform_query.get_mut(actor_entity).unwrap();
+                    let actor_stats = stats_query.get(actor_entity).unwrap();
                     let target_pos = target.translation;
                     let move_forward = actor.forward();
                     let distance_to_target = target_pos.distance(actor.translation);
@@ -71,11 +77,14 @@ pub fn attack_action_system(
                             attack.per_second * (time.delta().as_micros() as f32 / 1_000_000.0);
                     }
 
-                    if distance_to_target < 5.0 {
-                        // TODO: land a hit
+                    if distance_to_target < 3.0 {
+                        cmds.entity(target_entity).insert(Attacked {
+                            damage: actor_stats.attack,
+                        });
                     } else {
                         // move forward
-                        actor.translation += move_forward * 10.0 * time.delta_seconds();
+                        actor.translation +=
+                            move_forward * actor_stats.speed * time.delta_seconds();
                     }
 
                     if aggro.aggro <= attack.until {

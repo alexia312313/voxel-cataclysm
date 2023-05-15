@@ -9,14 +9,14 @@ pub use world::*;
 pub mod terraingen;
 
 pub mod animation;
-pub mod mob;
 
-/// Systems for managing player movement.
-pub mod player;
+mod actor;
+pub use actor::*;
 
 /// networking systems for voxels.
 pub mod networking;
 
+pub mod combat;
 /// Systems for loading voxel data from disk.
 pub mod loading;
 

@@ -1,12 +1,16 @@
-use crate::GameState;
+use crate::{
+    voxel::{
+        animation::{AnimationController, Animations},
+        loading::MyAssets,
+    },
+    GameState,
+};
 
 use self::brain::BrainHandlerPlugin;
 use bevy::{prelude::*, utils::HashMap};
+use bevy_rapier3d::prelude::{ActiveEvents, Collider, GravityScale, RigidBody};
 
-use super::{
-    animation::{AnimationController, Animations},
-    loading::MyAssets,
-};
+use super::Stats;
 
 pub mod brain;
 
@@ -28,6 +32,13 @@ pub fn setup(mut cmds: Commands, _my_assets: Res<MyAssets>) {
 
     cmds.spawn((
         Mob,
+        RigidBody::Dynamic,
+        Stats {
+            hp: 20,
+            max_hp: 20,
+            attack: 10,
+            speed: 5.0,
+        },
         VisibilityBundle {
             visibility: Visibility::Visible,
             ..default()
@@ -38,19 +49,18 @@ pub fn setup(mut cmds: Commands, _my_assets: Res<MyAssets>) {
         },
     ))
     .with_children(|mob| {
-        mob.spawn(Body).insert(SceneBundle {
+        mob.spawn(SceneBundle {
             scene: _my_assets.slime.clone(),
             transform: Transform::IDENTITY.looking_to(Vec3::Z, Vec3::Y),
             ..default()
         });
     })
     .insert(AnimationController { done: false })
-    .insert(Animations(map));
+    .insert(Animations(map))
+    .insert(Collider::cuboid(1.0, 1.0, 1.0))
+    .insert(GravityScale(0.0))
+    .insert(ActiveEvents::COLLISION_EVENTS);
 }
 
 #[derive(Component)]
 pub struct Mob;
-
-/// Marker component for player body.
-#[derive(Component)]
-pub struct Body;
