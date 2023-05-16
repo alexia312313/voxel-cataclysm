@@ -7,3 +7,6 @@ edition = "2021"
 
 [dependencies]
 bevy.workspace = true
+bevy_renet.workspace = true
+bevy_rapier3d.workspace = true
+serde.workspace = true

@@ -10,6 +10,7 @@ use bevy_rapier3d::{
     prelude::{NoUserData, RapierPhysicsPlugin},
     render::RapierDebugRenderPlugin,
 };
+use bevy_renet::{transport::NetcodeClientPlugin, RenetClientPlugin};
 
 mod debug;
 mod voxel;
@@ -25,6 +26,8 @@ fn main() {
         ..default()
     }))
     .add_state::<GameState>()
+    .add_plugin(RenetClientPlugin)
+    .add_plugin(NetcodeClientPlugin)
     .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
     .add_plugin(RapierDebugRenderPlugin::default())
     .add_plugin(voxel::loading::LodingHandlerPlugin)
@@ -33,6 +36,7 @@ fn main() {
     .add_plugin(voxel::VoxelWorldPlugin)
     .add_plugin(debug::DebugUIPlugins)
     .add_plugin(voxel::ActorPlugin)
+    .add_plugin(voxel::networking::NetworkingPlugin)
     .run();
 }
 

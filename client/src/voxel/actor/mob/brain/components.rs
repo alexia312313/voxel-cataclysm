@@ -5,7 +5,7 @@
 // There's nothing special here. It's a plain old Bevy component.
 use bevy::prelude::*;
 
-use crate::voxel::player::Player;
+use crate::voxel::networking::ControlledPlayer;
 
 #[derive(Component, Debug)]
 pub struct Aggro {
@@ -27,7 +27,7 @@ impl Aggro {
 pub fn aggro_system(
     time: Res<Time>,
     mut query: Query<(&Transform, &mut Aggro)>,
-    player_query: Query<(&Transform, Entity), With<Player>>,
+    player_query: Query<(&Transform, Entity), With<ControlledPlayer>>,
 ) {
     for (mob_pos, mut aggro) in query.iter_mut() {
         let mut closest_player = std::f32::MAX;
