@@ -10,6 +10,7 @@ use crate::{
 use bevy::{
     app::AppExit,
     core_pipeline::fxaa::Fxaa,
+    ecs::entity,
     prelude::{shape::Icosphere, *},
     utils::HashMap,
     window::{exit_on_all_closed, PrimaryWindow},
@@ -23,7 +24,7 @@ use common::{
     connection_config, ClientChannel, NetworkedEntities, PlayerCommand, PlayerInput, ServerChannel,
     ServerMessages, PROTOCOL_ID,
 };
-use std::{f32::consts::PI, net::UdpSocket, time::SystemTime};
+use std::{f32::consts::PI, net::UdpSocket, thread::spawn, time::SystemTime};
 
 pub struct NetworkingPlugin;
 impl Plugin for NetworkingPlugin {
@@ -83,6 +84,8 @@ fn player_input(
     target_query: Query<&Transform, With<Target>>,
     mut player_commands: EventWriter<PlayerCommand>,
 ) {
+    player_input.run = keyboard_input.pressed(KeyCode::LControl);
+    player_input.crouch = keyboard_input.pressed(KeyCode::LShift);
     player_input.left = keyboard_input.pressed(KeyCode::A);
     player_input.right = keyboard_input.pressed(KeyCode::D);
     player_input.up = keyboard_input.pressed(KeyCode::W);
@@ -200,6 +203,12 @@ fn client_sync_players(
                         .insert(Fxaa::default())
                         .insert(Animations(map))
                         .insert(bevy_atmosphere::plugin::AtmosphereCamera::default())
+                        .insert(AnimationController { done: false })
+                        .insert(KinematicCharacterController::default())
+                        .insert(ActiveEvents::COLLISION_EVENTS);
+                } else {
+                    client_entity
+                        .insert(Animations(map))
                         .insert(AnimationController { done: false })
                         .insert(KinematicCharacterController::default())
                         .insert(ActiveEvents::COLLISION_EVENTS);

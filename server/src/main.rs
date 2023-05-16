@@ -222,12 +222,6 @@ fn server_network_sync(
 
 fn move_players_system(mut query: Query<(&mut Transform, &PlayerInput)>) {
     for (mut transform, input) in query.iter_mut() {
-        /*let x = (input.right as i8 - input.left as i8) as f32;
-        let y = (input.down as i8 - input.up as i8) as f32;
-        let direction = Vec2::new(x, y).normalize_or_zero();
-        velocity.linvel.x = direction.x * PLAYER_MOVE_SPEED;
-        velocity.linvel.z = direction.y * PLAYER_MOVE_SPEED;*/
-
         let mut acceleration = 1.0f32;
         let mut direction = Vec3::ZERO;
 
@@ -262,9 +256,8 @@ fn move_players_system(mut query: Query<(&mut Transform, &PlayerInput)>) {
         if direction == Vec3::ZERO {
             return;
         }
-
         // hardcoding 0.10 as a factor for now to not go zoomin across the world.
-        transform.translation += direction * acceleration;
+        transform.translation += (acceleration * direction * 0.10);
     }
 }
 
