@@ -1,6 +1,6 @@
 use std::{collections::HashMap, net::UdpSocket, time::SystemTime};
 
-use bevy::{app::AppExit, prelude::*, window::exit_on_all_closed};
+use bevy::{app::AppExit, prelude::*, transform, window::exit_on_all_closed};
 use bevy_rapier3d::prelude::*;
 use bevy_renet::{
     renet::{
@@ -107,7 +107,7 @@ fn server_update_system(
                 // Spawn new player
                 let transform = Transform::from_xyz(
                     (fastrand::f32() - 0.5) * 40.,
-                    0.51,
+                    171.0,
                     (fastrand::f32() - 0.5) * 40.,
                 );
                 let player_entity = commands
@@ -119,7 +119,7 @@ fn server_update_system(
                     .insert(LockedAxes::ROTATION_LOCKED | LockedAxes::TRANSLATION_LOCKED_Y)
                     .insert(Collider::capsule_y(0.5, 0.5))
                     .insert(PlayerInput::default())
-                    .insert(Velocity::default())
+                    //.insert(Velocity::default())
                     .insert(Player { id: *client_id })
                     .id();
 
@@ -220,14 +220,51 @@ fn server_network_sync(
     server.broadcast_message(ServerChannel::NetworkedEntities, sync_message);
 }
 
-fn move_players_system(mut query: Query<(&mut Velocity, &PlayerInput)>) {
-    //TODO: ADAPT
-    for (mut velocity, input) in query.iter_mut() {
-        let x = (input.right as i8 - input.left as i8) as f32;
+fn move_players_system(mut query: Query<(&mut Transform, &PlayerInput)>) {
+    for (mut transform, input) in query.iter_mut() {
+        /*let x = (input.right as i8 - input.left as i8) as f32;
         let y = (input.down as i8 - input.up as i8) as f32;
         let direction = Vec2::new(x, y).normalize_or_zero();
         velocity.linvel.x = direction.x * PLAYER_MOVE_SPEED;
-        velocity.linvel.z = direction.y * PLAYER_MOVE_SPEED;
+        velocity.linvel.z = direction.y * PLAYER_MOVE_SPEED;*/
+
+        let mut acceleration = 1.0f32;
+        let mut direction = Vec3::ZERO;
+
+        if input.up {
+            direction.z -= 1.0;
+        }
+
+        if input.down {
+            direction.z += 1.0;
+        }
+
+        if input.right {
+            direction.x += 1.0;
+        }
+
+        if input.left {
+            direction.x -= 1.0;
+        }
+
+        if input.jump {
+            direction.y += 1.0;
+        }
+        //Crouch
+        if input.crouch {
+            direction.y -= 1.0;
+        }
+
+        if input.run {
+            acceleration *= 8.0;
+        }
+
+        if direction == Vec3::ZERO {
+            return;
+        }
+
+        // hardcoding 0.10 as a factor for now to not go zoomin across the world.
+        transform.translation += direction * acceleration;
     }
 }
 

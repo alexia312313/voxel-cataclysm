@@ -83,11 +83,11 @@ fn player_input(
     target_query: Query<&Transform, With<Target>>,
     mut player_commands: EventWriter<PlayerCommand>,
 ) {
-    player_input.left = keyboard_input.pressed(KeyCode::A) || keyboard_input.pressed(KeyCode::Left);
-    player_input.right =
-        keyboard_input.pressed(KeyCode::D) || keyboard_input.pressed(KeyCode::Right);
-    player_input.up = keyboard_input.pressed(KeyCode::W) || keyboard_input.pressed(KeyCode::Up);
-    player_input.down = keyboard_input.pressed(KeyCode::S) || keyboard_input.pressed(KeyCode::Down);
+    player_input.left = keyboard_input.pressed(KeyCode::A);
+    player_input.right = keyboard_input.pressed(KeyCode::D);
+    player_input.up = keyboard_input.pressed(KeyCode::W);
+    player_input.down = keyboard_input.pressed(KeyCode::S);
+    player_input.jump = keyboard_input.pressed(KeyCode::Space);
 
     if mouse_button_input.just_pressed(MouseButton::Left) {
         let target_transform = target_query.single();
