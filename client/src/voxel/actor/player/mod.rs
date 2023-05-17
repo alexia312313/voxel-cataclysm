@@ -7,7 +7,10 @@ use crate::{
     GameState,
 };
 use bevy::{core_pipeline::fxaa::Fxaa, prelude::*, utils::HashMap};
-use bevy_rapier3d::prelude::{ActiveEvents, Collider, KinematicCharacterController};
+use bevy_rapier3d::prelude::{
+    Collider, ColliderMassProperties, CollidingEntities, CollisionGroups, GravityScale, Group,
+    KinematicCharacterController, LockedAxes, RigidBody,
+};
 use std::f32::consts::PI;
 
 pub mod player_controller;
@@ -28,19 +31,19 @@ fn setup(mut cmds: Commands, _my_assets: Res<MyAssets>) {
 
     cmds.spawn((
         Player,
-        Collider::cuboid(0.4, 0.8, 0.4),
         Stats {
             hp: 100,
             max_hp: 100,
             attack: 5,
             speed: 10.0,
         },
+        ColliderBundle::default(),
         VisibilityBundle {
             visibility: Visibility::Visible,
             ..default()
         },
         TransformBundle {
-            local: Transform::from_xyz(2.0, 170.0, 2.0).looking_to(Vec3::Z, Vec3::Y),
+            local: Transform::from_xyz(2.0, 160.0, 2.0).looking_to(Vec3::Z, Vec3::Y),
             ..default()
         },
     ))
@@ -80,9 +83,7 @@ fn setup(mut cmds: Commands, _my_assets: Res<MyAssets>) {
     .insert(Fxaa::default())
     .insert(bevy_atmosphere::plugin::AtmosphereCamera::default())
     .insert(AnimationController { done: false })
-    .insert(Animations(map))
-    .insert(KinematicCharacterController::default())
-    .insert(ActiveEvents::COLLISION_EVENTS);
+    .insert(Animations(map));
 
     cmds.insert_resource(AmbientLight {
         color: Color::WHITE,
@@ -117,6 +118,39 @@ impl CameraMode {
         match self {
             Self::FirstPerson => Vec3::ZERO,
             Self::ThirdPersonForward => Vec3::Z * -5.0,
+        }
+    }
+}
+
+#[derive(Bundle)]
+pub struct ColliderBundle {
+    pub colliding_entities: CollidingEntities,
+    pub collider: Collider,
+    pub gravity: GravityScale,
+    pub controller: KinematicCharacterController,
+    pub rigid_body: RigidBody,
+    pub density: ColliderMassProperties,
+    pub rotation_constraints: LockedAxes,
+    pub collision_groups: CollisionGroups,
+}
+
+impl Default for ColliderBundle {
+    fn default() -> Self {
+        Self {
+            collider: Collider::capsule_y(2., 1.5),
+            rigid_body: RigidBody::Dynamic,
+            gravity: GravityScale(1.0),
+            controller: KinematicCharacterController {
+                translation: Some(Vec3::new(1.0, 1.0, 1.0)),
+                ..default()
+            },
+            rotation_constraints: LockedAxes::ROTATION_LOCKED,
+            collision_groups: CollisionGroups::new(
+                Group::GROUP_1,
+                Group::from_bits_truncate(Group::GROUP_2.bits()),
+            ),
+            colliding_entities: CollidingEntities::default(),
+            density: ColliderMassProperties::Density(1.0),
         }
     }
 }

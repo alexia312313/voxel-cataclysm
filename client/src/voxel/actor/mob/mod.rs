@@ -8,7 +8,7 @@ use crate::{
 
 use self::brain::BrainHandlerPlugin;
 use bevy::{prelude::*, utils::HashMap};
-use bevy_rapier3d::prelude::{ActiveEvents, Collider, GravityScale, RigidBody};
+use bevy_rapier3d::prelude::{ActiveEvents, Collider, LockedAxes, RigidBody};
 
 use super::Stats;
 
@@ -32,7 +32,6 @@ pub fn setup(mut cmds: Commands, _my_assets: Res<MyAssets>) {
 
     cmds.spawn((
         Mob,
-        Collider::cuboid(1.0, 1.0, 1.0),
         Stats {
             hp: 20,
             max_hp: 20,
@@ -44,9 +43,10 @@ pub fn setup(mut cmds: Commands, _my_assets: Res<MyAssets>) {
             ..default()
         },
         TransformBundle {
-            local: Transform::from_xyz(20.0, 170.0, 2.0).looking_to(Vec3::Z, Vec3::Y),
+            local: Transform::from_xyz(10.0, 170.0, 2.0).looking_to(Vec3::Z, Vec3::Y),
             ..default()
         },
+        Collider::cuboid(1.0, 1.0, 1.0),
     ))
     .with_children(|mob| {
         mob.spawn(SceneBundle {
@@ -58,7 +58,7 @@ pub fn setup(mut cmds: Commands, _my_assets: Res<MyAssets>) {
     .insert(AnimationController { done: false })
     .insert(Animations(map))
     .insert(RigidBody::Dynamic)
-    .insert(GravityScale(0.0))
+    .insert(LockedAxes::ROTATION_LOCKED)
     .insert(ActiveEvents::COLLISION_EVENTS);
 }
 
