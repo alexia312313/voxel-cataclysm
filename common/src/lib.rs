@@ -41,6 +41,10 @@ pub enum ServerChannel {
 
 #[derive(Debug, Serialize, Deserialize, Component)]
 pub enum ServerMessages {
+    RotateBody {
+        entity: Entity,
+        rotation: Quat,
+    },
     PlayerCreate {
         entity: Entity,
         id: u64,

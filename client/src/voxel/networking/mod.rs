@@ -11,9 +11,10 @@ use bevy::{
     app::AppExit,
     core_pipeline::fxaa::Fxaa,
     ecs::entity,
+    input::mouse::MouseMotion,
     prelude::{shape::Icosphere, *},
     utils::HashMap,
-    window::{exit_on_all_closed, PrimaryWindow},
+    window::{exit_on_all_closed, CursorGrabMode, PrimaryWindow},
 };
 use bevy_rapier3d::prelude::{ActiveEvents, Collider, KinematicCharacterController};
 use bevy_renet::renet::{
@@ -24,7 +25,12 @@ use common::{
     connection_config, ClientChannel, NetworkedEntities, PlayerCommand, PlayerInput, ServerChannel,
     ServerMessages, PROTOCOL_ID,
 };
-use std::{f32::consts::PI, net::UdpSocket, thread::spawn, time::SystemTime};
+use std::{
+    f32::consts::{E, FRAC_PI_2, PI},
+    net::UdpSocket,
+    thread::spawn,
+    time::SystemTime,
+};
 
 pub struct NetworkingPlugin;
 impl Plugin for NetworkingPlugin {
@@ -102,7 +108,6 @@ fn player_input(
 
 fn client_send_input(player_input: Res<PlayerInput>, mut client: ResMut<RenetClient>) {
     let input_message = bincode::serialize(&*player_input).unwrap();
-
     client.send_message(ClientChannel::Input, input_message);
 }
 
@@ -208,6 +213,13 @@ fn client_sync_players(
                         .insert(ActiveEvents::COLLISION_EVENTS);
                 } else {
                     client_entity
+                        .with_children(|player| {
+                            player.spawn(SceneBundle {
+                                scene: _my_assets.player.clone(),
+                                transform: Transform::IDENTITY.looking_to(Vec3::Z, Vec3::Y),
+                                ..default()
+                            });
+                        })
                         .insert(Animations(map))
                         .insert(AnimationController { done: false })
                         .insert(KinematicCharacterController::default())
@@ -255,6 +267,7 @@ fn client_sync_players(
                     commands.entity(entity).despawn();
                 }
             }
+            ServerMessages::RotateBody { entity, rotation } => {}
         }
     }
 

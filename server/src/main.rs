@@ -1,4 +1,4 @@
-use std::{collections::HashMap, net::UdpSocket, time::SystemTime};
+use std::{collections::HashMap, net::UdpSocket, option::Iter, time::SystemTime};
 
 use bevy::{app::AppExit, prelude::*, transform, window::exit_on_all_closed};
 use bevy_rapier3d::prelude::*;
@@ -119,7 +119,6 @@ fn server_update_system(
                     .insert(LockedAxes::ROTATION_LOCKED | LockedAxes::TRANSLATION_LOCKED_Y)
                     .insert(Collider::capsule_y(0.5, 0.5))
                     .insert(PlayerInput::default())
-                    //.insert(Velocity::default())
                     .insert(Player { id: *client_id })
                     .id();
 
@@ -148,8 +147,6 @@ fn server_update_system(
     }
 
     for client_id in server.connections_id() {
-        //TODO: ADAPT
-
         while let Some(message) = server.receive_message(client_id, ClientChannel::Command) {
             let command: PlayerCommand = bincode::deserialize(&message).unwrap();
             match command {
@@ -183,6 +180,7 @@ fn server_update_system(
         }
         while let Some(message) = server.receive_message(client_id, ClientChannel::Input) {
             let input: PlayerInput = bincode::deserialize(&message).unwrap();
+            println!("{:?}", input);
             if let Some(player_entity) = lobby.players.get(&client_id) {
                 commands.entity(*player_entity).insert(input);
             }
@@ -244,7 +242,6 @@ fn move_players_system(mut query: Query<(&mut Transform, &PlayerInput)>) {
         if input.jump {
             direction.y += 1.0;
         }
-        //Crouch
         if input.crouch {
             direction.y -= 1.0;
         }
@@ -256,8 +253,8 @@ fn move_players_system(mut query: Query<(&mut Transform, &PlayerInput)>) {
         if direction == Vec3::ZERO {
             return;
         }
-        // hardcoding 0.10 as a factor for now to not go zoomin across the world.
-        transform.translation += (acceleration * direction * 0.10);
+        // hardcoding 0.01 as a factor for now to not go zoomin across the world.
+        transform.translation += acceleration * direction * 0.01;
     }
 }
 
@@ -266,7 +263,6 @@ fn despawn_projectile_system(
     mut collision_events: EventReader<CollisionEvent>,
     projectile_query: Query<Option<&Projectile>>,
 ) {
-    //TODO: ADAPT
     for collision_event in collision_events.iter() {
         if let CollisionEvent::Started(entity1, entity2, _) = collision_event {
             if let Ok(Some(_)) = projectile_query.get(*entity1) {
