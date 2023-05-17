@@ -5,11 +5,7 @@
 )]
 
 use bevy::{prelude::*, window::WindowMode};
-
-use bevy_rapier3d::{
-    prelude::{NoUserData, RapierPhysicsPlugin},
-    render::RapierDebugRenderPlugin,
-};
+use bevy_rapier3d::prelude::{NoUserData, RapierPhysicsPlugin};
 
 mod debug;
 mod voxel;
@@ -26,9 +22,7 @@ fn main() {
     }))
     .add_state::<GameState>()
     .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
-    .add_plugin(RapierDebugRenderPlugin::default())
     .add_plugin(voxel::loading::LodingHandlerPlugin)
-    .add_plugin(voxel::animation::AnimationsHandlerPlugin)
     .add_plugin(voxel::combat::CombatPlugin)
     .add_plugin(voxel::VoxelWorldPlugin)
     .add_plugin(debug::DebugUIPlugins)
