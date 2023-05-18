@@ -59,6 +59,9 @@ pub fn attack_action_system(
                     trace!("Attacking...");
 
                     let target_entity = aggro.target;
+                    if let Err(_) = transform_query.get(target_entity) {
+                        return;
+                    }
                     let target = *transform_query.get(target_entity).unwrap();
                     let mut actor = transform_query.get_mut(actor_entity).unwrap();
                     let actor_stats = stats_query.get(actor_entity).unwrap();

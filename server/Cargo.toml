@@ -9,4 +9,8 @@ default-run = "server"
 [dependencies]
 bevy.workspace = true
 bevy_renet.workspace = true
+bevy_rapier3d.workspace = true
+serde.workspace = true
+bincode.workspace = true
+fastrand = "1.9.0"
 common = { path = "../common" }

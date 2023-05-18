@@ -11,6 +11,7 @@ default-run = "client"
 [dependencies]
 bevy.workspace = true
 bevy_renet.workspace = true
+bincode.workspace = true
 ndshape = "0.3.0"
 block-mesh = "0.2.0"
 ndcopy = "0.3.0"
