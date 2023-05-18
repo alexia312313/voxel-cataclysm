@@ -1,36 +1,19 @@
-use super::loading::MyAssets;
-use crate::{
-    voxel::{
-        animation::{AnimationController, Animations},
-        player::{Body, CameraMode, Head},
-        Stats,
-    },
-    GameState,
-};
+use crate::GameState;
 use bevy::{
     app::AppExit,
-    core_pipeline::fxaa::Fxaa,
-    ecs::entity,
-    input::mouse::MouseMotion,
     prelude::{shape::Icosphere, *},
     utils::HashMap,
-    window::{exit_on_all_closed, CursorGrabMode, PrimaryWindow},
+    window::exit_on_all_closed,
 };
-use bevy_rapier3d::prelude::{ActiveEvents, Collider, KinematicCharacterController};
 use bevy_renet::renet::{
     transport::{ClientAuthentication, NetcodeClientTransport, NetcodeTransportError},
     RenetClient,
 };
-use common::{
-    connection_config, ClientChannel, NetworkedEntities, PlayerCommand, PlayerInput, ServerChannel,
-    ServerMessages, PROTOCOL_ID,
-};
-use std::{
-    f32::consts::{E, FRAC_PI_2, PI},
-    net::UdpSocket,
-    thread::spawn,
-    time::SystemTime,
-};
+use common::{connection_config, PlayerCommand, PlayerInput, PROTOCOL_ID};
+use std::{net::UdpSocket, time::SystemTime};
+
+mod sync;
+mod update;
 
 pub struct NetworkingPlugin;
 impl Plugin for NetworkingPlugin {
@@ -42,17 +25,8 @@ impl Plugin for NetworkingPlugin {
             .insert_resource(client)
             .insert_resource(transport)
             .insert_resource(NetworkMapping::default())
-            .add_system(player_input.in_set(OnUpdate(GameState::Game)))
-            .add_systems(
-                (
-                    client_sync_rotation,
-                    client_send_input,
-                    client_send_player_commands,
-                    client_sync_players,
-                )
-                    .distributive_run_if(bevy_renet::transport::client_connected)
-                    .in_set(OnUpdate(GameState::Game)),
-            )
+            .add_plugin(sync::NetSyncPlugin)
+            .add_plugin(update::NetUpdatePlugin)
             .add_system(
                 disconnect_on_exit
                     .in_base_set(CoreSet::PostUpdate)
@@ -82,237 +56,6 @@ fn new_renet_client() -> (RenetClient, NetcodeClientTransport) {
     let transport = NetcodeClientTransport::new(current_time, authentication, socket).unwrap();
 
     (client, transport)
-}
-
-fn player_input(
-    keyboard_input: Res<Input<KeyCode>>,
-    mut player_input: ResMut<PlayerInput>,
-    mouse_button_input: Res<Input<MouseButton>>,
-    target_query: Query<&Transform, With<Target>>,
-    mut player_commands: EventWriter<PlayerCommand>,
-) {
-    player_input.run = keyboard_input.pressed(KeyCode::LControl);
-    player_input.crouch = keyboard_input.pressed(KeyCode::LShift);
-    player_input.left = keyboard_input.pressed(KeyCode::A);
-    player_input.right = keyboard_input.pressed(KeyCode::D);
-    player_input.up = keyboard_input.pressed(KeyCode::W);
-    player_input.down = keyboard_input.pressed(KeyCode::S);
-    player_input.jump = keyboard_input.pressed(KeyCode::Space);
-
-    if mouse_button_input.just_pressed(MouseButton::Left) {
-        let target_transform = target_query.single();
-        player_commands.send(PlayerCommand::BasicAttack {
-            cast_at: target_transform.translation,
-        });
-    }
-}
-
-fn client_send_input(player_input: Res<PlayerInput>, mut client: ResMut<RenetClient>) {
-    let input_message = bincode::serialize(&*player_input).unwrap();
-    client.send_message(ClientChannel::Input, input_message);
-}
-
-fn client_send_player_commands(
-    mut player_commands: EventReader<PlayerCommand>,
-    mut client: ResMut<RenetClient>,
-) {
-    for command in player_commands.iter() {
-        let command_message = bincode::serialize(command).unwrap();
-        client.send_message(ClientChannel::Command, command_message);
-    }
-}
-
-fn client_sync_rotation(body_rot: Query<&Transform, With<Body>>, mut client: ResMut<RenetClient>) {
-    if let Err(_) = body_rot.get_single() {
-        return;
-    }
-    let rotation = body_rot.single();
-
-    let message = bincode::serialize(&rotation.rotation).unwrap();
-    client.send_message(ClientChannel::Rots, message)
-}
-
-fn client_sync_players(
-    mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
-    mut client: ResMut<RenetClient>,
-    transport: Res<NetcodeClientTransport>,
-    mut lobby: ResMut<ClientLobby>,
-    mut network_mapping: ResMut<NetworkMapping>,
-    _my_assets: Res<MyAssets>,
-) {
-    let client_id = transport.client_id();
-    while let Some(message) = client.receive_message(ServerChannel::ServerMessages) {
-        let server_message = bincode::deserialize(&message).unwrap();
-        match server_message {
-            ServerMessages::PlayerCreate {
-                id,
-                translation,
-                entity,
-            } => {
-                println!("Player {} connected.", id);
-
-                let mut map = HashMap::new();
-                map.insert("walk".to_string(), _my_assets.player_animation_walk.clone());
-                map.insert("hit".to_string(), _my_assets.player_animation_hit.clone());
-
-                let mut client_entity = commands.spawn((
-                    Collider::cuboid(0.4, 0.8, 0.4),
-                    Stats {
-                        hp: 100,
-                        max_hp: 100,
-                        attack: 5,
-                        speed: 10.0,
-                    },
-                    VisibilityBundle {
-                        visibility: Visibility::Visible,
-                        ..default()
-                    },
-                    TransformBundle {
-                        local: Transform::from_xyz(translation[0], translation[1], translation[2])
-                            .looking_to(Vec3::Z, Vec3::Y),
-                        ..default()
-                    },
-                ));
-
-                if client_id == id {
-                    client_entity
-                        .with_children(|player| {
-                            player.spawn(Body).insert(SceneBundle {
-                                scene: _my_assets.player.clone(),
-                                transform: Transform::IDENTITY.looking_to(Vec3::Z, Vec3::Y),
-                                ..default()
-                            });
-                            player
-                                .spawn((
-                                    Head,
-                                    TransformBundle {
-                                        // head is 1.8m above feet
-                                        local: Transform::from_translation(Vec3::new(
-                                            0.0, 0.9, 0.0,
-                                        ))
-                                        .looking_to(Vec3::Z, Vec3::Y),
-                                        ..default()
-                                    },
-                                ))
-                                .with_children(|head| {
-                                    // spawn camera as a child of head
-                                    head.spawn(Camera3dBundle {
-                                        projection: bevy::render::camera::Projection::Perspective(
-                                            PerspectiveProjection {
-                                                fov: PI / 2.,
-                                                far: 2048.0,
-                                                ..Default::default()
-                                            },
-                                        ),
-                                        transform: Transform::from_translation(Vec3::new(
-                                            0.0, 0.0, -5.0,
-                                        ))
-                                        .looking_to(Vec3::Z, Vec3::Y),
-                                        ..Default::default()
-                                    })
-                                    .insert(CameraMode::ThirdPersonForward);
-                                });
-                        })
-                        .insert(ControlledPlayer)
-                        .insert(Fxaa::default())
-                        .insert(Animations(map))
-                        .insert(bevy_atmosphere::plugin::AtmosphereCamera::default())
-                        .insert(AnimationController { done: false })
-                        .insert(KinematicCharacterController::default())
-                        .insert(ActiveEvents::COLLISION_EVENTS);
-                } else {
-                    client_entity
-                        .with_children(|player| {
-                            player.spawn(SceneBundle {
-                                scene: _my_assets.player.clone(),
-                                transform: Transform::IDENTITY.looking_to(Vec3::Z, Vec3::Y),
-                                ..default()
-                            });
-                        })
-                        .insert(Animations(map))
-                        .insert(AnimationController { done: false })
-                        .insert(KinematicCharacterController::default())
-                        .insert(ActiveEvents::COLLISION_EVENTS);
-                }
-
-                let player_info = PlayerInfo {
-                    server_entity: entity,
-                    client_entity: client_entity.id(),
-                };
-                lobby.players.insert(id, player_info);
-                network_mapping.0.insert(entity, client_entity.id());
-            }
-            ServerMessages::PlayerRemove { id } => {
-                println!("Player {} disconnected.", id);
-                if let Some(PlayerInfo {
-                    server_entity,
-                    client_entity,
-                }) = lobby.players.remove(&id)
-                {
-                    commands.entity(client_entity).despawn();
-                    network_mapping.0.remove(&server_entity);
-                }
-            }
-            ServerMessages::SpawnProjectile {
-                entity,
-                translation,
-            } => {
-                let projectile_entity = commands.spawn(PbrBundle {
-                    mesh: meshes.add(
-                        Mesh::try_from(Icosphere {
-                            radius: 0.1,
-                            subdivisions: 5,
-                        })
-                        .unwrap(),
-                    ),
-                    material: materials.add(Color::rgb(1.0, 0.0, 0.0).into()),
-                    transform: Transform::from_translation(translation.into()),
-                    ..Default::default()
-                });
-                network_mapping.0.insert(entity, projectile_entity.id());
-            }
-            ServerMessages::DespawnProjectile { entity } => {
-                if let Some(entity) = network_mapping.0.remove(&entity) {
-                    commands.entity(entity).despawn();
-                }
-            }
-        }
-    }
-
-    while let Some(message) = client.receive_message(ServerChannel::NetworkedEntities) {
-        let networked_entities: NetworkedEntities = bincode::deserialize(&message).unwrap();
-
-        for i in 0..networked_entities.entities.len() {
-            if let Some(entity) = network_mapping.0.get(&networked_entities.entities[i]) {
-                let translation = networked_entities.translations[i].into();
-                let rotation = networked_entities.rotations[i].into();
-                let transform = Transform {
-                    rotation,
-                    translation,
-                    ..Default::default()
-                };
-                commands.entity(*entity).insert(transform);
-            }
-        }
-    }
-}
-
-fn update_target_system(
-    primary_window: Query<&Window, With<PrimaryWindow>>,
-    mut target_query: Query<&mut Transform, With<Target>>,
-    camera_query: Query<(&Camera, &GlobalTransform)>,
-) {
-    let (camera, camera_transform) = camera_query.single();
-    let mut target_transform = target_query.single_mut();
-    if let Some(cursor_pos) = primary_window.single().cursor_position() {
-        if let Some(ray) = camera.viewport_to_world(camera_transform, cursor_pos) {
-            if let Some(distance) = ray.intersect_plane(Vec3::Y, Vec3::Y) {
-                target_transform.translation = ray.direction * distance + ray.origin;
-            }
-        }
-    }
 }
 
 fn setup_target(

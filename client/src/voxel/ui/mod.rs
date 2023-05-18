@@ -2,8 +2,7 @@ use crate::GameState;
 use bevy::prelude::*;
 use update::*;
 
-mod crosshair;
-mod healthbar;
+mod build;
 mod spawn;
 mod styles;
 mod update;

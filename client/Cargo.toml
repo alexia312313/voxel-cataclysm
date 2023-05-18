@@ -33,5 +33,4 @@ bevy_rapier3d = { version = "0.21.0", features = [
     "simd-stable",
 ] }
 big-brain = "0.17.0"
-
 common = { path = "../common" }

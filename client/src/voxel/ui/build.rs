@@ -4,21 +4,23 @@ use crate::voxel::ui::{
 };
 use bevy::prelude::*;
 
-use super::{styles::{SuperUI, CROSSHAIR_STYLE}, SuperUIs};
+use super::{
+    styles::{CROSSHAIR_STYLE, SUPER_UI},
+    SuperUIs,
+};
 
-pub fn build_ui_health(commands: &mut Commands, asset_server: &Res<AssetServer>) -> Entity {
-    
-        let ui_health_entity = commands
+pub fn build_ui(commands: &mut Commands, asset_server: &Res<AssetServer>) -> Entity {
+    let ui_health_entity = commands
         .spawn((
             NodeBundle {
-                style: SuperUI,
+                style: SUPER_UI,
                 ..Default::default()
             },
             SuperUIs,
         ))
         .with_children(|parent| {
-            parent.spawn(
-                NodeBundle {
+            parent
+                .spawn(NodeBundle {
                     style: CROSSHAIR_STYLE,
                     ..default()
                 })
@@ -28,17 +30,17 @@ pub fn build_ui_health(commands: &mut Commands, asset_server: &Res<AssetServer>)
                         text: Text {
                             sections: vec![TextSection::new("+", get_text_style(&asset_server))],
                             alignment: TextAlignment::Center,
-        
+
                             ..default()
                         },
                         ..default()
                     });
                 });
-        
+
             parent
                 .spawn((
                     NodeBundle {
-                        style: UI,                
+                        style: UI,
                         ..default()
                     },
                     UiHealth,
@@ -112,8 +114,8 @@ pub fn build_ui_health(commands: &mut Commands, asset_server: &Res<AssetServer>)
                                 ScoreText,
                             ));
                         });
-                })
-                ;
-        }).id();
-        ui_health_entity
+                });
+        })
+        .id();
+    ui_health_entity
 }

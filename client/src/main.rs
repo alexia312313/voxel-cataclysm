@@ -5,12 +5,8 @@
 )]
 
 use bevy::{prelude::*, window::WindowMode};
-use bevy_rapier3d::{
-    prelude::{NoUserData, RapierPhysicsPlugin},
-    render::RapierDebugRenderPlugin,
-};
+use bevy_rapier3d::prelude::{NoUserData, RapierPhysicsPlugin};
 use bevy_renet::{transport::NetcodeClientPlugin, RenetClientPlugin};
-
 
 mod debug;
 mod voxel;
@@ -20,16 +16,19 @@ fn main() {
     app.add_plugins(DefaultPlugins.set(WindowPlugin {
         primary_window: Some(Window {
             title: "vx_bevy".into(),
-            mode: WindowMode::BorderlessFullscreen,
+            mode: WindowMode::Windowed,
             ..default()
         }),
         ..default()
     }))
     .add_state::<GameState>()
+    .insert_resource(AmbientLight {
+        color: Color::WHITE,
+        brightness: 1.0,
+    })
     .add_plugin(RenetClientPlugin)
     .add_plugin(NetcodeClientPlugin)
     .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
-    .add_plugin(RapierDebugRenderPlugin::default())
     .add_plugin(voxel::ui::UiPlugin)
     .add_plugin(voxel::loading::LodingHandlerPlugin)
     .add_plugin(voxel::combat::CombatPlugin)

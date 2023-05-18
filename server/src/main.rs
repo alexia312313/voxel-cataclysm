@@ -1,6 +1,4 @@
-use std::{collections::HashMap, net::UdpSocket, option::Iter, time::SystemTime};
-
-use bevy::{app::AppExit, prelude::*, transform, window::exit_on_all_closed};
+use bevy::{app::AppExit, prelude::*, window::exit_on_all_closed};
 use bevy_rapier3d::prelude::*;
 use bevy_renet::{
     renet::{
@@ -14,13 +12,12 @@ use common::{
     connection_config, spawn_fireball, ClientChannel, NetworkedEntities, Player, PlayerCommand,
     PlayerInput, Projectile, RotationInput, ServerChannel, ServerMessages, PROTOCOL_ID,
 };
+use std::{collections::HashMap, net::UdpSocket, time::SystemTime};
 
 #[derive(Debug, Default, Resource)]
 pub struct ServerLobby {
     pub players: HashMap<u64, Entity>,
 }
-
-const PLAYER_MOVE_SPEED: f32 = 5.0;
 
 #[derive(Debug, Resource)]
 struct BotId(u64);

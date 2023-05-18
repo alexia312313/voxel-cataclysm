@@ -11,10 +11,10 @@ pub mod terraingen;
 mod actor;
 pub use actor::*;
 
-pub mod ui;
-
 /// networking systems for voxels.
 pub mod networking;
+
+pub mod ui;
 
 pub mod combat;
 /// Systems for loading voxel data from disk.

@@ -1,7 +1,6 @@
 use bevy::prelude::*;
 
-
-pub const SuperUI: Style = Style {
+pub const SUPER_UI: Style = Style {
     display: Display::Flex,
     flex_direction: FlexDirection::Column,
     justify_content: JustifyContent::SpaceBetween,

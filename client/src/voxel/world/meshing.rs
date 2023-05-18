@@ -1,5 +1,3 @@
-use std::cell::RefCell;
-
 use super::{
     chunks::{ChunkEntities, ChunkLoadingSet, DirtyChunks},
     terrain::TerrainGenSet,
@@ -20,6 +18,7 @@ use bevy::{
 use bevy_rapier3d::prelude::{AsyncCollider, ComputedColliderShape};
 use futures_lite::future;
 use once_cell::sync::Lazy;
+use std::cell::RefCell;
 use thread_local::ThreadLocal;
 
 /// Attaches to the newly inserted chunk entities components required for rendering.
@@ -94,7 +93,6 @@ fn process_mesh_tasks(
 ) {
     chunk_query.for_each_mut(|(entity, handle, mut mesh_task)| {
         if let Some(mesh) = future::block_on(future::poll_once(&mut mesh_task.0)) {
-            /*
             let indices = mesh.indices().unwrap();
             if indices.len() > 0 {
                 commands.entity(entity).insert((
@@ -102,7 +100,6 @@ fn process_mesh_tasks(
                     RapierSlowdownWorkaround,
                 ));
             }
-            */
             *meshes.get_mut(handle).unwrap() = mesh;
             commands.entity(entity).remove::<ChunkMeshingTask>();
         }

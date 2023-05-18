@@ -3,15 +3,14 @@ use crate::GameState;
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 
-use super::crosshair::build_ui_crosshair;
-use super::healthbar::build_ui_health;
+use super::build::build_ui;
 
 pub fn spawn_ui_health(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     window_query: Query<&Window, With<PrimaryWindow>>,
 ) {
-    build_ui_health(&mut commands, &asset_server);
+    build_ui(&mut commands, &asset_server);
     //build_ui_crosshair(&mut commands, &asset_server);
 
     let window = window_query.get_single().unwrap();

@@ -7,7 +7,7 @@ use crate::{
     GameState,
 };
 use bevy::{prelude::*, utils::HashMap};
-use bevy_rapier3d::prelude::{ActiveEvents, Collider, GravityScale, LockedAxes, RigidBody};
+use bevy_rapier3d::prelude::{ActiveEvents, Collider, LockedAxes, RigidBody};
 
 pub mod brain;
 
@@ -56,7 +56,6 @@ pub fn setup(mut cmds: Commands, _my_assets: Res<MyAssets>) {
     .insert(AnimationController { done: false })
     .insert(Animations(map))
     .insert(RigidBody::Dynamic)
-    .insert(GravityScale(0.0))
     .insert(LockedAxes::ROTATION_LOCKED)
     .insert(ActiveEvents::COLLISION_EVENTS);
 }
