@@ -24,4 +24,5 @@ pub struct Stats {
     pub max_hp: i32,
     pub attack: i32,
     pub speed: f32,
+    pub score: i32,
 }

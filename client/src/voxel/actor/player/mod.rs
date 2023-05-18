@@ -36,6 +36,7 @@ fn setup(mut cmds: Commands, _my_assets: Res<MyAssets>) {
             max_hp: 100,
             attack: 5,
             speed: 10.0,
+            score: 0,
         },
         ColliderBundle::default(),
         VisibilityBundle {
@@ -53,6 +54,13 @@ fn setup(mut cmds: Commands, _my_assets: Res<MyAssets>) {
             transform: Transform::IDENTITY.looking_to(Vec3::Z, Vec3::Y),
             ..default()
         });
+        player.spawn((
+            Collider::capsule_y(0.5, 0.5),
+            TransformBundle {
+                local: Transform::from_xyz(0.0, 1.0, 0.0),
+                ..default()
+            },
+        ));
         player
             .spawn((
                 Head,
@@ -75,6 +83,10 @@ fn setup(mut cmds: Commands, _my_assets: Res<MyAssets>) {
                     ),
                     transform: Transform::from_translation(Vec3::new(0.0, 0.0, -5.0))
                         .looking_to(Vec3::Z, Vec3::Y),
+                    camera: Camera {
+                        order: (1),
+                        ..default()
+                    },
                     ..Default::default()
                 })
                 .insert(CameraMode::ThirdPersonForward);
@@ -125,7 +137,7 @@ impl CameraMode {
 #[derive(Bundle)]
 pub struct ColliderBundle {
     pub colliding_entities: CollidingEntities,
-    pub collider: Collider,
+
     pub gravity: GravityScale,
     pub controller: KinematicCharacterController,
     pub rigid_body: RigidBody,
@@ -137,9 +149,8 @@ pub struct ColliderBundle {
 impl Default for ColliderBundle {
     fn default() -> Self {
         Self {
-            collider: Collider::capsule_y(2., 1.5),
             rigid_body: RigidBody::Dynamic,
-            gravity: GravityScale(1.0),
+            gravity: GravityScale(0.0),
             controller: KinematicCharacterController {
                 translation: Some(Vec3::new(1.0, 1.0, 1.0)),
                 ..default()

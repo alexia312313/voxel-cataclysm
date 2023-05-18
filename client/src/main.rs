@@ -5,7 +5,10 @@
 )]
 
 use bevy::{prelude::*, window::WindowMode};
-use bevy_rapier3d::prelude::{NoUserData, RapierPhysicsPlugin};
+use bevy_rapier3d::{
+    prelude::{NoUserData, RapierPhysicsPlugin},
+    render::RapierDebugRenderPlugin,
+};
 
 mod debug;
 mod voxel;
@@ -15,13 +18,15 @@ fn main() {
     app.add_plugins(DefaultPlugins.set(WindowPlugin {
         primary_window: Some(Window {
             title: "vx_bevy".into(),
-            mode: WindowMode::Windowed,
+            mode: WindowMode::BorderlessFullscreen,
             ..default()
         }),
         ..default()
     }))
     .add_state::<GameState>()
     .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
+    .add_plugin(RapierDebugRenderPlugin::default())
+    .add_plugin(voxel::ui::UiPlugin)
     .add_plugin(voxel::loading::LodingHandlerPlugin)
     .add_plugin(voxel::combat::CombatPlugin)
     .add_plugin(voxel::VoxelWorldPlugin)
