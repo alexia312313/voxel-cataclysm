@@ -7,6 +7,7 @@ pub fn build_ui_crosshair(commands: &mut Commands, asset_server: &Res<AssetServe
     let ui_crosshair_entity = commands
         .spawn(NodeBundle {
             style: CROSSHAIR_STYLE,
+            background_color: BackgroundColor(Color::RED),
             ..default()
         })
         .with_children(|parent| {
@@ -15,6 +16,7 @@ pub fn build_ui_crosshair(commands: &mut Commands, asset_server: &Res<AssetServe
                 text: Text {
                     sections: vec![TextSection::new("+", get_text_style(&asset_server))],
                     alignment: TextAlignment::Center,
+
                     ..default()
                 },
                 ..default()

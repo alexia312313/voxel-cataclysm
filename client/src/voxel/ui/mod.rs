@@ -24,6 +24,9 @@ impl Plugin for UiPlugin {
 pub struct UICamera;
 
 #[derive(Component)]
+pub struct SuperUIs;
+
+#[derive(Component)]
 pub struct UiHealth;
 
 #[derive(Component)]

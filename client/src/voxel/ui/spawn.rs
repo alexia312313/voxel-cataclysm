@@ -12,7 +12,7 @@ pub fn spawn_ui_health(
     window_query: Query<&Window, With<PrimaryWindow>>,
 ) {
     build_ui_health(&mut commands, &asset_server);
-    build_ui_crosshair(&mut commands, &asset_server);
+    //build_ui_crosshair(&mut commands, &asset_server);
 
     let window = window_query.get_single().unwrap();
 
