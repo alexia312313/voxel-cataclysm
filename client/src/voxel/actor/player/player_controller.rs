@@ -1,5 +1,5 @@
-use super::{Body, CameraMode, Head, Player};
-use crate::{debug::DebugUISet, GameState};
+use super::{Body, CameraMode, Head};
+use crate::{debug::DebugUISet, voxel::networking::ControlledPlayer, GameState};
 use bevy::{input::mouse::MouseMotion, prelude::*, window::CursorGrabMode};
 use bevy_egui::EguiContexts;
 use std::f32::consts::FRAC_PI_2;
@@ -12,6 +12,9 @@ fn handle_player_mouse_move(
     mut mouse_motion_event_reader: EventReader<MouseMotion>,
     windows: Query<&Window>,
 ) {
+    if let Err(_) = head.get_single_mut() {
+        return;
+    }
     let window = windows.single();
     let mut head_transform = head.single_mut();
     let mut delta = Vec2::ZERO;
@@ -37,13 +40,17 @@ fn handle_player_mouse_move(
 fn handle_player_keyboard_input(
     mut egui: EguiContexts,
     mut queries: ParamSet<(
-        Query<&mut Transform, With<Player>>,
+        Query<&mut Transform, With<ControlledPlayer>>,
         Query<&Transform, With<Body>>,
     )>,
     keys: Res<Input<KeyCode>>,
     btns: Res<Input<MouseButton>>,
     mut windows: Query<&mut Window>,
 ) {
+    if let Err(_) = queries.p1().get_single() {
+        return;
+    }
+
     let mut window = windows.single_mut();
 
     // cursor grabbing
@@ -127,6 +134,10 @@ fn update_player_body_rotation(
         Query<&Transform, With<Head>>,
     )>,
 ) {
+    if let Err(_) = queries.p1().get_single() {
+        return;
+    }
+
     let yaw = {
         let head = queries.p1();
         let (yaw, _pitch, _roll) = head.single().rotation.to_euler(EulerRot::YXZ);
