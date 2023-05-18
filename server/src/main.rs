@@ -180,18 +180,6 @@ fn server_update_system(
         }
         while let Some(message) = server.receive_message(client_id, ClientChannel::Input) {
             let input: PlayerInput = bincode::deserialize(&message).unwrap();
-
-            if input.crouch
-                || input.jump
-                || input.down
-                || input.left
-                || input.right
-                || input.up
-                || input.run
-            {
-                println!("Estic enviant la input: {:?}", input);
-            }
-
             if let Some(player_entity) = lobby.players.get(&client_id) {
                 commands.entity(*player_entity).insert(input);
             }
@@ -243,6 +231,12 @@ fn move_players_system(mut query: Query<(&mut Transform, &PlayerInput)>) {
         let mut acceleration = 1.0f32;
         let mut direction = Vec3::ZERO;
 
+        let (forward, right) = {
+            let forward = transform.rotation.mul_vec3(Vec3::Z).normalize();
+            let right = Vec3::Y.cross(forward); // @todo(meyerzinn): not sure why this is the correct orientation
+            (forward, right)
+        };
+
         if input.up {
             direction.z -= 1.0;
         }
@@ -273,8 +267,11 @@ fn move_players_system(mut query: Query<(&mut Transform, &PlayerInput)>) {
         if direction == Vec3::ZERO {
             return;
         }
+
         // hardcoding 0.01 as a factor for now to not go zoomin across the world.
-        transform.translation += acceleration * direction * 0.01;
+        transform.translation += direction.x * right * acceleration * 0.01
+            + direction.z * forward * acceleration * 0.01
+            + direction.y * Vec3::Y * acceleration * 0.01;
     }
 }
 
