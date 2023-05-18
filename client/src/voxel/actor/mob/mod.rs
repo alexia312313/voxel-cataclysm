@@ -1,3 +1,4 @@
+use super::Stats;
 use crate::{
     voxel::{
         animation::{AnimationController, Animations},
@@ -5,12 +6,8 @@ use crate::{
     },
     GameState,
 };
-
-use self::brain::BrainHandlerPlugin;
 use bevy::{prelude::*, utils::HashMap};
-use bevy_rapier3d::prelude::{ActiveEvents, Collider, LockedAxes, RigidBody};
-
-use super::Stats;
+use bevy_rapier3d::prelude::{ActiveEvents, Collider, GravityScale, LockedAxes, RigidBody};
 
 pub mod brain;
 
@@ -19,7 +16,7 @@ pub struct MobPlugin;
 impl Plugin for MobPlugin {
     fn build(&self, app: &mut App) {
         app.add_system(setup.in_schedule(OnEnter(GameState::Game)))
-            .add_plugin(BrainHandlerPlugin);
+            .add_plugin(brain::BrainHandlerPlugin);
     }
 }
 
@@ -37,6 +34,7 @@ pub fn setup(mut cmds: Commands, _my_assets: Res<MyAssets>) {
             max_hp: 20,
             attack: 10,
             speed: 5.0,
+            score: 0,
         },
         VisibilityBundle {
             visibility: Visibility::Visible,
@@ -58,6 +56,7 @@ pub fn setup(mut cmds: Commands, _my_assets: Res<MyAssets>) {
     .insert(AnimationController { done: false })
     .insert(Animations(map))
     .insert(RigidBody::Dynamic)
+    .insert(GravityScale(0.0))
     .insert(LockedAxes::ROTATION_LOCKED)
     .insert(ActiveEvents::COLLISION_EVENTS);
 }

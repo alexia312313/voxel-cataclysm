@@ -44,7 +44,7 @@ fn handle_player_keyboard_input(
         Query<&Transform, With<Body>>,
     )>,
     keys: Res<Input<KeyCode>>,
-    btns: Res<Input<MouseButton>>,
+    _btns: Res<Input<MouseButton>>,
     mut windows: Query<&mut Window>,
 ) {
     if let Err(_) = queries.p1().get_single() {
@@ -54,15 +54,14 @@ fn handle_player_keyboard_input(
     let mut window = windows.single_mut();
 
     // cursor grabbing
-    if btns.just_pressed(MouseButton::Left) && !egui.ctx_mut().wants_pointer_input() {
-        window.cursor.grab_mode = CursorGrabMode::Locked;
-        window.cursor.visible = false;
-    }
-
-    // cursor ungrabbing
-    if keys.just_pressed(KeyCode::Escape) {
-        window.cursor.grab_mode = CursorGrabMode::None;
-        window.cursor.visible = true;
+    if keys.just_pressed(KeyCode::Escape) && !egui.ctx_mut().wants_pointer_input() {
+        if window.cursor.grab_mode == CursorGrabMode::None {
+            window.cursor.grab_mode = CursorGrabMode::Locked;
+            window.cursor.visible = false;
+        } else {
+            window.cursor.grab_mode = CursorGrabMode::None;
+            window.cursor.visible = true;
+        }
     }
 
     let (forward, right) = {

@@ -11,6 +11,7 @@ use bevy_rapier3d::{
 };
 use bevy_renet::{transport::NetcodeClientPlugin, RenetClientPlugin};
 
+
 mod debug;
 mod voxel;
 
@@ -19,7 +20,7 @@ fn main() {
     app.add_plugins(DefaultPlugins.set(WindowPlugin {
         primary_window: Some(Window {
             title: "vx_bevy".into(),
-            mode: WindowMode::Windowed,
+            mode: WindowMode::BorderlessFullscreen,
             ..default()
         }),
         ..default()
@@ -28,6 +29,8 @@ fn main() {
     .add_plugin(RenetClientPlugin)
     .add_plugin(NetcodeClientPlugin)
     .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
+    .add_plugin(RapierDebugRenderPlugin::default())
+    .add_plugin(voxel::ui::UiPlugin)
     .add_plugin(voxel::loading::LodingHandlerPlugin)
     .add_plugin(voxel::combat::CombatPlugin)
     .add_plugin(voxel::VoxelWorldPlugin)

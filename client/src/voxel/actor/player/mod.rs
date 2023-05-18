@@ -62,7 +62,7 @@ impl CameraMode {
 #[derive(Bundle)]
 pub struct ColliderBundle {
     pub colliding_entities: CollidingEntities,
-    pub collider: Collider,
+
     pub gravity: GravityScale,
     pub controller: KinematicCharacterController,
     pub rigid_body: RigidBody,
@@ -74,9 +74,8 @@ pub struct ColliderBundle {
 impl Default for ColliderBundle {
     fn default() -> Self {
         Self {
-            collider: Collider::capsule_y(2., 1.5),
             rigid_body: RigidBody::Dynamic,
-            gravity: GravityScale(1.0),
+            gravity: GravityScale(0.0),
             controller: KinematicCharacterController {
                 translation: Some(Vec3::new(1.0, 1.0, 1.0)),
                 ..default()
