@@ -17,6 +17,7 @@ use bevy::{
     render::{primitives::Aabb, render_resource::PrimitiveTopology},
     tasks::{AsyncComputeTaskPool, Task},
 };
+use bevy_rapier3d::prelude::{AsyncCollider, ComputedColliderShape};
 use futures_lite::future;
 use once_cell::sync::Lazy;
 use thread_local::ThreadLocal;
@@ -93,6 +94,13 @@ fn process_mesh_tasks(
 ) {
     chunk_query.for_each_mut(|(entity, handle, mut mesh_task)| {
         if let Some(mesh) = future::block_on(future::poll_once(&mut mesh_task.0)) {
+            let indices = mesh.indices().unwrap();
+            if indices.len() > 0 {
+                commands.entity(entity).insert((
+                    AsyncCollider(ComputedColliderShape::TriMesh),
+                    RapierSlowdownWorkaround,
+                ));
+            }
             *meshes.get_mut(handle).unwrap() = mesh;
             commands.entity(entity).remove::<ChunkMeshingTask>();
         }
@@ -115,7 +123,12 @@ impl Plugin for VoxelWorldMeshingPlugin {
                 .after(ChunkLoadingSet),
         )
         .add_systems(
-            (prepare_chunks, queue_mesh_tasks, process_mesh_tasks)
+            (
+                prepare_chunks,
+                queue_mesh_tasks,
+                process_mesh_tasks,
+                rapier_slowdown_workaround,
+            )
                 .chain()
                 .in_set(ChunkMeshingSet),
         );
@@ -124,3 +137,17 @@ impl Plugin for VoxelWorldMeshingPlugin {
 
 #[derive(Component)]
 pub struct ChunkMeshingTask(Task<Mesh>);
+
+#[derive(Component)]
+#[component(storage = "SparseSet")]
+pub struct RapierSlowdownWorkaround;
+
+fn rapier_slowdown_workaround(
+    mut commands: Commands,
+    mut chunks: Query<(Entity, &mut Transform), With<RapierSlowdownWorkaround>>,
+) {
+    chunks.for_each_mut(|(entity, mut transform)| {
+        transform.set_changed();
+        commands.entity(entity).remove::<RapierSlowdownWorkaround>();
+    });
+}

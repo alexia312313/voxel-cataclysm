@@ -11,7 +11,6 @@ default-run = "client"
 [dependencies]
 bevy.workspace = true
 bevy_renet.workspace = true
-bevy_rapier3d.workspace = true
 bincode.workspace = true
 ndshape = "0.3.0"
 block-mesh = "0.2.0"
@@ -27,6 +26,12 @@ ilattice = { version = "0.1.0", features = ["glam", "morton-encoding"] }
 noise = "0.8.2"
 itertools = "0.10.5"
 bevy_asset_loader = "0.16.0"
+bevy_rapier3d = { version = "0.21.0", features = [
+    "debug-render",
+    "async-collider",
+    "parallel",
+    "simd-stable",
+] }
 big-brain = "0.17.0"
 
 common = { path = "../common" }
