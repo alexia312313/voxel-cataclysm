@@ -23,6 +23,10 @@ pub struct PlayerInput {
     pub left: bool,
     pub right: bool,
 }
+#[derive(Debug, Default, Clone, Copy, Serialize, Deserialize, Component, Resource)]
+pub struct RotationInput {
+    pub rotation: Quat,
+}
 
 #[derive(Debug, Serialize, Deserialize, Component)]
 pub enum PlayerCommand {
@@ -32,6 +36,7 @@ pub enum PlayerCommand {
 pub enum ClientChannel {
     Input,
     Command,
+    Rots,
 }
 
 pub enum ServerChannel {
@@ -41,10 +46,6 @@ pub enum ServerChannel {
 
 #[derive(Debug, Serialize, Deserialize, Component)]
 pub enum ServerMessages {
-    RotateBody {
-        entity: Entity,
-        rotation: Quat,
-    },
     PlayerCreate {
         entity: Entity,
         id: u64,
@@ -66,6 +67,7 @@ pub enum ServerMessages {
 pub struct NetworkedEntities {
     pub entities: Vec<Entity>,
     pub translations: Vec<[f32; 3]>,
+    pub rotations: Vec<Quat>,
 }
 
 impl From<ClientChannel> for u8 {
@@ -73,6 +75,7 @@ impl From<ClientChannel> for u8 {
         match channel_id {
             ClientChannel::Command => 0,
             ClientChannel::Input => 1,
+            ClientChannel::Rots => 2,
         }
     }
 }
@@ -82,6 +85,13 @@ impl ClientChannel {
         vec![
             ChannelConfig {
                 channel_id: Self::Input.into(),
+                max_memory_usage_bytes: 5 * 1024 * 1024,
+                send_type: SendType::ReliableOrdered {
+                    resend_time: Duration::ZERO,
+                },
+            },
+            ChannelConfig {
+                channel_id: Self::Rots.into(),
                 max_memory_usage_bytes: 5 * 1024 * 1024,
                 send_type: SendType::ReliableOrdered {
                     resend_time: Duration::ZERO,

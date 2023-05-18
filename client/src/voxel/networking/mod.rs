@@ -45,6 +45,7 @@ impl Plugin for NetworkingPlugin {
             .add_system(player_input.in_set(OnUpdate(GameState::Game)))
             .add_systems(
                 (
+                    client_sync_rotation,
                     client_send_input,
                     client_send_player_commands,
                     client_sync_players,
@@ -119,6 +120,16 @@ fn client_send_player_commands(
         let command_message = bincode::serialize(command).unwrap();
         client.send_message(ClientChannel::Command, command_message);
     }
+}
+
+fn client_sync_rotation(body_rot: Query<&Transform, With<Body>>, mut client: ResMut<RenetClient>) {
+    if let Err(_) = body_rot.get_single() {
+        return;
+    }
+    let rotation = body_rot.single();
+
+    let message = bincode::serialize(&rotation.rotation).unwrap();
+    client.send_message(ClientChannel::Rots, message)
 }
 
 fn client_sync_players(
@@ -267,7 +278,6 @@ fn client_sync_players(
                     commands.entity(entity).despawn();
                 }
             }
-            ServerMessages::RotateBody { entity, rotation } => {}
         }
     }
 
@@ -277,7 +287,9 @@ fn client_sync_players(
         for i in 0..networked_entities.entities.len() {
             if let Some(entity) = network_mapping.0.get(&networked_entities.entities[i]) {
                 let translation = networked_entities.translations[i].into();
+                let rotation = networked_entities.rotations[i].into();
                 let transform = Transform {
+                    rotation,
                     translation,
                     ..Default::default()
                 };

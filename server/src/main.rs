@@ -12,7 +12,7 @@ use bevy_renet::{
 };
 use common::{
     connection_config, spawn_fireball, ClientChannel, NetworkedEntities, Player, PlayerCommand,
-    PlayerInput, Projectile, ServerChannel, ServerMessages, PROTOCOL_ID,
+    PlayerInput, Projectile, RotationInput, ServerChannel, ServerMessages, PROTOCOL_ID,
 };
 
 #[derive(Debug, Default, Resource)]
@@ -84,7 +84,7 @@ fn server_update_system(
     mut commands: Commands,
     mut lobby: ResMut<ServerLobby>,
     mut server: ResMut<RenetServer>,
-    players: Query<(Entity, &Player, &Transform)>,
+    mut players: Query<(Entity, &Player, &mut Transform)>,
 ) {
     for event in server_events.iter() {
         //TODO: ADAPT
@@ -180,9 +180,28 @@ fn server_update_system(
         }
         while let Some(message) = server.receive_message(client_id, ClientChannel::Input) {
             let input: PlayerInput = bincode::deserialize(&message).unwrap();
-            println!("{:?}", input);
+
+            if input.crouch
+                || input.jump
+                || input.down
+                || input.left
+                || input.right
+                || input.up
+                || input.run
+            {
+                println!("Estic enviant la input: {:?}", input);
+            }
+
             if let Some(player_entity) = lobby.players.get(&client_id) {
                 commands.entity(*player_entity).insert(input);
+            }
+        }
+        while let Some(message) = server.receive_message(client_id, ClientChannel::Rots) {
+            let rots: RotationInput = bincode::deserialize(&message).unwrap();
+            if let Some(player_entity) = lobby.players.get(&client_id) {
+                if let Ok((_, _, mut player_transform)) = players.get_mut(*player_entity) {
+                    player_transform.rotation = rots.rotation;
+                }
             }
         }
     }
@@ -212,6 +231,7 @@ fn server_network_sync(
         networked_entities
             .translations
             .push(transform.translation.into());
+        networked_entities.rotations.push(transform.rotation.into());
     }
 
     let sync_message = bincode::serialize(&networked_entities).unwrap();
