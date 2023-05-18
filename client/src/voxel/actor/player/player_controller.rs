@@ -17,7 +17,7 @@ fn handle_player_mouse_move(
     }
     let window = windows.single();
     let mut head_transform = head.single_mut();
-    let mut delta = Vec2::ZERO;
+    let mut delta: Vec2 = Vec2::ZERO;
 
     for mouse_move in mouse_motion_event_reader.iter() {
         delta -= mouse_move.delta;

@@ -1,6 +1,6 @@
-use std::{collections::HashMap, net::UdpSocket, time::SystemTime};
+use std::{collections::HashMap, net::UdpSocket, option::Iter, time::SystemTime};
 
-use bevy::{app::AppExit, prelude::*, window::exit_on_all_closed};
+use bevy::{app::AppExit, prelude::*, transform, window::exit_on_all_closed};
 use bevy_rapier3d::prelude::*;
 use bevy_renet::{
     renet::{
@@ -12,7 +12,7 @@ use bevy_renet::{
 };
 use common::{
     connection_config, spawn_fireball, ClientChannel, NetworkedEntities, Player, PlayerCommand,
-    PlayerInput, Projectile, ServerChannel, ServerMessages, PROTOCOL_ID,
+    PlayerInput, Projectile, RotationInput, ServerChannel, ServerMessages, PROTOCOL_ID,
 };
 
 #[derive(Debug, Default, Resource)]
@@ -84,7 +84,7 @@ fn server_update_system(
     mut commands: Commands,
     mut lobby: ResMut<ServerLobby>,
     mut server: ResMut<RenetServer>,
-    players: Query<(Entity, &Player, &Transform)>,
+    mut players: Query<(Entity, &Player, &mut Transform)>,
 ) {
     for event in server_events.iter() {
         //TODO: ADAPT
@@ -107,7 +107,7 @@ fn server_update_system(
                 // Spawn new player
                 let transform = Transform::from_xyz(
                     (fastrand::f32() - 0.5) * 40.,
-                    0.51,
+                    171.0,
                     (fastrand::f32() - 0.5) * 40.,
                 );
                 let player_entity = commands
@@ -119,7 +119,6 @@ fn server_update_system(
                     .insert(LockedAxes::ROTATION_LOCKED | LockedAxes::TRANSLATION_LOCKED_Y)
                     .insert(Collider::capsule_y(0.5, 0.5))
                     .insert(PlayerInput::default())
-                    .insert(Velocity::default())
                     .insert(Player { id: *client_id })
                     .id();
 
@@ -148,8 +147,6 @@ fn server_update_system(
     }
 
     for client_id in server.connections_id() {
-        //TODO: ADAPT
-
         while let Some(message) = server.receive_message(client_id, ClientChannel::Command) {
             let command: PlayerCommand = bincode::deserialize(&message).unwrap();
             match command {
@@ -187,6 +184,14 @@ fn server_update_system(
                 commands.entity(*player_entity).insert(input);
             }
         }
+        while let Some(message) = server.receive_message(client_id, ClientChannel::Rots) {
+            let rots: RotationInput = bincode::deserialize(&message).unwrap();
+            if let Some(player_entity) = lobby.players.get(&client_id) {
+                if let Ok((_, _, mut player_transform)) = players.get_mut(*player_entity) {
+                    player_transform.rotation = rots.rotation;
+                }
+            }
+        }
     }
 }
 
@@ -214,20 +219,59 @@ fn server_network_sync(
         networked_entities
             .translations
             .push(transform.translation.into());
+        networked_entities.rotations.push(transform.rotation.into());
     }
 
     let sync_message = bincode::serialize(&networked_entities).unwrap();
     server.broadcast_message(ServerChannel::NetworkedEntities, sync_message);
 }
 
-fn move_players_system(mut query: Query<(&mut Velocity, &PlayerInput)>) {
-    //TODO: ADAPT
-    for (mut velocity, input) in query.iter_mut() {
-        let x = (input.right as i8 - input.left as i8) as f32;
-        let y = (input.down as i8 - input.up as i8) as f32;
-        let direction = Vec2::new(x, y).normalize_or_zero();
-        velocity.linvel.x = direction.x * PLAYER_MOVE_SPEED;
-        velocity.linvel.z = direction.y * PLAYER_MOVE_SPEED;
+fn move_players_system(mut query: Query<(&mut Transform, &PlayerInput)>) {
+    for (mut transform, input) in query.iter_mut() {
+        let mut acceleration = 1.0f32;
+        let mut direction = Vec3::ZERO;
+
+        let (forward, right) = {
+            let forward = transform.rotation.mul_vec3(Vec3::Z).normalize();
+            let right = Vec3::Y.cross(forward); // @todo(meyerzinn): not sure why this is the correct orientation
+            (forward, right)
+        };
+
+        if input.up {
+            direction.z -= 1.0;
+        }
+
+        if input.down {
+            direction.z += 1.0;
+        }
+
+        if input.right {
+            direction.x += 1.0;
+        }
+
+        if input.left {
+            direction.x -= 1.0;
+        }
+
+        if input.jump {
+            direction.y += 1.0;
+        }
+        if input.crouch {
+            direction.y -= 1.0;
+        }
+
+        if input.run {
+            acceleration *= 8.0;
+        }
+
+        if direction == Vec3::ZERO {
+            return;
+        }
+
+        // hardcoding 0.01 as a factor for now to not go zoomin across the world.
+        transform.translation += direction.x * right * acceleration * 0.01
+            + direction.z * forward * acceleration * 0.01
+            + direction.y * Vec3::Y * acceleration * 0.01;
     }
 }
 
@@ -236,7 +280,6 @@ fn despawn_projectile_system(
     mut collision_events: EventReader<CollisionEvent>,
     projectile_query: Query<Option<&Projectile>>,
 ) {
-    //TODO: ADAPT
     for collision_event in collision_events.iter() {
         if let CollisionEvent::Started(entity1, entity2, _) = collision_event {
             if let Ok(Some(_)) = projectile_query.get(*entity1) {

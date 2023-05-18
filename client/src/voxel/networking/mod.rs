@@ -10,9 +10,11 @@ use crate::{
 use bevy::{
     app::AppExit,
     core_pipeline::fxaa::Fxaa,
+    ecs::entity,
+    input::mouse::MouseMotion,
     prelude::{shape::Icosphere, *},
     utils::HashMap,
-    window::{exit_on_all_closed, PrimaryWindow},
+    window::{exit_on_all_closed, CursorGrabMode, PrimaryWindow},
 };
 use bevy_rapier3d::prelude::{ActiveEvents, Collider, KinematicCharacterController};
 use bevy_renet::renet::{
@@ -23,7 +25,12 @@ use common::{
     connection_config, ClientChannel, NetworkedEntities, PlayerCommand, PlayerInput, ServerChannel,
     ServerMessages, PROTOCOL_ID,
 };
-use std::{f32::consts::PI, net::UdpSocket, time::SystemTime};
+use std::{
+    f32::consts::{E, FRAC_PI_2, PI},
+    net::UdpSocket,
+    thread::spawn,
+    time::SystemTime,
+};
 
 pub struct NetworkingPlugin;
 impl Plugin for NetworkingPlugin {
@@ -38,6 +45,7 @@ impl Plugin for NetworkingPlugin {
             .add_system(player_input.in_set(OnUpdate(GameState::Game)))
             .add_systems(
                 (
+                    client_sync_rotation,
                     client_send_input,
                     client_send_player_commands,
                     client_sync_players,
@@ -83,11 +91,13 @@ fn player_input(
     target_query: Query<&Transform, With<Target>>,
     mut player_commands: EventWriter<PlayerCommand>,
 ) {
-    player_input.left = keyboard_input.pressed(KeyCode::A) || keyboard_input.pressed(KeyCode::Left);
-    player_input.right =
-        keyboard_input.pressed(KeyCode::D) || keyboard_input.pressed(KeyCode::Right);
-    player_input.up = keyboard_input.pressed(KeyCode::W) || keyboard_input.pressed(KeyCode::Up);
-    player_input.down = keyboard_input.pressed(KeyCode::S) || keyboard_input.pressed(KeyCode::Down);
+    player_input.run = keyboard_input.pressed(KeyCode::LControl);
+    player_input.crouch = keyboard_input.pressed(KeyCode::LShift);
+    player_input.left = keyboard_input.pressed(KeyCode::A);
+    player_input.right = keyboard_input.pressed(KeyCode::D);
+    player_input.up = keyboard_input.pressed(KeyCode::W);
+    player_input.down = keyboard_input.pressed(KeyCode::S);
+    player_input.jump = keyboard_input.pressed(KeyCode::Space);
 
     if mouse_button_input.just_pressed(MouseButton::Left) {
         let target_transform = target_query.single();
@@ -99,7 +109,6 @@ fn player_input(
 
 fn client_send_input(player_input: Res<PlayerInput>, mut client: ResMut<RenetClient>) {
     let input_message = bincode::serialize(&*player_input).unwrap();
-
     client.send_message(ClientChannel::Input, input_message);
 }
 
@@ -111,6 +120,16 @@ fn client_send_player_commands(
         let command_message = bincode::serialize(command).unwrap();
         client.send_message(ClientChannel::Command, command_message);
     }
+}
+
+fn client_sync_rotation(body_rot: Query<&Transform, With<Body>>, mut client: ResMut<RenetClient>) {
+    if let Err(_) = body_rot.get_single() {
+        return;
+    }
+    let rotation = body_rot.single();
+
+    let message = bincode::serialize(&rotation.rotation).unwrap();
+    client.send_message(ClientChannel::Rots, message)
 }
 
 fn client_sync_players(
@@ -203,6 +222,19 @@ fn client_sync_players(
                         .insert(AnimationController { done: false })
                         .insert(KinematicCharacterController::default())
                         .insert(ActiveEvents::COLLISION_EVENTS);
+                } else {
+                    client_entity
+                        .with_children(|player| {
+                            player.spawn(SceneBundle {
+                                scene: _my_assets.player.clone(),
+                                transform: Transform::IDENTITY.looking_to(Vec3::Z, Vec3::Y),
+                                ..default()
+                            });
+                        })
+                        .insert(Animations(map))
+                        .insert(AnimationController { done: false })
+                        .insert(KinematicCharacterController::default())
+                        .insert(ActiveEvents::COLLISION_EVENTS);
                 }
 
                 let player_info = PlayerInfo {
@@ -255,7 +287,9 @@ fn client_sync_players(
         for i in 0..networked_entities.entities.len() {
             if let Some(entity) = network_mapping.0.get(&networked_entities.entities[i]) {
                 let translation = networked_entities.translations[i].into();
+                let rotation = networked_entities.rotations[i].into();
                 let transform = Transform {
+                    rotation,
                     translation,
                     ..Default::default()
                 };
