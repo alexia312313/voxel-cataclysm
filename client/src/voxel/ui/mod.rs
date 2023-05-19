@@ -2,6 +2,7 @@ use crate::GameState;
 use bevy::prelude::*;
 use update::*;
 
+ mod end;
 mod build;
 mod spawn;
 mod styles;
@@ -36,3 +37,4 @@ pub struct ScoreText;
 
 #[derive(Component)]
 pub struct HealthText;
+
