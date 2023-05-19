@@ -30,7 +30,7 @@ fn main() {
     .add_plugin(NetcodeClientPlugin)
     .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
     .add_plugin(voxel::ui::UiPlugin)
-    .add_plugin(voxel::loading::LodingHandlerPlugin)
+    .add_plugin(voxel::loading::LoadingHandlerPlugin)
     .add_plugin(voxel::combat::CombatPlugin)
     .add_plugin(voxel::VoxelWorldPlugin)
     .add_plugin(debug::DebugUIPlugins)
