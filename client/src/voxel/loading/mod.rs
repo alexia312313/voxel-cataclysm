@@ -34,4 +34,7 @@ pub struct MyAssets {
     // Mobs animations
     #[asset(path = "models/mob/slime.gltf#Animation0")]
     pub slime_animation_walking: Handle<AnimationClip>,
+    // Portal
+    #[asset(path ="models/item/Portal.gltf#Scene0")]
+    pub end_portal: Handle<Scene>
 }

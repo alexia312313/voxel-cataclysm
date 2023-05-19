@@ -36,7 +36,8 @@ fn main() {
     .add_plugin(debug::DebugUIPlugins)
     .add_plugin(voxel::ActorPlugin)
     .add_plugin(voxel::networking::NetworkingPlugin)
-    .run();
+    .add_plugin(voxel::end_portal::EndPlugin)
+        .run();
 }
 
 #[derive(Clone, Eq, PartialEq, Debug, Hash, Default, States)]
