@@ -8,7 +8,10 @@ use super::{
     styles::{SUPER_UI}, EndScreenCamera2d,
 };
 
-pub fn build_end_screen(mut commands:  Commands, asset_server: Res<AssetServer>) -> Entity {
+pub fn build_end_screen(
+    mut commands:  &Commands,
+     asset_server: &Res<AssetServer>
+) -> Entity {
     let end_screen_entity = commands
         .spawn((
             NodeBundle {

@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use bevy_rapier3d::prelude::{Collider, RapierContext, Sensor};
 
 use crate::voxel::{
-    end_portal::EndPortal, loading::MyAssets, mob::Mob, networking::ControlledPlayer,
+    end_portal::EndPortal, loading::MyAssets, mob::Mob, networking::ControlledPlayer, ui::end::end::build_end_screen,
 };
 
 pub fn spawn_end_portal(mut commands: Commands, _my_assets: Res<MyAssets>) {
@@ -24,6 +24,26 @@ pub fn despawn_end_portal(mut commands: Commands, portal_query: Query<Entity, Wi
     }
 }
 
+pub fn detect_player(
+rapier_context: Res<RapierContext>,
+player_query: Query<Entity, With<ControlledPlayer>>,
+portal_query: Query<Entity, With<EndPortal>>,
+ commands:  &mut Commands,
+asset_server: &Res<AssetServer>
+) {
+for portal in portal_query.iter() {
+    for player in player_query.iter() {
+        for (collider1, collider2, intersecting) in rapier_context.intersections_with(portal) {
+            if intersecting {
+                println!("The entities {:?} and {:?} have intersecting colliders!", collider1, collider2);
+                build_end_screen(commands, asset_server);
+            }
+        }
+    }
+}
+}
+
+/* 
 pub fn detect_player(
     rapier_context: Res<RapierContext>,
     player_query: Query<Entity, With<ControlledPlayer>>,
@@ -91,3 +111,4 @@ pub fn detect_player(
         }
     }
 }
+*/
