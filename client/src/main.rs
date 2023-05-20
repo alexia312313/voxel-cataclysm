@@ -4,8 +4,8 @@
     clippy::module_inception
 )]
 
-use bevy::{prelude::*, window::WindowMode};
-use bevy_rapier3d::prelude::{NoUserData, RapierPhysicsPlugin};
+use bevy::{prelude::*, window::WindowMode, reflect::erased_serde::__private::serde::__private::de};
+use bevy_rapier3d::{prelude::{NoUserData, RapierPhysicsPlugin}, render::RapierDebugRenderPlugin};
 use bevy_renet::{transport::NetcodeClientPlugin, RenetClientPlugin};
 
 mod debug;

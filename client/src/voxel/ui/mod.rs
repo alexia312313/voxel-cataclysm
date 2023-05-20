@@ -2,7 +2,7 @@ use crate::GameState;
 use bevy::prelude::*;
 use update::*;
 
- mod end;
+ pub(crate) mod end;
 mod build;
 mod spawn;
 mod styles;
