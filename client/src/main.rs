@@ -4,8 +4,8 @@
     clippy::module_inception
 )]
 
-use bevy::{prelude::*, window::WindowMode, reflect::erased_serde::__private::serde::__private::de};
-use bevy_rapier3d::{prelude::{NoUserData, RapierPhysicsPlugin}, render::RapierDebugRenderPlugin};
+use bevy::{prelude::*, window::WindowMode};
+use bevy_rapier3d::{prelude::{NoUserData, RapierPhysicsPlugin}};
 use bevy_renet::{transport::NetcodeClientPlugin, RenetClientPlugin};
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 
@@ -38,14 +38,18 @@ fn main() {
     .add_plugin(voxel::ActorPlugin)
     .add_plugin(voxel::networking::NetworkingPlugin)
     .add_plugin(voxel::end_portal::EndPlugin)
+    .add_plugin(voxel::ui::end::GameOverPlugin)
     .add_plugin(WorldInspectorPlugin::new())
 
         .run();
 }
 
 #[derive(Clone, Eq, PartialEq, Debug, Hash, Default, States)]
-enum GameState {
+pub enum GameState {
     #[default]
     Loading,
     Game,
+    GameOver,
+    Death
+
 }

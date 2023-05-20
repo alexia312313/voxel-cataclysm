@@ -2,15 +2,14 @@ use crate::voxel::ui::{
     styles::{get_text_style},
 };
 
-use bevy::prelude::*;
+use bevy::{prelude::*, window::PrimaryWindow};
 
 use super::{
-    styles::{SUPER_UI}, EndScreenCamera2d,
+    styles::{SUPER_UI}, EndScreenCamera2d, EndScreenUI,
 };
 
 pub fn build_end_screen(
-    mut commands:  &Commands,
-     asset_server: &Res<AssetServer>
+    commands: &mut Commands, asset_server: &Res<AssetServer>
 ) -> Entity {
     let end_screen_entity = commands
         .spawn((
@@ -18,7 +17,7 @@ pub fn build_end_screen(
                 style: SUPER_UI,
                 ..Default::default()
             },
-            EndScreenCamera2d,
+            EndScreenUI,
         ))
                 .with_children(|parent| {
 
@@ -34,3 +33,27 @@ pub fn build_end_screen(
                 }).id() ;
                 end_screen_entity
 }
+
+pub fn spawn_end_screen(
+   mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    window_query: Query<&Window, With<PrimaryWindow>>,
+) {
+    build_end_screen(&mut commands, &asset_server);
+    //build_ui_crosshair(&mut commands, &asset_server);
+
+    let window = window_query.get_single().unwrap();
+
+    println!("spawn end screen");
+    commands
+        .spawn((
+            Camera2dBundle {
+                transform: Transform::from_xyz(window.width() / 2.0, window.height() / 2.0, 0.0),
+                camera: Camera {
+                    order: (1),
+                    ..default()
+                },
+                ..default()
+            },
+            EndScreenCamera2d {},
+        ));}
