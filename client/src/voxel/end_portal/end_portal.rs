@@ -12,7 +12,7 @@ pub fn spawn_end_portal(mut commands: Commands, _my_assets: Res<MyAssets>) {
             transform: Transform::from_xyz(0.0, 200.0, 0.0),
             ..Default::default()
         },
-        Collider::cuboid(10.0, 10.0, 10.0),
+        Collider::cuboid(5.0, 5.0, 5.0),
         Sensor,
         EndPortal {},
     ));
@@ -52,7 +52,9 @@ pub fn detect_player(
             println!("remove portal");
         }
     }
-
+    println!(
+        "Test1"
+    );
     for portal in portal_query.iter() {
         for player in player_query.iter() {
             if rapier_context.intersection_pair(portal, player) == Some(true) {
@@ -60,6 +62,31 @@ pub fn detect_player(
                     "The colliders {:?} and {:?} are intersecting!",
                     portal, player
                 );
+            }
+        }
+    }
+    println!(
+        "Test2"
+    );
+    for portal in portal_query.iter() {
+        for player in player_query.iter() {
+            if rapier_context.intersection_pair(player, portal) == Some(true) {
+                println!(
+                    "The colliders {:?} and {:?} are intersecting!",
+                    portal, player
+                );
+            }
+        }
+    }
+     println!(
+        "Test3"
+    );
+    for portal in portal_query.iter() {
+        for player in player_query.iter() {
+            for (collider1, collider2, intersecting) in rapier_context.intersections_with(portal) {
+                if intersecting {
+                    println!("The entities {:?} and {:?} have intersecting colliders!", collider1, collider2);
+                }
             }
         }
     }
