@@ -1,4 +1,4 @@
-use crate::voxel::ui::{styles::{get_text_style,get_text_style_title }};
+use crate::voxel::ui::{styles::{get_text_style,get_text_style_title }, end::ElapsedTime};
 
 use bevy::{prelude::*, window::PrimaryWindow};
 
@@ -147,13 +147,19 @@ pub fn spawn_end_screen(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     window_query: Query<&Window, With<PrimaryWindow>>,
+    time: Res<Time>
 ) {
+    let elapsed_t = time.elapsed_seconds_wrapped();
+    commands.spawn(ElapsedTime{
+        elapsed:elapsed_t
+    }
+    );
+    println!("hello {}",elapsed_t);
     build_end_screen(&mut commands, &asset_server);
     //build_ui_crosshair(&mut commands, &asset_server);
 
     let window = window_query.get_single().unwrap();
 
-    println!("spawn end screen");
     commands.spawn((
         Camera2dBundle {
             transform: Transform::from_xyz(window.width() / 2.0, window.height() / 2.0, 0.0),

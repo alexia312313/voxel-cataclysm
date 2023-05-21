@@ -4,7 +4,7 @@ use crate::GameState;
 
 use self::dead::spawn_dead_screen;
 
-use super::end::updates::{update_score_text_final, interact_with_quit_button};
+use super::end::updates::{update_score_text_final, interact_with_quit_button, update_time_final};
 
 pub mod dead;
 pub struct DeadPlugin;
@@ -13,10 +13,13 @@ impl Plugin for DeadPlugin {
     fn build(&self, app: &mut App) {
         app
         .add_system(spawn_dead_screen.in_schedule(OnEnter(GameState::Dead)))
-        .add_system(update_score_text_final.in_set(OnUpdate(GameState::Dead)))
-
-        .add_system(interact_with_quit_button.in_set(OnUpdate(GameState::Dead)))
-
+        .add_systems(
+            (
+                update_score_text_final,
+                interact_with_quit_button,
+                update_time_final,
+            )
+                .in_set(OnUpdate(GameState::Dead)))
         .add_system(despawn_dead.in_schedule(OnExit(GameState::Dead)));
     }
 }

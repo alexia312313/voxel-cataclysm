@@ -2,7 +2,7 @@ use bevy::{prelude::*, app::AppExit};
 
 use crate::voxel::{Stats, networking::{ControlledPlayer,},};
 
-use super::{QuitButton, styles::{PRESSED_BUTTON_COLOR, HOVERED_BUTTON_COLOR, NORMAL_BUTTON_COLOR}, FinalScoreText};
+use super::{QuitButton, styles::{PRESSED_BUTTON_COLOR, HOVERED_BUTTON_COLOR, NORMAL_BUTTON_COLOR}, FinalScoreText, FinalTime, ElapsedTime};
 
 pub fn interact_with_quit_button(
     mut app_exit_event_writer: EventWriter<AppExit>,
@@ -41,4 +41,15 @@ pub fn update_score_text_final(
 }
 
 
+pub fn update_time_final(
+    mut text_query: Query<&mut Text, With<FinalTime>>,
+    time:Query<&ElapsedTime>
+) {
+    for elapsed in time.iter(){
 
+        for mut text in text_query.iter_mut() {
+            text.sections[0].value = format!("{:?}", elapsed);
+        }
+    }
+    
+}

@@ -12,13 +12,11 @@ pub fn spawn_dead_screen(
     window_query: Query<&Window, With<PrimaryWindow>>,
 ) {
 
-    println!("dead screen");
     build_dead_screen(&mut commands, &asset_server);
     //build_ui_crosshair(&mut commands, &asset_server);
 
     let window = window_query.get_single().unwrap();
 
-    println!("spawn end screen");
     commands.spawn((
         Camera2dBundle {
             transform: Transform::from_xyz(window.width() / 2.0, window.height() / 2.0, 0.0),
