@@ -44,4 +44,5 @@ enum GameState {
     #[default]
     Loading,
     Game,
+    Started,
 }
