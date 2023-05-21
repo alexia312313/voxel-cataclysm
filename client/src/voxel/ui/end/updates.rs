@@ -1,6 +1,6 @@
 use bevy::{prelude::*, app::AppExit};
 
-use crate::voxel::{Stats, networking::ControlledPlayer,};
+use crate::voxel::{Stats, networking::{ControlledPlayer,},};
 
 use super::{QuitButton, styles::{PRESSED_BUTTON_COLOR, HOVERED_BUTTON_COLOR, NORMAL_BUTTON_COLOR}, FinalScoreText};
 
@@ -28,7 +28,7 @@ pub fn interact_with_quit_button(
 }
 
 
-pub fn update_score_text_win(
+pub fn update_score_text_final(
     mut text_query: Query<&mut Text, With<FinalScoreText>>,
     stats_query: Query<&Stats, With<ControlledPlayer>>,
 ) {
@@ -39,3 +39,6 @@ pub fn update_score_text_win(
         }
     }
 }
+
+
+

@@ -13,12 +13,13 @@ use crate::{
 };
 use bevy::{
     prelude::{shape::Icosphere, *},
-    utils::HashMap,
+    utils::{HashMap},
 };
 use bevy_renet::renet::{transport::NetcodeClientTransport, RenetClient};
 use common::{
     ClientChannel, NetworkedEntities, PlayerCommand, PlayerInput, ServerChannel, ServerMessages,
 };
+
 
 fn sync_players(
     mut cmds: Commands,

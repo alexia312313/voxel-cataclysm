@@ -38,6 +38,43 @@ pub fn build_end_screen(commands: &mut Commands, asset_server: &Res<AssetServer>
                     });
                 });
 
+
+            parent
+            .spawn(NodeBundle {
+                style: TIME_BOX_STYLE,
+                ..default()
+            })
+            .with_children(|parent| {
+                parent.spawn(TextBundle {
+                    text: Text {
+                        sections: vec![TextSection::new(
+                            "Time: ",
+                            get_text_style(&asset_server),
+                        )],
+                        alignment: TextAlignment::Center,
+
+                        ..default()
+                    },
+                    ..default()
+                });
+
+                parent.spawn((
+                    TextBundle {
+                        text: Text {
+                            sections: vec![TextSection::new(
+                                "0",
+                                get_text_style(&asset_server),
+                            )],
+                            alignment: TextAlignment::Center,
+                            ..default()
+                        },
+                        ..default()
+                    },
+                    FinalTime,
+                ));
+            });
+
+
             parent
                 .spawn(NodeBundle {
                     style: SCORE_BOX_STYLE,
@@ -70,42 +107,6 @@ pub fn build_end_screen(commands: &mut Commands, asset_server: &Res<AssetServer>
                             ..default()
                         },
                         FinalScoreText,
-                    ));
-                });
-
-            parent
-                .spawn(NodeBundle {
-                    style: TIME_BOX_STYLE,
-                    //      background_color:BackgroundColor(Color::GREEN),
-                    ..default()
-                })
-                .with_children(|parent| {
-                    parent.spawn(TextBundle {
-                        text: Text {
-                            sections: vec![TextSection::new(
-                                "Time: ",
-                                get_text_style(&asset_server),
-                            )],
-                            alignment: TextAlignment::Center,
-
-                            ..default()
-                        },
-                        ..default()
-                    });
-
-                    parent.spawn((
-                        TextBundle {
-                            text: Text {
-                                sections: vec![TextSection::new(
-                                    "0",
-                                    get_text_style(&asset_server),
-                                )],
-                                alignment: TextAlignment::Center,
-                                ..default()
-                            },
-                            ..default()
-                        },
-                        FinalTime,
                     ));
                 });
 

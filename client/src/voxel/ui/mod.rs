@@ -2,11 +2,15 @@ use crate::GameState;
 use bevy::prelude::*;
 use update::*;
 
+use self::time::track_time;
+
+
 mod build;
 pub(crate) mod end;
 mod spawn;
 mod styles;
 mod update;
+mod time;
 pub(crate) mod dead;
 pub struct UiPlugin;
 
@@ -16,6 +20,7 @@ impl Plugin for UiPlugin {
             //plugins
             .add_plugin(spawn::SpawnHandlerPlugin)
             //systems
+            
             .add_systems((update_health_text, update_score_text).in_set(OnUpdate(GameState::Game)));
     }
 }
