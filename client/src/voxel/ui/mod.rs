@@ -3,10 +3,11 @@ use bevy::prelude::*;
 use update::*;
 
 mod build;
+pub(crate) mod dead;
+pub(crate) mod end;
 mod spawn;
 mod styles;
 mod update;
-
 pub struct UiPlugin;
 
 impl Plugin for UiPlugin {

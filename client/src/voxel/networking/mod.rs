@@ -7,7 +7,9 @@ use bevy_renet::renet::{
 use common::{connection_config, PlayerCommand, PlayerInput, PROTOCOL_ID};
 use std::{net::UdpSocket, time::SystemTime};
 
-mod sync;
+pub mod sync;
+mod update;
+
 
 pub struct NetworkingPlugin;
 impl Plugin for NetworkingPlugin {

@@ -54,3 +54,11 @@ pub fn get_text_style(asset_server: &Res<AssetServer>) -> TextStyle {
         color: Color::rgb(1.0, 1.0, 1.0),
     }
 }
+
+pub fn get_text_style_title(asset_server: &Res<AssetServer>) -> TextStyle {
+    TextStyle {
+        font: asset_server.load("fonts/dogicabold.ttf"),
+        font_size: 40.0,
+        color: Color::rgb(1.0, 1.0, 1.0),
+    }
+}

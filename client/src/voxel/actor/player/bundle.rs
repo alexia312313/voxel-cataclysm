@@ -75,7 +75,7 @@ impl Default for MyCamera3dBundle {
                 transform: Transform::from_translation(Vec3::new(0.0, 0.0, -5.0))
                     .looking_to(Vec3::Z, Vec3::Y),
                 camera: Camera {
-                    order: (1),
+                    order: (2),
                     ..default()
                 },
                 ..Default::default()
