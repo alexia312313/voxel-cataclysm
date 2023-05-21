@@ -48,8 +48,14 @@ pub enum ServerChannel {
 
 #[derive(Debug, Serialize, Deserialize, Component)]
 pub enum ServerMessages {
-    PlayerCreate { entity: Entity, id: u64 },
-    PlayerRemove { id: u64 },
+    PlayerCreate {
+        entity: Entity,
+        id: u64,
+        translation: [f32; 3],
+    },
+    PlayerRemove {
+        id: u64,
+    },
 }
 
 #[derive(Debug, Serialize, Deserialize, Default)]

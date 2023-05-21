@@ -22,13 +22,17 @@ fn sync_players(
     mut lobby: ResMut<ClientLobby>,
     mut network_mapping: ResMut<NetworkMapping>,
     _my_assets: Res<MyAssets>,
-    player_query: Query<&ControlledPlayer>,
+    mut queries: ParamSet<(Query<&Transform>, Query<&ControlledPlayer>)>,
 ) {
     let client_id = transport.client_id();
     while let Some(message) = client.receive_message(ServerChannel::ServerMessages) {
         let server_message = bincode::deserialize(&message).unwrap();
         match server_message {
-            ServerMessages::PlayerCreate { id, entity } => {
+            ServerMessages::PlayerCreate {
+                id,
+                entity,
+                translation,
+            } => {
                 println!("Player {} connected.", id);
 
                 let mut map = HashMap::new();
@@ -38,7 +42,11 @@ fn sync_players(
                 let mut client_entity = cmds.spawn((
                     BasePlayerBundle::default(),
                     Animations(map),
-                    TransformBundle { ..default() },
+                    TransformBundle {
+                        local: Transform::from_xyz(translation[0], translation[1], translation[2])
+                            .looking_to(Vec3::Z, Vec3::Y),
+                        ..default()
+                    },
                 ));
 
                 if client_id == id {
@@ -94,16 +102,20 @@ fn sync_players(
         for i in 0..networked_entities.entities.len() {
             if let Some(entity) = network_mapping.0.get(&networked_entities.entities[i]) {
                 // if the entity is the ControlledPlayer, we don't want to apply it
-                if player_query.get(*entity).is_err() {
-                    let translation = networked_entities.translations[i].into();
-                    let rotation = networked_entities.rotations[i];
-                    let transform = Transform {
-                        rotation,
-                        translation,
-                        ..Default::default()
-                    };
+                if queries.p1().get(*entity).is_err() {
+                    if let Ok(current_transform) = queries.p0().get(*entity) {
+                        let translation = networked_entities.translations[i].into();
+                        let rotation = networked_entities.rotations[i];
+                        if translation != current_transform.translation {
+                            let transform = Transform {
+                                rotation,
+                                translation,
+                                ..Default::default()
+                            };
 
-                    cmds.entity(*entity).insert(transform);
+                            cmds.entity(*entity).insert(transform);
+                        }
+                    }
                 }
             }
         }
@@ -118,7 +130,6 @@ fn sync_input(
         return;
     }
     let translation = player_input.single();
-    println!("Input: {:?}", translation);
     let message = bincode::serialize(&translation.translation).unwrap();
     client.send_message(ClientChannel::Input, message)
 }
