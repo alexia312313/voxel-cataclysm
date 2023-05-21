@@ -47,7 +47,6 @@ impl Plugin for GameOverPlugin {
                 )
                     .in_set(OnUpdate(GameState::GameOver)),
             )
-            .add_system(add_score.in_set(OnUpdate(GameState::Game)))
             .add_system(despawn_game_over.in_schedule(OnExit(GameState::GameOver)));
     }
 }
@@ -62,12 +61,5 @@ pub fn despawn_game_over(
     }
     if let Ok(end_screen_ui_entity) = end_screen_ui_query.get_single() {
         commands.entity(end_screen_ui_entity).despawn_recursive();
-    }
-}
-
-//testing
-fn add_score(mut player_q: Query<&mut Stats, With<ControlledPlayer>>) {
-    for mut player in player_q.iter_mut() {
-        player.score += 1;
     }
 }

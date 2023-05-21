@@ -69,17 +69,14 @@ fn player_melee_attack(
 // system that despawn dead mobs
 pub fn despawn_dead_mobs(
     mut cmds: Commands,
-    mut query: Query<(Entity, &Stats), With<Mob>>,
-    mut player_q: Query<&mut Stats, (With<ControlledPlayer>, Without<Mob>)>,
+    mut mob_stats_query: Query<(Entity, &Stats), With<Mob>>,
+    mut player_stats_query: Query<&mut Stats, With<ControlledPlayer>>,
 ) {
-    for (entity, stats) in query.iter_mut() {
-        if stats.hp <= 0 {
+    for (entity, mob_stats) in mob_stats_query.iter_mut() {
+        if mob_stats.hp <= 0 {
+            let mut player_stats = player_stats_query.single_mut();
             cmds.entity(entity).despawn_recursive();
-            for mut player in player_q.iter_mut() {
-                //   player.score+=1;
-
-                player.score += stats.score;
-            }
+            player_stats.score += mob_stats.score;
         }
     }
 }
