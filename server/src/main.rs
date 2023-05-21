@@ -1,4 +1,4 @@
-use bevy::{app::AppExit, prelude::*, window::exit_on_all_closed};
+use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 use bevy_renet::{
     renet::{
@@ -64,13 +64,7 @@ fn main() {
         update_projectiles_system,
         despawn_projectile_system,
     ));
-    app.add_systems(
-        (
-            projectile_on_removal_system,
-            disconnect_clients_on_exit.after(exit_on_all_closed),
-        )
-            .in_base_set(CoreSet::PostUpdate),
-    );
+    app.add_system(projectile_on_removal_system.in_base_set(CoreSet::PostUpdate));
 
     app.run();
 }
@@ -143,7 +137,7 @@ fn server_update_system(
         }
     }
 
-    for client_id in server.connections_id() {
+    for client_id in server.disconnections_id() {
         while let Some(message) = server.receive_message(client_id, ClientChannel::Command) {
             let command: PlayerCommand = bincode::deserialize(&message).unwrap();
             match command {
@@ -299,11 +293,5 @@ fn projectile_on_removal_system(
         let message = bincode::serialize(&message).unwrap();
 
         server.broadcast_message(ServerChannel::ServerMessages, message);
-    }
-}
-
-fn disconnect_clients_on_exit(exit: EventReader<AppExit>, mut server: ResMut<RenetServer>) {
-    if !exit.is_empty() {
-        server.disconnect_all();
     }
 }

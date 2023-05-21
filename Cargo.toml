@@ -3,11 +3,27 @@ members = ["client", "server", "common"]
 resolver = "2"
 
 [workspace.dependencies]
-bevy = "0.10.1"
-bevy_renet = { git = "https://github.com/lucaspoffo/renet/" }
-bevy_rapier3d = { version = "0.21.0" }
+bevy = "0.10"
+bevy_renet = "0.0.8"
+bevy_rapier3d = "0.21.0"
 serde = { version = "1.0", features = ["derive"] }
 bincode = "1.3.1"
+ndshape = "0.3.0"
+block-mesh = "0.2.0"
+ndcopy = "0.3.0"
+thread_local = "1.1.7"
+bevy_egui = "0.20"
+float-ord = "0.3.2"
+futures-lite = "1.12.0"
+once_cell = "1.17.1"
+bevy_atmosphere = "0.6"
+bitflags = "2.0.2"
+ilattice = { version = "0.1.0", features = ["glam", "morton-encoding"] }
+noise = "0.8.2"
+itertools = "0.10.5"
+bevy_asset_loader = "0.16.0"
+big-brain = "0.17.0"
+fastrand = "1.9.0"
 
 [profile.dev]
 opt-level = 3

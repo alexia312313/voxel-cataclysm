@@ -1,9 +1,7 @@
 use crate::GameState;
 use bevy::{
-    app::AppExit,
     prelude::{shape::Icosphere, *},
     utils::HashMap,
-    window::exit_on_all_closed,
 };
 use bevy_renet::renet::{
     transport::{ClientAuthentication, NetcodeClientTransport, NetcodeTransportError},
@@ -27,11 +25,6 @@ impl Plugin for NetworkingPlugin {
             .insert_resource(NetworkMapping::default())
             .add_plugin(sync::NetSyncPlugin)
             .add_plugin(update::NetUpdatePlugin)
-            .add_system(
-                disconnect_on_exit
-                    .in_base_set(CoreSet::PostUpdate)
-                    .after(exit_on_all_closed),
-            )
             .add_system(setup_target.in_schedule(OnEnter(GameState::Game)))
             .add_system(panic_on_error_system.in_set(OnUpdate(GameState::Game)));
     }
@@ -77,12 +70,6 @@ fn setup_target(
             ..Default::default()
         })
         .insert(Target);
-}
-
-fn disconnect_on_exit(exit: EventReader<AppExit>, mut client: ResMut<RenetClient>) {
-    if !exit.is_empty() && client.is_connected() {
-        client.disconnect();
-    }
 }
 
 // If any error is found we just panic
