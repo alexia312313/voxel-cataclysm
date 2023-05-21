@@ -15,5 +15,4 @@ impl Plugin for EventsHandlerPlugin {
 }
 
 #[derive(Component)]
-
 pub struct EndPortal {}

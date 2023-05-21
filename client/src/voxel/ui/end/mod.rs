@@ -1,9 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{
-    voxel::{networking::ControlledPlayer, Stats},
-    GameState,
-};
+use crate::GameState;
 
 use self::{
     end::spawn_end_screen,

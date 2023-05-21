@@ -3,8 +3,8 @@ use bevy::prelude::*;
 use update::*;
 
 mod build;
-pub(crate) mod dead;
-pub(crate) mod end;
+pub mod dead;
+pub mod end;
 mod spawn;
 mod styles;
 mod update;
