@@ -75,10 +75,12 @@ fn server_update_system(
             ServerEvent::ClientConnected { client_id } => {
                 println!("Player {} connected.", client_id);
                 // Initialize other players for this new client
-                for (entity, player, _transform) in players.iter() {
+                for (entity, player, transform) in players.iter() {
+                    let translation: [f32; 3] = transform.translation.into();
                     let message = bincode::serialize(&ServerMessages::PlayerCreate {
                         id: player.id,
                         entity,
+                        translation,
                     })
                     .unwrap();
                     server.send_message(*client_id, ServerChannel::ServerMessages, message);
@@ -102,9 +104,12 @@ fn server_update_system(
 
                 lobby.players.insert(*client_id, player_entity);
 
+                let translation: [f32; 3] = transform.translation.into();
+
                 let message = bincode::serialize(&ServerMessages::PlayerCreate {
                     id: *client_id,
                     entity: player_entity,
+                    translation,
                 })
                 .unwrap();
                 server.broadcast_message(ServerChannel::ServerMessages, message);
@@ -128,7 +133,6 @@ fn server_update_system(
             let input: PlayerInput = bincode::deserialize(&message).unwrap();
             if let Some(player_entity) = lobby.players.get(&client_id) {
                 if let Ok((_, _, mut player_transform)) = players.get_mut(*player_entity) {
-                    println!("translation: {:?}", input.translation);
                     player_transform.translation = input.translation;
                 }
             }

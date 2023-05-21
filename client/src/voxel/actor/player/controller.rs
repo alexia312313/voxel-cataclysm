@@ -164,7 +164,7 @@ impl Plugin for PlayerControllerPlugin {
                 handle_player_change_camera_mode,
             )
                 .chain()
-                .in_set(OnUpdate(GameState::Game))
+                .in_set(OnUpdate(GameState::Started))
                 .after(DebugUISet::Display),
         );
     }

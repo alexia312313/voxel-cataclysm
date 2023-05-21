@@ -15,7 +15,7 @@ pub struct MobPlugin;
 
 impl Plugin for MobPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(setup.in_schedule(OnEnter(GameState::Game)))
+        app.add_system(setup.in_schedule(OnEnter(GameState::Started)))
             .add_plugin(brain::BrainHandlerPlugin);
     }
 }

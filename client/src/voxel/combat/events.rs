@@ -60,7 +60,6 @@ fn player_melee_attack(
                         commands.entity(entity).insert(Attacked {
                             damage: stats.attack,
                         });
-                        print!("{:?}", entity)
                     }
                 }
             }
