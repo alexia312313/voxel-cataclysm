@@ -1,6 +1,6 @@
 use bevy::{prelude::*, app::AppExit};
 
-use crate::voxel::{Stats, networking::ControlledPlayer, ui::ScoreText};
+use crate::voxel::{Stats, networking::ControlledPlayer,};
 
 use super::{QuitButton, styles::{PRESSED_BUTTON_COLOR, HOVERED_BUTTON_COLOR, NORMAL_BUTTON_COLOR}, FinalScoreText};
 
@@ -32,6 +32,7 @@ pub fn update_score_text_win(
     mut text_query: Query<&mut Text, With<FinalScoreText>>,
     stats_query: Query<&Stats, With<ControlledPlayer>>,
 ) {
+    
     if let Ok(player_stats) = stats_query.get_single() {
         for mut text in text_query.iter_mut() {
             text.sections[0].value = format!("{}", player_stats.score);

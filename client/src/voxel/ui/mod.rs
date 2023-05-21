@@ -7,7 +7,7 @@ pub(crate) mod end;
 mod spawn;
 mod styles;
 mod update;
-mod dead;
+pub(crate) mod dead;
 pub struct UiPlugin;
 
 impl Plugin for UiPlugin {

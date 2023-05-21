@@ -10,8 +10,6 @@ pub fn entity_attacked_handler(
     mut cmds: Commands,
     time: Res<Time>,
     mut query: Query<(Entity, &mut Transform, &mut Stats, &Attacked)>,
-    mut game_state_next_state: ResMut<NextState<GameState>>,
-
 ) {
     for (entity, mut transform, mut stats, attacked) in query.iter_mut() {
         // move back
@@ -21,11 +19,6 @@ pub fn entity_attacked_handler(
         stats.hp -= attacked.damage;
         // reset attacked component
         cmds.entity(entity).remove::<Attacked>();
-
-        if stats.hp <0{
-            game_state_next_state.set(GameState::Dead)
-
-        }
     }
 }
 
@@ -76,18 +69,17 @@ fn player_melee_attack(
 }
 // system that despawn dead mobs
 pub fn despawn_dead_mobs(
-    mut cmds: Commands, 
+    mut cmds: Commands,
     mut query: Query<(Entity, &Stats), With<Mob>>,
-    mut player_q: Query<&mut Stats,(With<ControlledPlayer>,Without<Mob>)>
-
+    mut player_q: Query<&mut Stats, (With<ControlledPlayer>, Without<Mob>)>,
 ) {
     for (entity, stats) in query.iter_mut() {
         if stats.hp <= 0 {
             cmds.entity(entity).despawn_recursive();
-            for mut player in player_q.iter_mut(){
-             //   player.score+=1;
+            for mut player in player_q.iter_mut() {
+                //   player.score+=1;
 
-             player.score += stats.score;
+                player.score += stats.score;
             }
         }
     }
@@ -101,8 +93,22 @@ impl Plugin for EventHandlerPlugin {
                 entity_attacked_handler,
                 despawn_dead_mobs,
                 player_melee_attack,
+                check_hp,
             )
                 .in_set(OnUpdate(GameState::Game)),
         );
+    }
+}
+
+pub fn check_hp(
+    mut stats: Query<&mut Stats, With<ControlledPlayer>>,
+    button: Res<Input<MouseButton>>,
+    mut game_state_next_state: ResMut<NextState<GameState>>,
+) {
+    for mut hp in stats.iter_mut() {
+        if hp.hp < 1 {
+            game_state_next_state.set(GameState::Dead)
+        }
+        if button.just_pressed(MouseButton::Right) {hp.hp -= 10}
     }
 }

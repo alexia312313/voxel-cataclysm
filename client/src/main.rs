@@ -39,6 +39,7 @@ fn main() {
     .add_plugin(voxel::networking::NetworkingPlugin)
     .add_plugin(voxel::end_portal::EndPlugin)
     .add_plugin(GameOverPlugin)
+    .add_plugin(voxel::ui::dead::DeadPlugin)
         .run();
 }
 

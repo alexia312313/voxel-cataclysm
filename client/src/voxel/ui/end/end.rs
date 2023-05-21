@@ -1,4 +1,4 @@
-use crate::voxel::ui::{styles::get_text_style, ScoreText};
+use crate::voxel::ui::{styles::{get_text_style,get_text_style_title }};
 
 use bevy::{prelude::*, window::PrimaryWindow};
 
@@ -28,7 +28,7 @@ pub fn build_end_screen(commands: &mut Commands, asset_server: &Res<AssetServer>
                         text: Text {
                             sections: vec![TextSection::new(
                                 "Game Over",
-                                get_text_style(&asset_server),
+                                get_text_style_title(&asset_server),
                             )],
                             alignment: TextAlignment::Center,
 

@@ -1,8 +1,7 @@
 use super::{Body, CameraMode, Head};
-use crate::{debug::DebugUISet, voxel::{networking::ControlledPlayer, end_portal::EndPortal}, GameState};
+use crate::{debug::DebugUISet, voxel::{networking::ControlledPlayer,}, GameState};
 use bevy::{input::mouse::MouseMotion, prelude::*, window::CursorGrabMode};
 use bevy_egui::EguiContexts;
-use bevy_rapier3d::rapier::prelude::Translation;
 use std::f32::consts::FRAC_PI_2;
 
 const BODY_ROTATION_SLERP: f32 = 0.5;

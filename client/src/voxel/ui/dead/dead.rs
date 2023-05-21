@@ -1,4 +1,4 @@
-use crate::voxel::ui::{styles::{get_text_style, SUPER_UI}, end::{styles::{GAME_OVER_STYLE, SCORE_BOX_STYLE, TIME_BOX_STYLE, QUIT_BUTTON_STYLE}, FinalScoreText, FinalTime, QuitButton}, dead::DeadScreenCamera2d};
+use crate::voxel::ui::{styles::{get_text_style,get_text_style_title }, end::{styles::{SUPER_UI,GAME_OVER_STYLE, SCORE_BOX_STYLE, TIME_BOX_STYLE, QUIT_BUTTON_STYLE}, FinalScoreText, FinalTime, QuitButton}, dead::DeadScreenCamera2d};
 
 use bevy::{prelude::*, window::PrimaryWindow};
 
@@ -11,6 +11,8 @@ pub fn spawn_dead_screen(
     asset_server: Res<AssetServer>,
     window_query: Query<&Window, With<PrimaryWindow>>,
 ) {
+
+    println!("dead screen");
     build_dead_screen(&mut commands, &asset_server);
     //build_ui_crosshair(&mut commands, &asset_server);
 
@@ -52,7 +54,7 @@ pub fn build_dead_screen(commands: &mut Commands, asset_server: &Res<AssetServer
                         text: Text {
                             sections: vec![TextSection::new(
                                 "You died",
-                                get_text_style(&asset_server),
+                                get_text_style_title(&asset_server),
                             )],
                             alignment: TextAlignment::Center,
 
