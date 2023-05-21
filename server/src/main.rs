@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_rapier3d::prelude::*;
+use bevy_rapier3d::{na::Rotation, prelude::*};
 use bevy_renet::{
     renet::{
         transport::{NetcodeServerTransport, ServerAuthentication, ServerConfig},
@@ -12,7 +12,7 @@ use common::{
     connection_config, ClientChannel, NetworkedEntities, Player, PlayerInput, RotationInput,
     ServerChannel, ServerMessages, PROTOCOL_ID,
 };
-use std::{collections::HashMap, net::UdpSocket, time::SystemTime};
+use std::{collections::HashMap, f32::consts::PI, net::UdpSocket, time::SystemTime};
 
 #[derive(Debug, Default, Resource)]
 pub struct ServerLobby {
@@ -89,7 +89,9 @@ fn server_update_system(
                     (fastrand::f32() - 0.5) * 40.,
                     171.0,
                     (fastrand::f32() - 0.5) * 40.,
-                );
+                )
+                .with_rotation(Quat::from_rotation_y(PI));
+
                 let player_entity = commands
                     .spawn(PbrBundle {
                         transform,
