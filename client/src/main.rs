@@ -37,7 +37,7 @@ fn main() {
     .add_plugin(debug::DebugUIPlugins)
     .add_plugin(voxel::ActorPlugin)
     .add_plugin(voxel::networking::NetworkingPlugin)
-    .add_plugin(voxel::end_portal::EndPlugin)
+    .add_plugin(voxel::events::EventsHandlerPlugin)
     .add_plugin(GameOverPlugin)
     .add_plugin(voxel::ui::dead::DeadPlugin)
     .run();

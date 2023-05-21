@@ -29,7 +29,7 @@ pub mod material;
 /// rust ports of signed distance field functions for use in world generation.
 pub mod sdf;
 
-pub mod end_portal;
+pub mod events;
 
 mod voxel;
 

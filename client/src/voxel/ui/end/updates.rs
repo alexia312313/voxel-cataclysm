@@ -4,7 +4,7 @@ use crate::voxel::{networking::ControlledPlayer, Stats};
 
 use super::{
     styles::{HOVERED_BUTTON_COLOR, NORMAL_BUTTON_COLOR, PRESSED_BUTTON_COLOR},
-    ElapsedTime, FinalScoreText, FinalTime, QuitButton,
+    FinalScoreText, FinalTime, QuitButton,
 };
 
 pub fn interact_with_quit_button(
@@ -43,11 +43,10 @@ pub fn update_score_text_final(
 
 pub fn update_time_final(
     mut text_query: Query<&mut Text, With<FinalTime>>,
-    time: Query<&ElapsedTime>,
+    mut time: ResMut<Time>,
 ) {
-    for elapsed in time.iter() {
-        for mut text in text_query.iter_mut() {
-            text.sections[0].value = format!("{:?}", elapsed);
-        }
+    for mut text in text_query.iter_mut() {
+        text.sections[0].value = format!("{:?}", time.elapsed_seconds());
+        time.pause();
     }
 }
