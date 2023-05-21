@@ -9,8 +9,8 @@ use bevy_renet::{
     RenetServerPlugin,
 };
 use common::{
-    connection_config, ClientChannel, NetworkedEntities, Player, PlayerInput, Projectile,
-    RotationInput, ServerChannel, ServerMessages, PROTOCOL_ID,
+    connection_config, ClientChannel, NetworkedEntities, Player, PlayerInput, RotationInput,
+    ServerChannel, ServerMessages, PROTOCOL_ID,
 };
 use std::{collections::HashMap, net::UdpSocket, time::SystemTime};
 
@@ -57,11 +57,7 @@ fn main() {
         .insert_resource(BotId(0))
         .insert_resource(server)
         .insert_resource(transport)
-        .add_systems((
-            server_update_system,
-            server_network_sync,
-            move_players_system,
-        ))
+        .add_systems((server_update_system, server_network_sync))
         .run();
 }
 
@@ -78,14 +74,11 @@ fn server_update_system(
         match event {
             ServerEvent::ClientConnected { client_id } => {
                 println!("Player {} connected.", client_id);
-
                 // Initialize other players for this new client
-                for (entity, player, transform) in players.iter() {
-                    let translation: [f32; 3] = transform.translation.into();
+                for (entity, player, _transform) in players.iter() {
                     let message = bincode::serialize(&ServerMessages::PlayerCreate {
                         id: player.id,
                         entity,
-                        translation,
                     })
                     .unwrap();
                     server.send_message(*client_id, ServerChannel::ServerMessages, message);
@@ -102,20 +95,14 @@ fn server_update_system(
                         transform,
                         ..Default::default()
                     })
-                    .insert(RigidBody::Dynamic)
-                    .insert(LockedAxes::ROTATION_LOCKED | LockedAxes::TRANSLATION_LOCKED_Y)
-                    .insert(Collider::capsule_y(0.5, 0.5))
-                    .insert(PlayerInput::default())
                     .insert(Player { id: *client_id })
                     .id();
 
                 lobby.players.insert(*client_id, player_entity);
 
-                let translation: [f32; 3] = transform.translation.into();
                 let message = bincode::serialize(&ServerMessages::PlayerCreate {
                     id: *client_id,
                     entity: player_entity,
-                    translation,
                 })
                 .unwrap();
                 server.broadcast_message(ServerChannel::ServerMessages, message);
@@ -133,11 +120,15 @@ fn server_update_system(
         }
     }
 
-    for client_id in server.disconnections_id() {
+    for client_id in server.clients_id() {
+        //Aqui no ha recibido mensaje
         while let Some(message) = server.receive_message(client_id, ClientChannel::Input) {
             let input: PlayerInput = bincode::deserialize(&message).unwrap();
             if let Some(player_entity) = lobby.players.get(&client_id) {
-                commands.entity(*player_entity).insert(input);
+                if let Ok((_, _, mut player_transform)) = players.get_mut(*player_entity) {
+                    println!("translation: {:?}", input.translation);
+                    player_transform.translation = input.translation;
+                }
             }
         }
         while let Some(message) = server.receive_message(client_id, ClientChannel::Rots) {
@@ -154,66 +145,17 @@ fn server_update_system(
 #[allow(clippy::type_complexity)]
 fn server_network_sync(
     mut server: ResMut<RenetServer>,
-    query: Query<(Entity, &Transform), Or<(With<Player>, With<Projectile>)>>,
+    query: Query<(Entity, &Transform), With<Player>>,
 ) {
     let mut networked_entities = NetworkedEntities::default();
     for (entity, transform) in query.iter() {
         networked_entities.entities.push(entity);
         networked_entities
             .translations
-            .push(transform.translation.into());
-        networked_entities.rotations.push(transform.rotation);
+            .push(transform.translation.into()); //Vec3
+        networked_entities.rotations.push(transform.rotation); //Quat
     }
 
     let sync_message = bincode::serialize(&networked_entities).unwrap();
     server.broadcast_message(ServerChannel::NetworkedEntities, sync_message);
-}
-
-fn move_players_system(mut query: Query<(&mut Transform, &PlayerInput)>) {
-    for (mut transform, input) in query.iter_mut() {
-        let mut acceleration = 1.0f32;
-        let mut direction = Vec3::ZERO;
-
-        let (forward, right) = {
-            let forward = transform.rotation.mul_vec3(Vec3::Z).normalize();
-            let right = Vec3::Y.cross(forward); // @todo(meyerzinn): not sure why this is the correct orientation
-            (forward, right)
-        };
-
-        if input.up {
-            direction.z -= 1.0;
-        }
-
-        if input.down {
-            direction.z += 1.0;
-        }
-
-        if input.right {
-            direction.x += 1.0;
-        }
-
-        if input.left {
-            direction.x -= 1.0;
-        }
-
-        if input.jump {
-            direction.y += 1.0;
-        }
-        if input.crouch {
-            direction.y -= 1.0;
-        }
-
-        if input.run {
-            acceleration *= 8.0;
-        }
-
-        if direction == Vec3::ZERO {
-            return;
-        }
-
-        // hardcoding 0.01 as a factor for now to not go zoomin across the world.
-        transform.translation += direction.x * right * acceleration * 0.01
-            + direction.z * forward * acceleration * 0.01
-            + direction.y * Vec3::Y * acceleration * 0.01;
-    }
 }

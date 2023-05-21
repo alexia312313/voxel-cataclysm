@@ -1,8 +1,5 @@
 use crate::GameState;
-use bevy::{
-    prelude::{shape::Icosphere, *},
-    utils::HashMap,
-};
+use bevy::{prelude::*, utils::HashMap};
 use bevy_renet::renet::{
     transport::{ClientAuthentication, NetcodeClientTransport, NetcodeTransportError},
     RenetClient,
@@ -11,7 +8,6 @@ use common::{connection_config, PlayerCommand, PlayerInput, PROTOCOL_ID};
 use std::{net::UdpSocket, time::SystemTime};
 
 mod sync;
-mod update;
 
 pub struct NetworkingPlugin;
 impl Plugin for NetworkingPlugin {
@@ -24,8 +20,6 @@ impl Plugin for NetworkingPlugin {
             .insert_resource(transport)
             .insert_resource(NetworkMapping::default())
             .add_plugin(sync::NetSyncPlugin)
-            .add_plugin(update::NetUpdatePlugin)
-            .add_system(setup_target.in_schedule(OnEnter(GameState::Game)))
             .add_system(panic_on_error_system.in_set(OnUpdate(GameState::Game)));
     }
 }
@@ -50,28 +44,6 @@ fn new_renet_client() -> (RenetClient, NetcodeClientTransport) {
 
     (client, transport)
 }
-
-fn setup_target(
-    mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
-) {
-    commands
-        .spawn(PbrBundle {
-            mesh: meshes.add(
-                Mesh::try_from(Icosphere {
-                    radius: 0.1,
-                    subdivisions: 5,
-                })
-                .unwrap(),
-            ),
-            material: materials.add(Color::rgb(1.0, 0.0, 0.0).into()),
-            transform: Transform::from_xyz(0.0, 0., 0.0),
-            ..Default::default()
-        })
-        .insert(Target);
-}
-
 // If any error is found we just panic
 fn panic_on_error_system(mut renet_error: EventReader<NetcodeTransportError>) {
     for e in renet_error.iter() {
