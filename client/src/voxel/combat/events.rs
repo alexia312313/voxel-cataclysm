@@ -10,6 +10,8 @@ pub fn entity_attacked_handler(
     mut cmds: Commands,
     time: Res<Time>,
     mut query: Query<(Entity, &mut Transform, &mut Stats, &Attacked)>,
+    mut game_state_next_state: ResMut<NextState<GameState>>,
+
 ) {
     for (entity, mut transform, mut stats, attacked) in query.iter_mut() {
         // move back
@@ -19,6 +21,11 @@ pub fn entity_attacked_handler(
         stats.hp -= attacked.damage;
         // reset attacked component
         cmds.entity(entity).remove::<Attacked>();
+
+        if stats.hp <0{
+            game_state_next_state.set(GameState::Dead)
+
+        }
     }
 }
 

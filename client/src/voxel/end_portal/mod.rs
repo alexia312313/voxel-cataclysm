@@ -12,7 +12,7 @@ impl Plugin for EndPlugin{
         app.add_system(spawn_end_portal.in_schedule(OnEnter(GameState::Game)))
 
         .add_system(detect_player.in_set(OnUpdate(GameState::Game)));
-     
+            
         
     }
 }

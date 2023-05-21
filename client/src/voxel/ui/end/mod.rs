@@ -23,7 +23,6 @@ pub struct FinalScoreText;
 pub struct FinalTime;
 
 
-
 #[derive(Component)]
 pub struct QuitButton;
 
