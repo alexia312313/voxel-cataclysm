@@ -3,6 +3,7 @@ use bevy::prelude::*;
 use update::*;
 
 mod build;
+pub(crate) mod end;
 mod spawn;
 mod styles;
 mod update;
