@@ -5,7 +5,7 @@
 )]
 
 use bevy::{prelude::*, window::WindowMode};
-use bevy_rapier3d::{prelude::{NoUserData, RapierPhysicsPlugin}};
+use bevy_rapier3d::prelude::{NoUserData, RapierPhysicsPlugin};
 use bevy_renet::{transport::NetcodeClientPlugin, RenetClientPlugin};
 use voxel::ui::end::GameOverPlugin;
 
@@ -40,7 +40,7 @@ fn main() {
     .add_plugin(voxel::end_portal::EndPlugin)
     .add_plugin(GameOverPlugin)
     .add_plugin(voxel::ui::dead::DeadPlugin)
-        .run();
+    .run();
 }
 
 #[derive(Clone, Eq, PartialEq, Debug, Hash, Default, States)]
@@ -49,5 +49,5 @@ pub enum GameState {
     Loading,
     Game,
     GameOver,
-    Dead
+    Dead,
 }

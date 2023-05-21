@@ -3,8 +3,8 @@ use crate::GameState;
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 
-use super::SuperUIs;
 use super::build::build_ui;
+use super::SuperUIs;
 
 pub fn spawn_ui_health(
     mut commands: Commands,
@@ -36,7 +36,6 @@ pub fn despawn_ui_health(
     ui_health_query: Query<Entity, With<UiHealth>>,
     camera_query: Query<Entity, With<UICamera>>,
     super_ui_query: Query<Entity, With<SuperUIs>>,
-
 ) {
     if let Ok(ui_health_entity) = ui_health_query.get_single() {
         commands.entity(ui_health_entity).despawn_recursive();

@@ -1,5 +1,5 @@
 use super::{Body, CameraMode, Head};
-use crate::{debug::DebugUISet, voxel::{networking::ControlledPlayer,}, GameState};
+use crate::{debug::DebugUISet, voxel::networking::ControlledPlayer, GameState};
 use bevy::{input::mouse::MouseMotion, prelude::*, window::CursorGrabMode};
 use bevy_egui::EguiContexts;
 use std::f32::consts::FRAC_PI_2;
@@ -114,8 +114,6 @@ fn handle_player_keyboard_input(
     body_transform.translation += direction.x * right * acceleration
         + direction.z * forward * acceleration
         + direction.y * Vec3::Y * acceleration;
-
- 
 }
 fn handle_player_change_camera_mode(
     keys: Res<Input<KeyCode>>,

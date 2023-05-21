@@ -1,8 +1,11 @@
-use bevy::{prelude::*, app::AppExit};
+use bevy::{app::AppExit, prelude::*};
 
-use crate::voxel::{Stats, networking::{ControlledPlayer,},};
+use crate::voxel::{networking::ControlledPlayer, Stats};
 
-use super::{QuitButton, styles::{PRESSED_BUTTON_COLOR, HOVERED_BUTTON_COLOR, NORMAL_BUTTON_COLOR}, FinalScoreText, FinalTime, ElapsedTime};
+use super::{
+    styles::{HOVERED_BUTTON_COLOR, NORMAL_BUTTON_COLOR, PRESSED_BUTTON_COLOR},
+    ElapsedTime, FinalScoreText, FinalTime, QuitButton,
+};
 
 pub fn interact_with_quit_button(
     mut app_exit_event_writer: EventWriter<AppExit>,
@@ -27,12 +30,10 @@ pub fn interact_with_quit_button(
     }
 }
 
-
 pub fn update_score_text_final(
     mut text_query: Query<&mut Text, With<FinalScoreText>>,
     stats_query: Query<&Stats, With<ControlledPlayer>>,
 ) {
-    
     if let Ok(player_stats) = stats_query.get_single() {
         for mut text in text_query.iter_mut() {
             text.sections[0].value = format!("{}", player_stats.score);
@@ -40,16 +41,13 @@ pub fn update_score_text_final(
     }
 }
 
-
 pub fn update_time_final(
     mut text_query: Query<&mut Text, With<FinalTime>>,
-    time:Query<&ElapsedTime>
+    time: Query<&ElapsedTime>,
 ) {
-    for elapsed in time.iter(){
-
+    for elapsed in time.iter() {
         for mut text in text_query.iter_mut() {
             text.sections[0].value = format!("{:?}", elapsed);
         }
     }
-    
 }

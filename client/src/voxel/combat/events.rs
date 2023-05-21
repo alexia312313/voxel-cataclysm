@@ -108,6 +108,8 @@ pub fn check_hp(
         if hp.hp < 1 {
             game_state_next_state.set(GameState::Dead)
         }
-        if button.just_pressed(MouseButton::Right) {hp.hp -= 10}
+        if button.just_pressed(MouseButton::Right) {
+            hp.hp -= 10
+        }
     }
 }

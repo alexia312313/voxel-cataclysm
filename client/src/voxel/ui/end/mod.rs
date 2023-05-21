@@ -17,10 +17,9 @@ pub mod updates;
 #[derive(Component)]
 pub struct EndScreenCamera2d;
 
-
-#[derive(Component,Debug)]
-pub struct ElapsedTime{
-    pub elapsed:f32
+#[derive(Component, Debug)]
+pub struct ElapsedTime {
+    pub elapsed: f32,
 }
 
 #[derive(Component)]
@@ -44,9 +43,10 @@ impl Plugin for GameOverPlugin {
                 (
                     update_score_text_final,
                     interact_with_quit_button,
-                    update_time_final, 
+                    update_time_final,
                 )
-                    .in_set(OnUpdate(GameState::GameOver)))
+                    .in_set(OnUpdate(GameState::GameOver)),
+            )
             .add_system(add_score.in_set(OnUpdate(GameState::Game)))
             .add_system(despawn_game_over.in_schedule(OnExit(GameState::GameOver)));
     }

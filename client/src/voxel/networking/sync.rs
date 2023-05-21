@@ -11,14 +11,10 @@ use crate::{
     },
     GameState,
 };
-use bevy::{
-    prelude::{shape::Icosphere, *},
-    utils::{HashMap},
-};
+use bevy::{prelude::*, utils::HashMap};
 
 use bevy_renet::renet::{transport::NetcodeClientTransport, RenetClient};
 use common::{ClientChannel, NetworkedEntities, PlayerCommand, ServerChannel, ServerMessages};
-
 
 fn sync_players(
     mut cmds: Commands,

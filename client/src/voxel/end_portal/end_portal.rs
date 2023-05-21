@@ -1,9 +1,10 @@
-use bevy::{prelude::*};
+use bevy::prelude::*;
 use bevy_rapier3d::prelude::{Collider, RapierContext, Sensor};
 
-use crate::{voxel::{
-    end_portal::EndPortal, loading::MyAssets,
-}, GameState};
+use crate::{
+    voxel::{end_portal::EndPortal, loading::MyAssets},
+    GameState,
+};
 
 pub fn spawn_end_portal(mut commands: Commands, _my_assets: Res<MyAssets>) {
     commands.spawn((
@@ -18,27 +19,25 @@ pub fn spawn_end_portal(mut commands: Commands, _my_assets: Res<MyAssets>) {
     ));
 }
 
-
-
 pub fn detect_player(
-rapier_context: Res<RapierContext>,
-portal_query: Query<Entity, With<EndPortal>>, 
-mut game_state_next_state: ResMut<NextState<GameState>>,
+    rapier_context: Res<RapierContext>,
+    portal_query: Query<Entity, With<EndPortal>>,
+    mut game_state_next_state: ResMut<NextState<GameState>>,
 ) {
-for portal in portal_query.iter() {
+    for portal in portal_query.iter() {
         for (collider1, collider2, intersecting) in rapier_context.intersections_with(portal) {
             if intersecting {
-                println!("The entities {:?} and {:?} have intersecting colliders!", collider1, collider2);
+                println!(
+                    "The entities {:?} and {:?} have intersecting colliders!",
+                    collider1, collider2
+                );
                 game_state_next_state.set(GameState::GameOver)
             }
         }
     }
-
 }
 
-
-
-/* 
+/*
 pub fn detect_player(
     rapier_context: Res<RapierContext>,
     player_query: Query<Entity, With<ControlledPlayer>>,

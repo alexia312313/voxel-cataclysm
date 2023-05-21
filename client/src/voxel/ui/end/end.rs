@@ -1,9 +1,12 @@
-use crate::voxel::ui::{styles::{get_text_style,get_text_style_title }, end::ElapsedTime};
+use crate::voxel::ui::{
+    end::ElapsedTime,
+    styles::{get_text_style, get_text_style_title},
+};
 
 use bevy::{prelude::*, window::PrimaryWindow};
 
 use super::{
-    styles::{GAME_OVER_STYLE, SCORE_BOX_STYLE, SUPER_UI, TIME_BOX_STYLE, QUIT_BUTTON_STYLE},
+    styles::{GAME_OVER_STYLE, QUIT_BUTTON_STYLE, SCORE_BOX_STYLE, SUPER_UI, TIME_BOX_STYLE},
     EndScreenCamera2d, EndScreenUI, FinalScoreText, FinalTime, QuitButton,
 };
 
@@ -28,7 +31,7 @@ pub fn build_end_screen(commands: &mut Commands, asset_server: &Res<AssetServer>
                         text: Text {
                             sections: vec![TextSection::new(
                                 "Game Over",
-                                get_text_style_title(&asset_server),
+                                get_text_style_title(asset_server),
                             )],
                             alignment: TextAlignment::Center,
 
@@ -38,54 +41,17 @@ pub fn build_end_screen(commands: &mut Commands, asset_server: &Res<AssetServer>
                     });
                 });
 
-
-            parent
-            .spawn(NodeBundle {
-                style: TIME_BOX_STYLE,
-                ..default()
-            })
-            .with_children(|parent| {
-                parent.spawn(TextBundle {
-                    text: Text {
-                        sections: vec![TextSection::new(
-                            "Time: ",
-                            get_text_style(&asset_server),
-                        )],
-                        alignment: TextAlignment::Center,
-
-                        ..default()
-                    },
-                    ..default()
-                });
-
-                parent.spawn((
-                    TextBundle {
-                        text: Text {
-                            sections: vec![TextSection::new(
-                                "0",
-                                get_text_style(&asset_server),
-                            )],
-                            alignment: TextAlignment::Center,
-                            ..default()
-                        },
-                        ..default()
-                    },
-                    FinalTime,
-                ));
-            });
-
-
             parent
                 .spawn(NodeBundle {
-                    style: SCORE_BOX_STYLE,
+                    style: TIME_BOX_STYLE,
                     ..default()
                 })
                 .with_children(|parent| {
                     parent.spawn(TextBundle {
                         text: Text {
                             sections: vec![TextSection::new(
-                                "Score: ",
-                                get_text_style(&asset_server),
+                                "Time: ",
+                                get_text_style(asset_server),
                             )],
                             alignment: TextAlignment::Center,
 
@@ -97,10 +63,39 @@ pub fn build_end_screen(commands: &mut Commands, asset_server: &Res<AssetServer>
                     parent.spawn((
                         TextBundle {
                             text: Text {
-                                sections: vec![TextSection::new(
-                                    "0",
-                                    get_text_style(&asset_server),
-                                )],
+                                sections: vec![TextSection::new("0", get_text_style(asset_server))],
+                                alignment: TextAlignment::Center,
+                                ..default()
+                            },
+                            ..default()
+                        },
+                        FinalTime,
+                    ));
+                });
+
+            parent
+                .spawn(NodeBundle {
+                    style: SCORE_BOX_STYLE,
+                    ..default()
+                })
+                .with_children(|parent| {
+                    parent.spawn(TextBundle {
+                        text: Text {
+                            sections: vec![TextSection::new(
+                                "Score: ",
+                                get_text_style(asset_server),
+                            )],
+                            alignment: TextAlignment::Center,
+
+                            ..default()
+                        },
+                        ..default()
+                    });
+
+                    parent.spawn((
+                        TextBundle {
+                            text: Text {
+                                sections: vec![TextSection::new("0", get_text_style(asset_server))],
                                 alignment: TextAlignment::Center,
                                 ..default()
                             },
@@ -110,34 +105,26 @@ pub fn build_end_screen(commands: &mut Commands, asset_server: &Res<AssetServer>
                     ));
                 });
 
-
-             
-                
-                parent
-                .spawn((ButtonBundle {
-                    style: QUIT_BUTTON_STYLE,
-                    background_color:BackgroundColor(Color::DARK_GRAY),
-                    ..default()
-                },
-                QuitButton{},
-                )
-            ).with_children(|parent|{
-                parent.spawn(TextBundle {
-                    text: Text {
-                        sections: vec![TextSection::new(
-                            "QUIT",
-                            get_text_style(&asset_server),
-                        )],
-                        alignment: TextAlignment::Center,
-
+            parent
+                .spawn((
+                    ButtonBundle {
+                        style: QUIT_BUTTON_STYLE,
+                        background_color: BackgroundColor(Color::DARK_GRAY),
                         ..default()
                     },
-                    ..default()
+                    QuitButton {},
+                ))
+                .with_children(|parent| {
+                    parent.spawn(TextBundle {
+                        text: Text {
+                            sections: vec![TextSection::new("QUIT", get_text_style(asset_server))],
+                            alignment: TextAlignment::Center,
+
+                            ..default()
+                        },
+                        ..default()
+                    });
                 });
-            });
-
-
-
         })
         .id();
     end_screen_entity
@@ -147,13 +134,10 @@ pub fn spawn_end_screen(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     window_query: Query<&Window, With<PrimaryWindow>>,
-    time: Res<Time>
+    time: Res<Time>,
 ) {
     let elapsed_t = time.elapsed_seconds_wrapped();
-    commands.spawn(ElapsedTime{
-        elapsed:elapsed_t
-    }
-    );
+    commands.spawn(ElapsedTime { elapsed: elapsed_t });
     build_end_screen(&mut commands, &asset_server);
     //build_ui_crosshair(&mut commands, &asset_server);
 
