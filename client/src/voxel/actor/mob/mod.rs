@@ -34,7 +34,7 @@ pub fn setup(mut cmds: Commands, _my_assets: Res<MyAssets>) {
             max_hp: 20,
             attack: 10,
             speed: 5.0,
-            score: 0,
+            score: 10,
         },
         VisibilityBundle {
             visibility: Visibility::Visible,

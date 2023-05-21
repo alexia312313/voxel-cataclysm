@@ -1,8 +1,8 @@
 use bevy::prelude::*;
 
-use crate::GameState;
+use crate::{GameState, voxel::{Stats, networking::ControlledPlayer}};
 
-use self::{end::spawn_end_screen, updates::interact_with_quit_button};
+use self::{end::spawn_end_screen, updates::{interact_with_quit_button, update_score_text_win}};
 
 pub mod end;
 pub mod styles;
@@ -34,7 +34,10 @@ impl Plugin for GameOverPlugin {
     fn build(&self, app: &mut App) {
         app
         .add_system(spawn_end_screen.in_schedule(OnEnter(GameState::GameOver)))
+        .add_system(update_score_text_win.in_set(OnUpdate(GameState::GameOver)))
+
         .add_system(interact_with_quit_button.in_set(OnUpdate(GameState::GameOver)))
+        .add_system(add_score.in_set(OnUpdate(GameState::Game)))
 
         .add_system(despawn_game_over.in_schedule(OnExit(GameState::GameOver)));
     }
@@ -52,4 +55,14 @@ pub fn despawn_game_over (
         commands.entity(end_screen_ui_entity).despawn_recursive();
     }
 
+
+}
+
+//testing 
+fn add_score(
+    mut player_q:Query<&mut Stats,With<ControlledPlayer>>
+){
+    for mut player in player_q.iter_mut(){
+        player.score +=1;
+    }
 }

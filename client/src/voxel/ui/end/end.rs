@@ -1,4 +1,4 @@
-use crate::voxel::ui::styles::get_text_style;
+use crate::voxel::ui::{styles::get_text_style, ScoreText};
 
 use bevy::{prelude::*, window::PrimaryWindow};
 
