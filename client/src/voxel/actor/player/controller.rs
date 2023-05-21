@@ -12,7 +12,7 @@ fn handle_player_mouse_move(
     mut mouse_motion_event_reader: EventReader<MouseMotion>,
     windows: Query<&Window>,
 ) {
-    if let Err(_) = head.get_single_mut() {
+    if head.get_single_mut().is_err() {
         return;
     }
     let window = windows.single();
@@ -47,7 +47,7 @@ fn handle_player_keyboard_input(
     _btns: Res<Input<MouseButton>>,
     mut windows: Query<&mut Window>,
 ) {
-    if let Err(_) = queries.p1().get_single() {
+    if queries.p1().get_single().is_err() {
         return;
     }
 
@@ -133,7 +133,7 @@ fn update_player_body_rotation(
         Query<&Transform, With<Head>>,
     )>,
 ) {
-    if let Err(_) = queries.p1().get_single() {
+    if queries.p1().get_single().is_err() {
         return;
     }
 

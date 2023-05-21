@@ -1,4 +1,4 @@
-use bevy::{prelude::*, window::PrimaryWindow};
+use bevy::prelude::*;
 use common::{PlayerCommand, PlayerInput};
 
 use crate::GameState;
@@ -25,22 +25,6 @@ fn update_player_input(
         player_commands.send(PlayerCommand::BasicAttack {
             cast_at: target_transform.translation,
         });
-    }
-}
-
-fn _update_target_system(
-    primary_window: Query<&Window, With<PrimaryWindow>>,
-    mut target_query: Query<&mut Transform, With<Target>>,
-    camera_query: Query<(&Camera, &GlobalTransform)>,
-) {
-    let (camera, camera_transform) = camera_query.single();
-    let mut target_transform = target_query.single_mut();
-    if let Some(cursor_pos) = primary_window.single().cursor_position() {
-        if let Some(ray) = camera.viewport_to_world(camera_transform, cursor_pos) {
-            if let Some(distance) = ray.intersect_plane(Vec3::Y, Vec3::Y) {
-                target_transform.translation = ray.direction * distance + ray.origin;
-            }
-        }
     }
 }
 

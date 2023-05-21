@@ -28,7 +28,7 @@ pub fn build_ui(commands: &mut Commands, asset_server: &Res<AssetServer>) -> Ent
                     // Crosshair
                     parent.spawn(TextBundle {
                         text: Text {
-                            sections: vec![TextSection::new("+", get_text_style(&asset_server))],
+                            sections: vec![TextSection::new("+", get_text_style(asset_server))],
                             alignment: TextAlignment::Center,
 
                             ..default()
@@ -57,7 +57,7 @@ pub fn build_ui(commands: &mut Commands, asset_server: &Res<AssetServer>) -> Ent
                                 text: Text {
                                     sections: vec![TextSection::new(
                                         "Health: ",
-                                        get_text_style(&asset_server),
+                                        get_text_style(asset_server),
                                     )],
                                     alignment: TextAlignment::Center,
                                     ..default()
@@ -69,7 +69,7 @@ pub fn build_ui(commands: &mut Commands, asset_server: &Res<AssetServer>) -> Ent
                                     text: Text {
                                         sections: vec![TextSection::new(
                                             "3",
-                                            get_text_style(&asset_server),
+                                            get_text_style(asset_server),
                                         )],
                                         alignment: TextAlignment::Center,
                                         ..default()
@@ -91,7 +91,7 @@ pub fn build_ui(commands: &mut Commands, asset_server: &Res<AssetServer>) -> Ent
                                 text: Text {
                                     sections: vec![TextSection::new(
                                         "Score: ",
-                                        get_text_style(&asset_server),
+                                        get_text_style(asset_server),
                                     )],
                                     alignment: TextAlignment::Center,
                                     ..default()
@@ -104,7 +104,7 @@ pub fn build_ui(commands: &mut Commands, asset_server: &Res<AssetServer>) -> Ent
                                     text: Text {
                                         sections: vec![TextSection::new(
                                             "0",
-                                            get_text_style(&asset_server),
+                                            get_text_style(asset_server),
                                         )],
                                         alignment: TextAlignment::Center,
                                         ..default()
