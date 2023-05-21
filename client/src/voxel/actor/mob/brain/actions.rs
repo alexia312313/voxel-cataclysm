@@ -59,7 +59,7 @@ pub fn attack_action_system(
                     trace!("Attacking...");
 
                     let target_entity = aggro.target;
-                    if let Err(_) = transform_query.get(target_entity) {
+                    if transform_query.get(target_entity).is_err() {
                         return;
                     }
                     let target = *transform_query.get(target_entity).unwrap();

@@ -2,8 +2,7 @@ use super::{CameraMode, Head};
 use crate::voxel::{animation::AnimationController, Stats};
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::{
-    Collider, ColliderMassProperties, CollidingEntities, CollisionGroups, GravityScale, Group,
-    KinematicCharacterController, LockedAxes, RigidBody,
+    Collider, CollidingEntities, GravityScale, KinematicCharacterController, LockedAxes, RigidBody,
 };
 use std::f32::consts::PI;
 
@@ -15,9 +14,9 @@ pub struct BasePlayerBundle {
     pub visibility: VisibilityBundle,
     pub controller: KinematicCharacterController,
     pub rigid_body: RigidBody,
-    pub density: ColliderMassProperties,
+    //pub density: ColliderMassProperties,
     pub rotation_constraints: LockedAxes,
-    pub collision_groups: CollisionGroups,
+    //pub collision_groups: CollisionGroups,
     pub animation_controller: AnimationController,
 }
 
@@ -41,18 +40,20 @@ impl Default for BasePlayerBundle {
             },
             // physics
             rigid_body: RigidBody::Dynamic,
-            gravity: GravityScale(9.0),
+            gravity: GravityScale(2.0),
             rotation_constraints: LockedAxes::ROTATION_LOCKED,
             colliding_entities: CollidingEntities::default(),
-            density: ColliderMassProperties::Density(1.0),
+            //density: ColliderMassProperties::Density(1.0),
             controller: KinematicCharacterController {
                 translation: Some(Vec3::new(1.0, 1.0, 1.0)),
                 ..default()
             },
+            /*
             collision_groups: CollisionGroups::new(
                 Group::GROUP_1,
                 Group::from_bits_truncate(Group::GROUP_2.bits()),
             ),
+            */
         }
     }
 }

@@ -15,21 +15,19 @@ use bevy::{
     prelude::{shape::Icosphere, *},
     utils::{HashMap},
 };
+
 use bevy_renet::renet::{transport::NetcodeClientTransport, RenetClient};
-use common::{
-    ClientChannel, NetworkedEntities, PlayerCommand, PlayerInput, ServerChannel, ServerMessages,
-};
+use common::{ClientChannel, NetworkedEntities, PlayerCommand, ServerChannel, ServerMessages};
 
 
 fn sync_players(
     mut cmds: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
     mut client: ResMut<RenetClient>,
     transport: Res<NetcodeClientTransport>,
     mut lobby: ResMut<ClientLobby>,
     mut network_mapping: ResMut<NetworkMapping>,
     _my_assets: Res<MyAssets>,
+    mut queries: ParamSet<(Query<&Transform>, Query<&ControlledPlayer>)>,
 ) {
     let client_id = transport.client_id();
     while let Some(message) = client.receive_message(ServerChannel::ServerMessages) {
@@ -37,8 +35,8 @@ fn sync_players(
         match server_message {
             ServerMessages::PlayerCreate {
                 id,
-                translation,
                 entity,
+                translation,
             } => {
                 println!("Player {} connected.", id);
 
@@ -100,29 +98,6 @@ fn sync_players(
                     network_mapping.0.remove(&server_entity);
                 }
             }
-            ServerMessages::SpawnProjectile {
-                entity,
-                translation,
-            } => {
-                let projectile_entity = cmds.spawn(PbrBundle {
-                    mesh: meshes.add(
-                        Mesh::try_from(Icosphere {
-                            radius: 0.1,
-                            subdivisions: 5,
-                        })
-                        .unwrap(),
-                    ),
-                    material: materials.add(Color::rgb(1.0, 0.0, 0.0).into()),
-                    transform: Transform::from_translation(translation.into()),
-                    ..Default::default()
-                });
-                network_mapping.0.insert(entity, projectile_entity.id());
-            }
-            ServerMessages::DespawnProjectile { entity } => {
-                if let Some(entity) = network_mapping.0.remove(&entity) {
-                    cmds.entity(entity).despawn();
-                }
-            }
         }
     }
 
@@ -131,30 +106,44 @@ fn sync_players(
 
         for i in 0..networked_entities.entities.len() {
             if let Some(entity) = network_mapping.0.get(&networked_entities.entities[i]) {
-                let translation = networked_entities.translations[i].into();
-                let rotation = networked_entities.rotations[i].into();
-                let transform = Transform {
-                    rotation,
-                    translation,
-                    ..Default::default()
-                };
-                cmds.entity(*entity).insert(transform);
+                // if the entity is the ControlledPlayer, we don't want to apply it
+                if queries.p1().get(*entity).is_err() {
+                    if let Ok(current_transform) = queries.p0().get(*entity) {
+                        let translation = networked_entities.translations[i].into();
+                        let rotation = networked_entities.rotations[i];
+                        if translation != current_transform.translation {
+                            let transform = Transform {
+                                rotation,
+                                translation,
+                                ..Default::default()
+                            };
+
+                            cmds.entity(*entity).insert(transform);
+                        }
+                    }
+                }
             }
         }
     }
 }
 
-fn sync_input(player_input: Res<PlayerInput>, mut client: ResMut<RenetClient>) {
-    let input_message = bincode::serialize(&*player_input).unwrap();
-    client.send_message(ClientChannel::Input, input_message);
+fn sync_input(
+    player_input: Query<&Transform, With<ControlledPlayer>>,
+    mut client: ResMut<RenetClient>,
+) {
+    if player_input.get_single().is_err() {
+        return;
+    }
+    let translation = player_input.single();
+    let message = bincode::serialize(&translation.translation).unwrap();
+    client.send_message(ClientChannel::Input, message)
 }
 
 fn sync_rotation(body_rot: Query<&Transform, With<Body>>, mut client: ResMut<RenetClient>) {
-    if let Err(_) = body_rot.get_single() {
+    if body_rot.get_single().is_err() {
         return;
     }
     let rotation = body_rot.single();
-
     let message = bincode::serialize(&rotation.rotation).unwrap();
     client.send_message(ClientChannel::Rots, message)
 }

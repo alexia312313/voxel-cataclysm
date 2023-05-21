@@ -15,13 +15,15 @@ pub struct Player {
 
 #[derive(Debug, Default, Clone, Copy, Serialize, Deserialize, Component, Resource)]
 pub struct PlayerInput {
-    pub run: bool,
-    pub crouch: bool,
-    pub jump: bool,
-    pub up: bool,
-    pub down: bool,
-    pub left: bool,
-    pub right: bool,
+    pub translation: Vec3,
+    /*    pub run: bool,
+       pub crouch: bool,
+       pub jump: bool,
+       pub up: bool,
+       pub down: bool,
+       pub left: bool,
+       pub right: bool,
+    */
 }
 #[derive(Debug, Default, Clone, Copy, Serialize, Deserialize, Component, Resource)]
 pub struct RotationInput {
@@ -53,13 +55,6 @@ pub enum ServerMessages {
     },
     PlayerRemove {
         id: u64,
-    },
-    SpawnProjectile {
-        entity: Entity,
-        translation: [f32; 3],
-    },
-    DespawnProjectile {
-        entity: Entity,
     },
 }
 

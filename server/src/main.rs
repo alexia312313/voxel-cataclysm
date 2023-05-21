@@ -1,4 +1,4 @@
-use bevy::{app::AppExit, prelude::*, window::exit_on_all_closed};
+use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 use bevy_renet::{
     renet::{
@@ -9,10 +9,10 @@ use bevy_renet::{
     RenetServerPlugin,
 };
 use common::{
-    connection_config, spawn_fireball, ClientChannel, NetworkedEntities, Player, PlayerCommand,
-    PlayerInput, Projectile, RotationInput, ServerChannel, ServerMessages, PROTOCOL_ID,
+    connection_config, ClientChannel, NetworkedEntities, Player, PlayerInput, RotationInput,
+    ServerChannel, ServerMessages, PROTOCOL_ID,
 };
-use std::{collections::HashMap, net::UdpSocket, time::SystemTime};
+use std::{collections::HashMap, f32::consts::PI, net::UdpSocket, time::SystemTime};
 
 #[derive(Debug, Default, Resource)]
 pub struct ServerLobby {
@@ -44,35 +44,21 @@ fn new_renet_server() -> (RenetServer, NetcodeServerTransport) {
 
 fn main() {
     let mut app = App::new();
-    app.add_plugin(AssetPlugin::default());
-    app.add_asset::<Mesh>();
-    app.add_asset::<Scene>();
-    app.insert_resource(SceneSpawner::default());
-    app.add_plugins(MinimalPlugins);
-    app.add_plugin(RenetServerPlugin);
-    app.add_plugin(NetcodeServerPlugin);
-    app.add_plugin(RapierPhysicsPlugin::<NoUserData>::default());
-    app.insert_resource(ServerLobby::default());
-    app.insert_resource(BotId(0));
     let (server, transport) = new_renet_server();
-    app.insert_resource(server);
-    app.insert_resource(transport);
-    app.add_systems((
-        server_update_system,
-        server_network_sync,
-        move_players_system,
-        update_projectiles_system,
-        despawn_projectile_system,
-    ));
-    app.add_systems(
-        (
-            projectile_on_removal_system,
-            disconnect_clients_on_exit.after(exit_on_all_closed),
-        )
-            .in_base_set(CoreSet::PostUpdate),
-    );
-
-    app.run();
+    app.add_plugin(AssetPlugin::default())
+        .add_asset::<Mesh>()
+        .add_asset::<Scene>()
+        .insert_resource(SceneSpawner::default())
+        .add_plugins(MinimalPlugins)
+        .add_plugin(RenetServerPlugin)
+        .add_plugin(NetcodeServerPlugin)
+        .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
+        .insert_resource(ServerLobby::default())
+        .insert_resource(BotId(0))
+        .insert_resource(server)
+        .insert_resource(transport)
+        .add_systems((server_update_system, server_network_sync))
+        .run();
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -88,7 +74,6 @@ fn server_update_system(
         match event {
             ServerEvent::ClientConnected { client_id } => {
                 println!("Player {} connected.", client_id);
-
                 // Initialize other players for this new client
                 for (entity, player, transform) in players.iter() {
                     let translation: [f32; 3] = transform.translation.into();
@@ -106,22 +91,21 @@ fn server_update_system(
                     (fastrand::f32() - 0.5) * 40.,
                     171.0,
                     (fastrand::f32() - 0.5) * 40.,
-                );
+                )
+                .with_rotation(Quat::from_rotation_y(PI));
+
                 let player_entity = commands
                     .spawn(PbrBundle {
                         transform,
                         ..Default::default()
                     })
-                    .insert(RigidBody::Dynamic)
-                    .insert(LockedAxes::ROTATION_LOCKED | LockedAxes::TRANSLATION_LOCKED_Y)
-                    .insert(Collider::capsule_y(0.5, 0.5))
-                    .insert(PlayerInput::default())
                     .insert(Player { id: *client_id })
                     .id();
 
                 lobby.players.insert(*client_id, player_entity);
 
                 let translation: [f32; 3] = transform.translation.into();
+
                 let message = bincode::serialize(&ServerMessages::PlayerCreate {
                     id: *client_id,
                     entity: player_entity,
@@ -143,42 +127,14 @@ fn server_update_system(
         }
     }
 
-    for client_id in server.connections_id() {
-        while let Some(message) = server.receive_message(client_id, ClientChannel::Command) {
-            let command: PlayerCommand = bincode::deserialize(&message).unwrap();
-            match command {
-                PlayerCommand::BasicAttack { mut cast_at } => {
-                    println!(
-                        "Received basic attack from client {}: {:?}",
-                        client_id, cast_at
-                    );
-
-                    if let Some(player_entity) = lobby.players.get(&client_id) {
-                        if let Ok((_, _, player_transform)) = players.get(*player_entity) {
-                            cast_at[1] = player_transform.translation[1];
-
-                            let direction =
-                                (cast_at - player_transform.translation).normalize_or_zero();
-                            let mut translation = player_transform.translation + (direction * 0.7);
-                            translation[1] = 1.0;
-
-                            let fireball_entity =
-                                spawn_fireball(&mut commands, translation, direction);
-                            let message = ServerMessages::SpawnProjectile {
-                                entity: fireball_entity,
-                                translation: translation.into(),
-                            };
-                            let message = bincode::serialize(&message).unwrap();
-                            server.broadcast_message(ServerChannel::ServerMessages, message);
-                        }
-                    }
-                }
-            }
-        }
+    for client_id in server.clients_id() {
+        //Aqui no ha recibido mensaje
         while let Some(message) = server.receive_message(client_id, ClientChannel::Input) {
             let input: PlayerInput = bincode::deserialize(&message).unwrap();
             if let Some(player_entity) = lobby.players.get(&client_id) {
-                commands.entity(*player_entity).insert(input);
+                if let Ok((_, _, mut player_transform)) = players.get_mut(*player_entity) {
+                    player_transform.translation = input.translation;
+                }
             }
         }
         while let Some(message) = server.receive_message(client_id, ClientChannel::Rots) {
@@ -192,118 +148,20 @@ fn server_update_system(
     }
 }
 
-fn update_projectiles_system(
-    mut commands: Commands,
-    mut projectiles: Query<(Entity, &mut Projectile)>,
-    time: Res<Time>,
-) {
-    for (entity, mut projectile) in projectiles.iter_mut() {
-        projectile.duration.tick(time.delta());
-        if projectile.duration.finished() {
-            commands.entity(entity).despawn();
-        }
-    }
-}
-
 #[allow(clippy::type_complexity)]
 fn server_network_sync(
     mut server: ResMut<RenetServer>,
-    query: Query<(Entity, &Transform), Or<(With<Player>, With<Projectile>)>>,
+    query: Query<(Entity, &Transform), With<Player>>,
 ) {
     let mut networked_entities = NetworkedEntities::default();
     for (entity, transform) in query.iter() {
         networked_entities.entities.push(entity);
         networked_entities
             .translations
-            .push(transform.translation.into());
-        networked_entities.rotations.push(transform.rotation.into());
+            .push(transform.translation.into()); //Vec3
+        networked_entities.rotations.push(transform.rotation); //Quat
     }
 
     let sync_message = bincode::serialize(&networked_entities).unwrap();
     server.broadcast_message(ServerChannel::NetworkedEntities, sync_message);
-}
-
-fn move_players_system(mut query: Query<(&mut Transform, &PlayerInput)>) {
-    for (mut transform, input) in query.iter_mut() {
-        let mut acceleration = 1.0f32;
-        let mut direction = Vec3::ZERO;
-
-        let (forward, right) = {
-            let forward = transform.rotation.mul_vec3(Vec3::Z).normalize();
-            let right = Vec3::Y.cross(forward); // @todo(meyerzinn): not sure why this is the correct orientation
-            (forward, right)
-        };
-
-        if input.up {
-            direction.z -= 1.0;
-        }
-
-        if input.down {
-            direction.z += 1.0;
-        }
-
-        if input.right {
-            direction.x += 1.0;
-        }
-
-        if input.left {
-            direction.x -= 1.0;
-        }
-
-        if input.jump {
-            direction.y += 1.0;
-        }
-        if input.crouch {
-            direction.y -= 1.0;
-        }
-
-        if input.run {
-            acceleration *= 8.0;
-        }
-
-        if direction == Vec3::ZERO {
-            return;
-        }
-
-        // hardcoding 0.01 as a factor for now to not go zoomin across the world.
-        transform.translation += direction.x * right * acceleration * 0.01
-            + direction.z * forward * acceleration * 0.01
-            + direction.y * Vec3::Y * acceleration * 0.01;
-    }
-}
-
-fn despawn_projectile_system(
-    mut commands: Commands,
-    mut collision_events: EventReader<CollisionEvent>,
-    projectile_query: Query<Option<&Projectile>>,
-) {
-    for collision_event in collision_events.iter() {
-        if let CollisionEvent::Started(entity1, entity2, _) = collision_event {
-            if let Ok(Some(_)) = projectile_query.get(*entity1) {
-                commands.entity(*entity1).despawn();
-            }
-            if let Ok(Some(_)) = projectile_query.get(*entity2) {
-                commands.entity(*entity2).despawn();
-            }
-        }
-    }
-}
-
-fn projectile_on_removal_system(
-    mut server: ResMut<RenetServer>,
-    mut removed_projectiles: RemovedComponents<Projectile>,
-) {
-    //TODO: ADAPT
-    for entity in &mut removed_projectiles {
-        let message = ServerMessages::DespawnProjectile { entity };
-        let message = bincode::serialize(&message).unwrap();
-
-        server.broadcast_message(ServerChannel::ServerMessages, message);
-    }
-}
-
-fn disconnect_clients_on_exit(exit: EventReader<AppExit>, mut server: ResMut<RenetServer>) {
-    if !exit.is_empty() {
-        server.disconnect_all();
-    }
 }

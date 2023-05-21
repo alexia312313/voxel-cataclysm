@@ -94,7 +94,7 @@ fn process_mesh_tasks(
     chunk_query.for_each_mut(|(entity, handle, mut mesh_task)| {
         if let Some(mesh) = future::block_on(future::poll_once(&mut mesh_task.0)) {
             let indices = mesh.indices().unwrap();
-            if indices.len() > 0 {
+            if !indices.is_empty() {
                 commands.entity(entity).insert((
                     AsyncCollider(ComputedColliderShape::TriMesh),
                     RapierSlowdownWorkaround,
