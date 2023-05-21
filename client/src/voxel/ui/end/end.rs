@@ -154,7 +154,6 @@ pub fn spawn_end_screen(
         elapsed:elapsed_t
     }
     );
-    println!("hello {}",elapsed_t);
     build_end_screen(&mut commands, &asset_server);
     //build_ui_crosshair(&mut commands, &asset_server);
 
