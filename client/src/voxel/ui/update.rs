@@ -10,7 +10,7 @@ pub fn update_score_text(
 ) {
     if let Ok(player_stats) = stats_query.get_single() {
         for mut text in text_query.iter_mut() {
-            text.sections[0].value = format!("{}", player_stats.score.to_string());
+            text.sections[0].value = format!("{}", player_stats.score);
         }
     }
 }
@@ -21,7 +21,7 @@ pub fn update_health_text(
 ) {
     if let Ok(player_stats) = stats_query.get_single() {
         for mut text in text_query.iter_mut() {
-            text.sections[0].value = format!("{}", player_stats.hp.to_string());
+            text.sections[0].value = format!("{}", player_stats.hp);
         }
     }
 }
