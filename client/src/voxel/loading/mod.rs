@@ -38,6 +38,6 @@ pub struct MyAssets {
     #[asset(path = "models/item/Portal.gltf#Scene0")]
     pub end_portal: Handle<Scene>,
     // Arrow 
-    #[asset(path = "models/item/arrowx10.gltf#Scene0")]
+    #[asset(path = "models/item/arrowx10North.gltf#Scene0")]
     pub arrow: Handle<Scene>
 }

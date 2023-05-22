@@ -1,7 +1,7 @@
 use std::ops::{AddAssign, Div, Sub};
 
 use bevy::prelude::*;
-use bevy_rapier3d::prelude::{Collider, RapierContext, Sensor};
+use bevy_rapier3d::{prelude::{Collider, RapierContext, Sensor}, na::Rotation};
 
 use crate::{
     voxel::{
@@ -25,26 +25,7 @@ pub fn spawn_end_portal(mut commands: Commands, _my_assets: Res<MyAssets>) {
     ));
 }
 
-pub fn find_portal_position(
-    portal_q: Query<&Transform, With<EndPortal>>,
-    player_pos: Query<&Transform, (With<ControlledPlayer>, Without<EndPortal>)>,
-) {
-    for portal in portal_q.iter() {
-        for pos in player_pos.iter() {
-            let portal_pos = portal.translation;
-            let player_pos = pos.translation;
-            let mag = player_pos.distance(portal_pos);
 
-            let vec_comps = portal_pos - player_pos;
-            let dic = vec_comps.div(mag);
-
-            //  println!("portal position{}", portal_pos);
-            //  println!("player position {}", player_pos);
-            //  println!("mag {}", mag);
-            //println!("dic {}", dic);
-        }
-    }
-}
 
 pub fn detect_player(
     rapier_context: Res<RapierContext>,
@@ -137,30 +118,54 @@ pub fn detect_player(
 pub fn spawn_arrow(
     mut commands: Commands,
     _my_assets: Res<MyAssets>,
-    player_q: Query<&Transform, With<ControlledPlayer>>,
     keyboard_input: Res<Input<KeyCode>>,
+
+    portal_q: Query<&Transform, With<EndPortal>>,
+    player_pos: Query<&Transform, (With<ControlledPlayer>, Without<EndPortal>)>,
+
     ) {
         if keyboard_input.just_pressed(KeyCode::P) {
         
-        for player in player_q.iter(){
+            for portal in portal_q.iter() {
+                for pos in player_pos.iter() {
+                    let portal_pos = portal.translation;
 
-            let translation = player.translation;
+            let translation = pos.translation;
             let above = Vec3::new(0.0,3.0,0.0);
             let combined = translation + above;
+            let up = pos.up();
             commands.spawn((
                 SceneBundle {
                     scene: _my_assets.arrow.clone_weak(),
-                    transform: Transform::from_translation(combined),
+                    transform:Transform::from_translation(combined).looking_at(portal_pos,up)
+                     ,
                     ..Default::default()
                 },
                 Arrow {},
             ));
-
-
-            println!("spawns arrow")
         }
 
     }
   
-}
+}}
 
+pub fn find_portal_position(
+    portal_q: Query<&Transform, With<EndPortal>>,
+    player_pos: Query<&Transform, (With<ControlledPlayer>, Without<EndPortal>)>,
+) {
+    for portal in portal_q.iter() {
+        for pos in player_pos.iter() {
+            let portal_pos = portal.translation;
+            let player_pos = pos.translation;
+            let mag = player_pos.distance(portal_pos);
+
+            let vec_comps = portal_pos - player_pos;
+            let dic = vec_comps.div(mag);
+
+            //  println!("portal position{}", portal_pos);
+            //  println!("player position {}", player_pos);
+            //  println!("mag {}", mag);
+            //println!("dic {}", dic);
+        }
+    }
+}
