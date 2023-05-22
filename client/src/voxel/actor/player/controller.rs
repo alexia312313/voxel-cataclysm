@@ -79,27 +79,27 @@ fn handle_player_keyboard_input(
     let mut acceleration = 1.0f32;
 
     if keys.pressed(KeyCode::W) {
-        direction.z -= 1.0;
+        direction.z -= 0.1;
     }
 
     if keys.pressed(KeyCode::S) {
-        direction.z += 1.0;
+        direction.z += 0.1;
     }
 
     if keys.pressed(KeyCode::D) {
-        direction.x += 1.0;
+        direction.x += 0.1;
     }
 
     if keys.pressed(KeyCode::A) {
-        direction.x -= 1.0;
+        direction.x -= 0.1;
     }
 
     if keys.pressed(KeyCode::Space) {
-        direction.y += 1.0;
+        direction.y += 1.1;
     }
 
     if keys.pressed(KeyCode::LShift) {
-        direction.y -= 1.0;
+        direction.y -= 0.1;
     }
 
     if keys.pressed(KeyCode::LControl) {
@@ -114,6 +114,7 @@ fn handle_player_keyboard_input(
     body_transform.translation += direction.x * right * acceleration
         + direction.z * forward * acceleration
         + direction.y * Vec3::Y * acceleration;
+        
 }
 fn handle_player_change_camera_mode(
     keys: Res<Input<KeyCode>>,
