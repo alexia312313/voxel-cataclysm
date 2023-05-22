@@ -79,12 +79,7 @@ pub fn despawn_dead_mobs(
     mut player_stats_query: Query<&mut Stats, (With<ControlledPlayer>, Without<Mob>)>,
 ) {
     for (entity, mob_stats) in mob_stats_query.iter_mut() {
-        let mut counter = 0;
-        counter += 1;
-        if counter > 500 {
-            counter -= 500;
-            println!("{}", mob_stats.hp);
-        }
+
         if mob_stats.hp <= 0 {
             let mut player_stats = player_stats_query.single_mut();
             cmds.entity(entity).despawn_recursive();
