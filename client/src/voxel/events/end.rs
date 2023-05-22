@@ -1,10 +1,12 @@
-use std::ops::{Sub, AddAssign, Div};
+use std::ops::{AddAssign, Div, Sub};
 
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::{Collider, RapierContext, Sensor};
 
 use crate::{
-    voxel::{events::EndPortal, loading::MyAssets, CurrentLocalPlayerChunk, networking::ControlledPlayer},
+    voxel::{
+        events::EndPortal, loading::MyAssets, networking::ControlledPlayer, CurrentLocalPlayerChunk,
+    },
     GameState,
 };
 
@@ -22,28 +24,24 @@ pub fn spawn_end_portal(mut commands: Commands, _my_assets: Res<MyAssets>) {
 }
 
 pub fn find_portal_position(
-    portal_q: Query<&Transform,With<EndPortal>>,
-    player_pos: Query<&Transform,(With<ControlledPlayer>,Without<EndPortal>)>,
-    
-){
-    for portal in portal_q.iter(){
-        for pos in player_pos.iter(){
+    portal_q: Query<&Transform, With<EndPortal>>,
+    player_pos: Query<&Transform, (With<ControlledPlayer>, Without<EndPortal>)>,
+) {
+    for portal in portal_q.iter() {
+        for pos in player_pos.iter() {
             let portal_pos = portal.translation;
             let player_pos = pos.translation;
             let mag = player_pos.distance(portal_pos);
-            println!("portal position{}", portal_pos);
-            println!("player position {}", player_pos);
-            println!("mag {}", mag);
-            let vec_comps = portal_pos-player_pos; 
-            let dic = vec_comps.div(mag); 
-            println!("dic {}", dic);
 
+            let vec_comps = portal_pos - player_pos;
+            let dic = vec_comps.div(mag);
+
+            //  println!("portal position{}", portal_pos);
+            //  println!("player position {}", player_pos);
+            //  println!("mag {}", mag);
+            //println!("dic {}", dic);
         }
-
-        
-        }
-
-
+    }
 }
 
 pub fn detect_player(
