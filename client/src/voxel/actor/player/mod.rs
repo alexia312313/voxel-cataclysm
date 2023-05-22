@@ -18,6 +18,9 @@ pub struct Body;
 #[derive(Component)]
 pub struct Head;
 
+#[derive(Component)]
+pub struct MobSpawnTimer(pub Timer);
+
 #[derive(Component, Debug, Clone, Copy)]
 pub enum CameraMode {
     FirstPerson,

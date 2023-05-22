@@ -6,7 +6,7 @@ use crate::{
         networking::{ControlledPlayer, PlayerInfo},
         player::{
             bundle::{BasePlayerBundle, MyCamera3dBundle, PlayerColliderBundle, PlayerHeadBundle},
-            Body,
+            Body, MobSpawnTimer,
         },
     },
     GameState,
@@ -53,6 +53,7 @@ fn sync_players(
                 if client_id == id {
                     client_entity
                         .insert(ControlledPlayer)
+                        .insert(MobSpawnTimer(Timer::from_seconds(10.0, TimerMode::Once)))
                         .with_children(|player| {
                             player.spawn(Body).insert(SceneBundle {
                                 scene: _my_assets.player.clone(),
