@@ -35,7 +35,12 @@ fn player_melee_attack(
         if button.just_pressed(MouseButton::Left) {
             let player_transform = transform_query.get(player_entity).unwrap();
             let window = windows.single();
-            let Some(cursor_position) = window.cursor_position() else { return; };
+            let cursor_position= (window.width()/2.0,(window.height()/100.0*56.0)).into();
+            let cursor= window.cursor_position();
+
+            println!("half windows{}",cursor_position);
+            println!("cursor windows{:?}",cursor);
+
             // We will color in read the colliders hovered by the mouse.
             for (camera, camera_transform) in &camera_query {
                 // First, compute a ray from the mouse position.
@@ -48,7 +53,7 @@ fn player_melee_attack(
                     true,
                     QueryFilter::only_dynamic(),
                 );
-
+                println!("hit{:?}",hit);
                 if let Some((entity, _toi)) = hit {
                     let mob_transform = transform_query.get(entity).unwrap();
 
@@ -56,7 +61,8 @@ fn player_melee_attack(
                         .translation
                         .distance(mob_transform.translation)
                         > 5.0
-                    {
+                    {   
+
                         commands.entity(entity).insert(Attacked {
                             damage: stats.attack,
                         });
@@ -73,6 +79,12 @@ pub fn despawn_dead_mobs(
     mut player_stats_query: Query<&mut Stats, (With<ControlledPlayer>, Without<Mob>)>,
 ) {
     for (entity, mob_stats) in mob_stats_query.iter_mut() {
+        let mut counter = 0;
+        counter +=1;
+        if counter>500{
+            counter -=500;
+            println!("{}",mob_stats.hp);
+        }
         if mob_stats.hp <= 0 {
             let mut player_stats = player_stats_query.single_mut();
             cmds.entity(entity).despawn_recursive();

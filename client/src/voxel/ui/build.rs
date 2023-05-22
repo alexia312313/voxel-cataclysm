@@ -22,6 +22,7 @@ pub fn build_ui(commands: &mut Commands, asset_server: &Res<AssetServer>) -> Ent
             parent
                 .spawn(NodeBundle {
                     style: CROSSHAIR_STYLE,
+                    background_color:bevy::prelude::BackgroundColor(Color::ALICE_BLUE),
                     ..default()
                 })
                 .with_children(|parent| {
@@ -30,6 +31,7 @@ pub fn build_ui(commands: &mut Commands, asset_server: &Res<AssetServer>) -> Ent
                         text: Text {
                             sections: vec![TextSection::new("+", get_text_style(asset_server))],
                             alignment: TextAlignment::Center,
+                            
 
                             ..default()
                         },
