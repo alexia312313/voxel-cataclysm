@@ -22,7 +22,6 @@ pub fn build_ui(commands: &mut Commands, asset_server: &Res<AssetServer>) -> Ent
             parent
                 .spawn(NodeBundle {
                     style: CROSSHAIR_STYLE,
-                    background_color:bevy::prelude::BackgroundColor(Color::ALICE_BLUE),
                     ..default()
                 })
                 .with_children(|parent| {
