@@ -1,7 +1,7 @@
 use crate::GameState;
 use bevy::prelude::*;
 
-use self::end::{detect_player, spawn_end_portal, find_portal_position};
+use self::end::{detect_player, spawn_end_portal, find_portal_position, spawn_arrow};
 
 mod end;
 
@@ -12,10 +12,15 @@ impl Plugin for EventsHandlerPlugin {
         app.add_system(spawn_end_portal.in_schedule(OnEnter(GameState::Game)))
             .add_systems((
                 detect_player,
-                find_portal_position
+                find_portal_position,
+                spawn_arrow
+
             ).in_set(OnUpdate(GameState::Game)));
     }
 }
 
 #[derive(Component)]
 pub struct EndPortal {}
+
+#[derive(Component)]
+pub struct Arrow {}

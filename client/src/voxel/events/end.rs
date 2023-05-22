@@ -10,6 +10,8 @@ use crate::{
     GameState,
 };
 
+use super::Arrow;
+
 pub fn spawn_end_portal(mut commands: Commands, _my_assets: Res<MyAssets>) {
     commands.spawn((
         SceneBundle {
@@ -131,3 +133,27 @@ pub fn detect_player(
     }
 }
 */
+
+pub fn spawn_arrow(
+    mut commands: Commands,
+    _my_assets: Res<MyAssets>,
+    player_q: Query<&Transform, With<ControlledPlayer>>,
+    keyboard_input: Res<Input<KeyCode>>,
+    ) {
+        if keyboard_input.just_pressed(KeyCode::P) {
+        
+        for player in player_q.iter(){
+            let translation = player.translation;
+            commands.spawn((
+                SceneBundle {
+                    scene: _my_assets.arrow.clone_weak(),
+                    transform: Transform::from_translation(translation),
+                    ..Default::default()
+                },
+                Arrow {},
+            ));
+        }
+
+    }
+  
+}
