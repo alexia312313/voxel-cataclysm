@@ -70,7 +70,7 @@ fn player_melee_attack(
 pub fn despawn_dead_mobs(
     mut cmds: Commands,
     mut mob_stats_query: Query<(Entity, &Stats), With<Mob>>,
-    mut player_stats_query: Query<&mut Stats, With<ControlledPlayer>>,
+    mut player_stats_query: Query<&mut Stats, (With<ControlledPlayer>, Without<Mob>)>,
 ) {
     for (entity, mob_stats) in mob_stats_query.iter_mut() {
         if mob_stats.hp <= 0 {
@@ -92,7 +92,8 @@ impl Plugin for EventHandlerPlugin {
                 check_hp,
             )
                 .in_set(OnUpdate(GameState::Game)),
-        );
+        )
+        .add_system(end_thing.in_schedule(OnExit(GameState::Game)));
     }
 }
 
@@ -108,5 +109,12 @@ pub fn check_hp(
         if button.just_pressed(MouseButton::Right) {
             hp.hp -= 10
         }
+    }
+}
+
+pub fn end_thing(mut windows: Query<&mut Window>, mut time: ResMut<Time>) {
+    for mut window in windows.iter_mut() {
+        window.cursor.visible = true;
+        time.pause();
     }
 }

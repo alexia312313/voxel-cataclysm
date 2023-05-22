@@ -23,9 +23,7 @@ pub fn detect_player(
     rapier_context: Res<RapierContext>,
     portal_query: Query<Entity, With<EndPortal>>,
     mut game_state_next_state: ResMut<NextState<GameState>>,
-    mut windows: Query<&mut Window>,
 ) {
-    let mut window = windows.single_mut();
     for portal in portal_query.iter() {
         for (collider1, collider2, intersecting) in rapier_context.intersections_with(portal) {
             if intersecting {
@@ -34,7 +32,6 @@ pub fn detect_player(
                     collider1, collider2
                 );
                 game_state_next_state.set(GameState::GameOver);
-                window.cursor.visible = true;
             }
         }
     }

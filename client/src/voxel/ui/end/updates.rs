@@ -41,12 +41,8 @@ pub fn update_score_text_final(
     }
 }
 
-pub fn update_time_final(
-    mut text_query: Query<&mut Text, With<FinalTime>>,
-    mut time: ResMut<Time>,
-) {
+pub fn update_time_final(mut text_query: Query<&mut Text, With<FinalTime>>, time: Res<Time>) {
     for mut text in text_query.iter_mut() {
         text.sections[0].value = format!("{:?}", time.elapsed_seconds());
-        time.pause();
     }
 }
