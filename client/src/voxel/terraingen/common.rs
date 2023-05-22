@@ -26,12 +26,14 @@ pub fn terrain_carve_heightmap(
     heighmap: &Heightmap<CHUNK_LENGTH_U, CHUNK_LENGTH_U>,
 ) {
     // drown the terrain under sea level.
+    /*
     if key.y <= 96 {
         buffer.fill_extent(
             Extent::from_min_and_shape(UVec3::ZERO, UVec3::splat(CHUNK_LENGTH)),
             Water::into_voxel(),
         );
     }
+     */
 
     // carve the terrain.
     Extent::from_min_and_shape(UVec2::ZERO, UVec2::new(CHUNK_LENGTH, CHUNK_LENGTH))
