@@ -3,6 +3,7 @@ use crate::{
     voxel::{
         animation::Animations,
         loading::MyAssets,
+        mob::Mob,
         networking::{ControlledPlayer, PlayerInfo},
         player::{
             bundle::{BasePlayerBundle, MyCamera3dBundle, PlayerColliderBundle, PlayerHeadBundle},
@@ -14,7 +15,10 @@ use crate::{
 use bevy::{prelude::*, utils::HashMap};
 
 use bevy_renet::renet::{transport::NetcodeClientTransport, RenetClient};
-use common::{ClientChannel, NetworkedEntities, PlayerCommand, ServerChannel, ServerMessages};
+use common::{
+    ClientChannel, NetworkedEntities, NonNetworkedEntities, PlayerCommand, ServerChannel,
+    ServerMessages,
+};
 
 fn sync_players(
     mut cmds: Commands,
@@ -24,6 +28,7 @@ fn sync_players(
     mut network_mapping: ResMut<NetworkMapping>,
     _my_assets: Res<MyAssets>,
     mut queries: ParamSet<(Query<&Transform>, Query<&ControlledPlayer>)>,
+    mut querie_mob: ParamSet<(Query<&Transform>, Query<&Mob>)>,
 ) {
     let client_id = transport.client_id();
     while let Some(message) = client.receive_message(ServerChannel::ServerMessages) {
@@ -98,9 +103,31 @@ fn sync_players(
         }
     }
 
+    while let Some(message) = client.receive_message(ServerChannel::NonNetworkedEntities) {
+        let non_networked_entities: NonNetworkedEntities = bincode::deserialize(&message).unwrap();
+        for i in 0..non_networked_entities.entities.len() {
+            if let Some(entity) = network_mapping.0.get(&non_networked_entities.entities[i]) {
+                // if the entity is the ControlledPlayer, we don't want to apply it
+                if querie_mob.p1().get(*entity).is_err() {
+                    if let Ok(current_transform) = querie_mob.p0().get(*entity) {
+                        let translation = non_networked_entities.translations[i].into();
+                        let rotation = non_networked_entities.rotations[i];
+                        if translation != current_transform.translation {
+                            let transform = Transform {
+                                rotation,
+                                translation,
+                                ..Default::default()
+                            };
+                            cmds.entity(*entity).insert(transform);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     while let Some(message) = client.receive_message(ServerChannel::NetworkedEntities) {
         let networked_entities: NetworkedEntities = bincode::deserialize(&message).unwrap();
-
         for i in 0..networked_entities.entities.len() {
             if let Some(entity) = network_mapping.0.get(&networked_entities.entities[i]) {
                 // if the entity is the ControlledPlayer, we don't want to apply it

@@ -13,18 +13,14 @@ pub struct Player {
     pub id: u64,
 }
 
+#[derive(Debug, Component)]
+pub struct Mob;
+
 #[derive(Debug, Default, Clone, Copy, Serialize, Deserialize, Component, Resource)]
 pub struct PlayerInput {
     pub translation: Vec3,
-    /*    pub run: bool,
-       pub crouch: bool,
-       pub jump: bool,
-       pub up: bool,
-       pub down: bool,
-       pub left: bool,
-       pub right: bool,
-    */
 }
+
 #[derive(Debug, Default, Clone, Copy, Serialize, Deserialize, Component, Resource)]
 pub struct RotationInput {
     pub rotation: Quat,
@@ -39,11 +35,13 @@ pub enum ClientChannel {
     Input,
     Command,
     Rots,
+    Mobs,
 }
 
 pub enum ServerChannel {
     ServerMessages,
     NetworkedEntities,
+    NonNetworkedEntities,
 }
 
 #[derive(Debug, Serialize, Deserialize, Component)]
@@ -65,12 +63,20 @@ pub struct NetworkedEntities {
     pub rotations: Vec<Quat>,
 }
 
+#[derive(Debug, Serialize, Deserialize, Default)]
+pub struct NonNetworkedEntities {
+    pub entities: Vec<Entity>,
+    pub translations: Vec<[f32; 3]>,
+    pub rotations: Vec<Quat>,
+}
+
 impl From<ClientChannel> for u8 {
     fn from(channel_id: ClientChannel) -> Self {
         match channel_id {
             ClientChannel::Command => 0,
             ClientChannel::Input => 1,
             ClientChannel::Rots => 2,
+            ClientChannel::Mobs => 3,
         }
     }
 }
@@ -99,6 +105,13 @@ impl ClientChannel {
                     resend_time: Duration::ZERO,
                 },
             },
+            ChannelConfig {
+                channel_id: Self::Mobs.into(),
+                max_memory_usage_bytes: 5 * 1024 * 1024,
+                send_type: SendType::ReliableOrdered {
+                    resend_time: Duration::ZERO,
+                },
+            },
         ]
     }
 }
@@ -108,6 +121,7 @@ impl From<ServerChannel> for u8 {
         match channel_id {
             ServerChannel::NetworkedEntities => 0,
             ServerChannel::ServerMessages => 1,
+            ServerChannel::NonNetworkedEntities => 2,
         }
     }
 }
@@ -126,6 +140,11 @@ impl ServerChannel {
                 send_type: SendType::ReliableOrdered {
                     resend_time: Duration::from_millis(200),
                 },
+            },
+            ChannelConfig {
+                channel_id: Self::NonNetworkedEntities.into(),
+                max_memory_usage_bytes: 10 * 1024 * 1024,
+                send_type: SendType::Unreliable,
             },
         ]
     }
