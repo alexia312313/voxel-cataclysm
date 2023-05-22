@@ -41,7 +41,7 @@ fn player_melee_attack(
             // let cursor= window.cursor_position();
             //println!("half windows{}",cursor_position);
             //println!("cursor windows{:?}",cursor);
-            
+
             // We will color in read the colliders hovered by the mouse.
             for (camera, camera_transform) in &camera_query {
                 // First, compute a ray from the mouse position.
@@ -54,7 +54,7 @@ fn player_melee_attack(
                     true,
                     QueryFilter::only_dynamic(),
                 );
-                println!("hit{:?}", hit);
+               // println!("hit{:?}", hit);
                 if let Some((entity, _toi)) = hit {
                     let mob_transform = transform_query.get(entity).unwrap();
 

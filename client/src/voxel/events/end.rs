@@ -143,17 +143,24 @@ pub fn spawn_arrow(
         if keyboard_input.just_pressed(KeyCode::P) {
         
         for player in player_q.iter(){
+
             let translation = player.translation;
+            let above = Vec3::new(0.0,3.0,0.0);
+            let combined = translation + above;
             commands.spawn((
                 SceneBundle {
                     scene: _my_assets.arrow.clone_weak(),
-                    transform: Transform::from_translation(translation),
+                    transform: Transform::from_translation(combined),
                     ..Default::default()
                 },
                 Arrow {},
             ));
+
+
+            println!("spawns arrow")
         }
 
     }
   
 }
+
