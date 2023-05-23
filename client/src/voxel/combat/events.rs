@@ -1,5 +1,5 @@
 use crate::{
-    voxel::{mob::Mob, networking::ControlledPlayer, Attacked, Stats},
+    voxel::{mob::Mob, networking::ControlledPlayer, player::MobSpawnTimer, Attacked, Stats},
     GameState,
 };
 use bevy::{prelude::*, window::PrimaryWindow};
@@ -70,11 +70,15 @@ fn player_melee_attack(
 pub fn despawn_dead_mobs(
     mut cmds: Commands,
     mut mob_stats_query: Query<(Entity, &Stats), With<Mob>>,
-    mut player_stats_query: Query<&mut Stats, (With<ControlledPlayer>, Without<Mob>)>,
+    mut player_stats_query: Query<
+        (&mut Stats, &mut MobSpawnTimer),
+        (With<ControlledPlayer>, Without<Mob>),
+    >,
 ) {
     for (entity, mob_stats) in mob_stats_query.iter_mut() {
         if mob_stats.hp <= 0 {
-            let mut player_stats = player_stats_query.single_mut();
+            let (mut player_stats, mut timer) = player_stats_query.single_mut();
+            timer.current_mobs -= 1;
             cmds.entity(entity).despawn_recursive();
             player_stats.score += mob_stats.score;
         }

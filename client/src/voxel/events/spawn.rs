@@ -19,19 +19,31 @@ pub fn spawn_mobs(
 ) {
     // random number from 100 to 200
     let mut rng = rand::thread_rng();
-    let random_number = rng.gen_range(100..200) as f32;
+    // random bool that is 50% false, 50% true
+    let random_bool = rng.gen_bool(0.5);
+    let random_number = rng.gen_range(50..100) as f32;
+    // if random_bool is false, make the random number negative
+    let random_number = if random_bool {
+        random_number
+    } else {
+        -random_number
+    };
+
     if let Ok((transform, mut timer)) = query.get_single_mut() {
-        timer.0.tick(time.delta());
-        if timer.0.just_finished() {
-            let player_pos = transform.translation;
-            let mob_pos = Vec3::new(
-                player_pos.x + random_number,
-                190.0,
-                player_pos.z + random_number,
-            );
-            println!("Mob Spawned at {:?}", mob_pos);
-            spawn_mob(&mut cmds, &my_assets, mob_pos);
-            timer.0.reset();
+        if timer.current_mobs < timer.max_mobs {
+            timer.get_timer.tick(time.delta());
+            if timer.get_timer.just_finished() {
+                let player_pos = transform.translation;
+                let mob_pos = Vec3::new(
+                    player_pos.x + random_number,
+                    190.0,
+                    player_pos.z + random_number,
+                );
+                println!("Mob Spawned at {:?}", mob_pos);
+                spawn_mob(&mut cmds, &my_assets, mob_pos);
+                timer.current_mobs += 1;
+                timer.get_timer.reset();
+            }
         }
     }
 }

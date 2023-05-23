@@ -27,8 +27,7 @@ fn sync_players(
     mut lobby: ResMut<ClientLobby>,
     mut network_mapping: ResMut<NetworkMapping>,
     _my_assets: Res<MyAssets>,
-    mut queries: ParamSet<(Query<&Transform>, Query<&ControlledPlayer>)>,
-    mut querie_mob: ParamSet<(Query<&Transform>, Query<&Mob>)>,
+    mut queries: ParamSet<(Query<&Transform>, Query<&ControlledPlayer>, Query<&Mob>)>,
 ) {
     let client_id = transport.client_id();
     while let Some(message) = client.receive_message(ServerChannel::ServerMessages) {
@@ -58,7 +57,11 @@ fn sync_players(
                 if client_id == id {
                     client_entity
                         .insert(ControlledPlayer)
-                        .insert(MobSpawnTimer(Timer::from_seconds(10.0, TimerMode::Once)))
+                        .insert(MobSpawnTimer {
+                            get_timer: Timer::from_seconds(5.0, TimerMode::Once),
+                            current_mobs: 0,
+                            max_mobs: 30,
+                        })
                         .with_children(|player| {
                             player.spawn(Body).insert(SceneBundle {
                                 scene: _my_assets.player.clone(),
@@ -108,8 +111,8 @@ fn sync_players(
         for i in 0..non_networked_entities.entities.len() {
             if let Some(entity) = network_mapping.0.get(&non_networked_entities.entities[i]) {
                 // if the entity is the ControlledPlayer, we don't want to apply it
-                if querie_mob.p1().get(*entity).is_err() {
-                    if let Ok(current_transform) = querie_mob.p0().get(*entity) {
+                if queries.p2().get(*entity).is_err() {
+                    if let Ok(current_transform) = queries.p0().get(*entity) {
                         let translation = non_networked_entities.translations[i].into();
                         let rotation = non_networked_entities.rotations[i];
                         if translation != current_transform.translation {
@@ -125,7 +128,7 @@ fn sync_players(
             }
         }
     }
-
+    // si peta aqui es culpa de l'Alexia
     while let Some(message) = client.receive_message(ServerChannel::NetworkedEntities) {
         let networked_entities: NetworkedEntities = bincode::deserialize(&message).unwrap();
         for i in 0..networked_entities.entities.len() {
