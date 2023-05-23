@@ -14,38 +14,43 @@ pub fn walk_animation(
         &AnimationEntityLink,
     )>,
     mouse: Res<Input<MouseButton>>,
-    mut bool: Local<bool>,
+    mut hit_done: Local<bool>,
     mut timer: Local<Timer>,
     time: Res<Time>,
 ) {
     for (is_moving, mut controller, animations, player_entity) in query.iter_mut() {
         let mut player = player_query.get_mut(player_entity.0).unwrap();
         let animations = &animations.0;
-        let done = &mut controller.done;
-        if !*bool {
+        let walk_done = &mut controller.done;
+        if !*hit_done {
             if is_moving {
-                if !*done {
+                if !*walk_done {
                     if let Some(walk) = animations.get("walk") {
                         player.play(walk.clone()).repeat();
                     }
-                    *done = true;
+                    *walk_done = true;
+                } else {
+                    player.stop_repeating();
+                    *walk_done = false;
                 }
-            } else {
-                player.stop_repeating();
-                *done = false;
             }
             if mouse.just_pressed(MouseButton::Left) {
+                timer.reset();
+                timer.set_duration(Duration::from_secs_f32(1.0));
                 if let Some(attack) = animations.get("hit") {
-                    timer.set_duration(Duration::from_secs_f32(1.0));
-                    player.play(attack.clone());
-                    *bool = true;
+                    player
+                        .play(animations.get("walk").unwrap().clone())
+                        .set_speed(0.0);
+                    player.play(attack.clone()).set_speed(3.0);
+                    *hit_done = true;
                 }
             }
         } else {
             timer.tick(time.delta());
             // if player finished
-            if timer.finished() {
-                *bool = false;
+            if timer.just_finished() {
+                println!("hit done");
+                *hit_done = false;
             }
         }
     }
