@@ -26,15 +26,26 @@ pub fn build_ui(commands: &mut Commands, asset_server: &Res<AssetServer>) -> Ent
                 })
                 .with_children(|parent| {
                     // Crosshair
-                    parent.spawn(TextBundle {
-                        text: Text {
-                            sections: vec![TextSection::new("+", get_text_style(asset_server))],
-                            alignment: TextAlignment::Center,
+                    parent.spawn(
+                        TextBundle {
+                            text: Text {
+                                sections: vec![TextSection::new("+", get_text_style(asset_server))],
+                                alignment: TextAlignment::Center,
 
+                                ..default()
+                            },
                             ..default()
-                        },
-                        ..default()
-                    });
+                        }
+                        .with_style(Style {
+                            position_type: PositionType::Relative,
+                            position: UiRect {
+                                bottom: Val::Px(80.0),
+                                right: Val::Px(0.0),
+                                ..default()
+                            },
+                            ..default()
+                        }),
+                    );
                 });
 
             parent

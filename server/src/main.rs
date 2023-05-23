@@ -8,7 +8,6 @@ use bevy_renet::{
     transport::NetcodeServerPlugin,
     RenetServerPlugin,
 };
-use bincode::Options;
 use common::{
     connection_config, ChatMessage, ClientChannel, NetworkedEntities, NonNetworkedEntities, Player,
     PlayerInput, RotationInput, ServerChannel, ServerMessages, PROTOCOL_ID,
