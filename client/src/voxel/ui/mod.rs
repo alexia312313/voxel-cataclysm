@@ -2,7 +2,10 @@ use crate::GameState;
 use bevy::prelude::*;
 use update::*;
 
+use self::chat::ChatPlugin;
+
 mod build;
+pub(crate) mod chat;
 pub mod dead;
 pub mod end;
 mod spawn;
@@ -15,6 +18,7 @@ impl Plugin for UiPlugin {
         app
             //plugins
             .add_plugin(spawn::SpawnHandlerPlugin)
+            .add_plugin(ChatPlugin)
             //systems
             .add_systems((update_health_text, update_score_text).in_set(OnUpdate(GameState::Game)));
     }
@@ -34,6 +38,8 @@ pub struct UiCrosshair;
 
 #[derive(Component)]
 pub struct ScoreText;
+#[derive(Component)]
+pub struct ChatText;
 
 #[derive(Component)]
 pub struct HealthText;

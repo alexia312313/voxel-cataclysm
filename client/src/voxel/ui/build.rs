@@ -5,8 +5,8 @@ use crate::voxel::ui::{
 use bevy::prelude::*;
 
 use super::{
-    styles::{CROSSHAIR_STYLE, SUPER_UI},
-    SuperUIs,
+    styles::{CHAT_STYLE, CROSSHAIR_STYLE, SUPER_UI},
+    ChatText, SuperUIs,
 };
 
 pub fn build_ui(commands: &mut Commands, asset_server: &Res<AssetServer>) -> Entity {
@@ -35,6 +35,25 @@ pub fn build_ui(commands: &mut Commands, asset_server: &Res<AssetServer>) -> Ent
                         },
                         ..default()
                     });
+                });
+
+            parent
+                .spawn(NodeBundle {
+                    style: CHAT_STYLE,
+                    ..default()
+                })
+                .with_children(|parent| {
+                    parent.spawn((
+                        TextBundle {
+                            text: Text {
+                                sections: vec![TextSection::new("", get_text_style(asset_server))],
+                                alignment: TextAlignment::Center,
+                                ..default()
+                            },
+                            ..default()
+                        },
+                        ChatText,
+                    ));
                 });
 
             parent
@@ -86,7 +105,7 @@ pub fn build_ui(commands: &mut Commands, asset_server: &Res<AssetServer>) -> Ent
                             ..default()
                         })
                         .with_children(|parent| {
-                            // Health
+                            // Chat
                             parent.spawn(TextBundle {
                                 text: Text {
                                     sections: vec![TextSection::new(
@@ -98,7 +117,6 @@ pub fn build_ui(commands: &mut Commands, asset_server: &Res<AssetServer>) -> Ent
                                 },
                                 ..default()
                             });
-
                             parent.spawn((
                                 TextBundle {
                                     text: Text {

@@ -47,6 +47,16 @@ pub const SCORE_STYLE: Style = Style {
     ..Style::DEFAULT
 };
 
+pub const CHAT_STYLE: Style = Style {
+    display: Display::Flex,
+    flex_direction: FlexDirection::Row,
+    justify_content: JustifyContent::Start,
+    align_items: AlignItems::End,
+    size: Size::new(Val::Percent(15.0), Val::Percent(5.0)),
+    margin: UiRect::new(Val::Px(0.0), Val::Px(32.0), Val::Px(0.0), Val::Px(0.0)),
+    ..Style::DEFAULT
+};
+
 pub fn get_text_style(asset_server: &Res<AssetServer>) -> TextStyle {
     TextStyle {
         font: asset_server.load("fonts/dogicabold.ttf"),

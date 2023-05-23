@@ -150,8 +150,8 @@ fn server_update_system(
             }
         }
         while let Some(message) = server.receive_message(client_id, ClientChannel::Chat) {
-            let chat_message: ChatMessage = bincode::deserialize(&message).unwrap();
-            println!("{}: {}", chat_message.client_id, chat_message.message);
+            let chat: String = bincode::deserialize(&message).unwrap();
+            println!("Received message: {:?}", chat);
             server.broadcast_message(ServerChannel::ChatChannel, message);
         }
     }

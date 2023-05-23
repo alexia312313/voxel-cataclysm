@@ -54,6 +54,7 @@ fn sync_players(
                 if client_id == id {
                     client_entity
                         .insert(ControlledPlayer)
+                        .insert(Player { id })
                         .with_children(|player| {
                             player.spawn(Body).insert(SceneBundle {
                                 scene: _my_assets.player.clone(),
@@ -199,6 +200,7 @@ fn sync_player_commands(
 
 fn send_text(mut client: ResMut<RenetClient>, chat_messages: Query<&ChatMessage>) {
     for chat_message in chat_messages.iter() {
+        println!("Hem entrat a send message hueheheh");
         let message = bincode::serialize(chat_message).unwrap();
         client.send_message(ClientChannel::Chat, message);
     }
