@@ -9,8 +9,8 @@ use bevy_renet::{
     RenetServerPlugin,
 };
 use common::{
-    connection_config, ChatMessage, ClientChannel, NetworkedEntities, NonNetworkedEntities, Player,
-    PlayerInput, RotationInput, ServerChannel, ServerMessages, PROTOCOL_ID,
+    connection_config, ChatMessage, ClientChannel, Mob, NetworkedEntities, NonNetworkedEntities,
+    Player, PlayerInput, RotationInput, ServerChannel, ServerMessages, PROTOCOL_ID,
 };
 use std::{collections::HashMap, f32::consts::PI, net::UdpSocket, time::SystemTime};
 
@@ -174,7 +174,6 @@ fn server_network_sync(
     server.broadcast_message(ServerChannel::NetworkedEntities, sync_message);
 }
 
-#[allow(clippy::type_complexity)]
 fn server_non_network_sync(
     mut server: ResMut<RenetServer>,
     query: Query<(Entity, &Transform), With<Mob>>,

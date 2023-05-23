@@ -135,7 +135,6 @@ fn sync_players(
         }
     }
 
-
     while let Some(message) = client.receive_message(ServerChannel::NetworkedEntities) {
         let networked_entities: NetworkedEntities = bincode::deserialize(&message).unwrap();
         for i in 0..networked_entities.entities.len() {
@@ -160,12 +159,12 @@ fn sync_players(
     }
     while let Some(message) = client.receive_message(ServerChannel::NonNetworkedEntities) {
         let non_networked_entities: NonNetworkedEntities = bincode::deserialize(&message).unwrap();
-        for i in 0..non_networked_entities.entity.len() {
-            if let Some(entity) = network_mapping.0.get(&non_networked_entities.entity[i]) {
+        for i in 0..non_networked_entities.entities.len() {
+            if let Some(entity) = network_mapping.0.get(&non_networked_entities.entities[i]) {
                 if queries.p1().get(*entity).is_err() {
                     if let Ok(current_transform) = queries.p0().get(*entity) {
-                        let translation = non_networked_entities.translation[i].into();
-                        let rotation = non_networked_entities.rotation[i];
+                        let translation = non_networked_entities.translations[i].into();
+                        let rotation = non_networked_entities.rotations[i];
                         if translation != current_transform.translation {
                             let transform = Transform {
                                 rotation,

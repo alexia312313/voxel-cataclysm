@@ -82,20 +82,13 @@ pub struct ChatMessage {
 
 #[derive(Debug, Serialize, Deserialize, Component, Default)]
 pub struct NonNetworkedEntities {
-    pub entity: Vec<Entity>,
-    pub translation: Vec<[f32; 3]>,
-    pub rotation: Vec<Quat>,
-}
-
-#[derive(Debug, Serialize, Deserialize, Default)]
-pub struct NetworkedEntities {
     pub entities: Vec<Entity>,
     pub translations: Vec<[f32; 3]>,
     pub rotations: Vec<Quat>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Default)]
-pub struct NonNetworkedEntities {
+pub struct NetworkedEntities {
     pub entities: Vec<Entity>,
     pub translations: Vec<[f32; 3]>,
     pub rotations: Vec<Quat>,
@@ -139,6 +132,12 @@ impl ClientChannel {
             },
             ChannelConfig {
                 channel_id: Self::Mobs.into(),
+                max_memory_usage_bytes: 5 * 1024 * 1024,
+                send_type: SendType::ReliableOrdered {
+                    resend_time: Duration::ZERO,
+                },
+            },
+            ChannelConfig {
                 channel_id: Self::Chat.into(),
                 max_memory_usage_bytes: 5 * 1024 * 1024,
                 send_type: SendType::ReliableOrdered {
