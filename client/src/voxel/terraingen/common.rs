@@ -3,7 +3,7 @@ use ilattice::{glam::UVec2, glam::UVec3, prelude::Extent};
 
 use crate::voxel::{
     material::VoxelMaterial,
-    materials::{Bedrock, Rock, Water},
+    materials::{Bedrock, Rock},
     sdf,
     storage::VoxelBuffer,
     ChunkShape, Voxel, CHUNK_LENGTH, CHUNK_LENGTH_U,
