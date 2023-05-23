@@ -35,11 +35,15 @@ fn player_melee_attack(
         if button.just_pressed(MouseButton::Left) {
             let player_transform = transform_query.get(player_entity).unwrap();
             let window = windows.single();
-            let Some(cursor_position) = window.cursor_position() else { return; };
+            let position = Vec2::new(
+                window.resolution.width() / 2.0,
+                (window.resolution.height() / 2.0) * 1.25,
+            );
             // We will color in read the colliders hovered by the mouse.
             for (camera, camera_transform) in &camera_query {
                 // First, compute a ray from the mouse position.
-                let Some(ray) = camera.viewport_to_world(camera_transform, cursor_position) else { return; };
+                let Some(ray) = camera.viewport_to_world(camera_transform, position) else { return; };
+
                 // Then cast the ray.
                 let hit = rapier_context.cast_ray(
                     ray.origin,

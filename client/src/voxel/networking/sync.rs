@@ -16,8 +16,8 @@ use bevy::{prelude::*, utils::HashMap};
 
 use bevy_renet::renet::{transport::NetcodeClientTransport, RenetClient};
 use common::{
-    ClientChannel, NetworkedEntities, NonNetworkedEntities, PlayerCommand, ServerChannel,
-    ServerMessages,
+    ChatMessage, ClientChannel, NetworkedEntities, NonNetworkedEntities, Player, PlayerCommand,
+    ServerChannel, ServerMessages,
 };
 
 fn sync_players(
@@ -39,7 +39,6 @@ fn sync_players(
                 translation,
             } => {
                 println!("Player {} connected.", id);
-
                 let mut map = HashMap::new();
                 map.insert("walk".to_string(), _my_assets.player_animation_walk.clone());
                 map.insert("hit".to_string(), _my_assets.player_animation_hit.clone());
@@ -53,7 +52,6 @@ fn sync_players(
                         ..default()
                     },
                 ));
-
                 if client_id == id {
                     client_entity
                         .insert(ControlledPlayer)
@@ -84,7 +82,6 @@ fn sync_players(
                         });
                     });
                 }
-
                 let player_info = PlayerInfo {
                     server_entity: entity,
                     client_entity: client_entity.id(),
@@ -129,6 +126,16 @@ fn sync_players(
         }
     }
     // si peta aqui es culpa de l'Alexia
+    while let Some(message) = client.receive_message(ServerChannel::Host) {
+        let host = bincode::deserialize(&message).unwrap();
+        if host {
+            println!("I'm the host");
+        } else {
+            println!("I'm not the host");
+        }
+    }
+
+
     while let Some(message) = client.receive_message(ServerChannel::NetworkedEntities) {
         let networked_entities: NetworkedEntities = bincode::deserialize(&message).unwrap();
         for i in 0..networked_entities.entities.len() {
@@ -144,7 +151,6 @@ fn sync_players(
                                 translation,
                                 ..Default::default()
                             };
-
                             cmds.entity(*entity).insert(transform);
                         }
                     }
@@ -152,6 +158,42 @@ fn sync_players(
             }
         }
     }
+    while let Some(message) = client.receive_message(ServerChannel::NonNetworkedEntities) {
+        let non_networked_entities: NonNetworkedEntities = bincode::deserialize(&message).unwrap();
+        for i in 0..non_networked_entities.entity.len() {
+            if let Some(entity) = network_mapping.0.get(&non_networked_entities.entity[i]) {
+                if queries.p1().get(*entity).is_err() {
+                    if let Ok(current_transform) = queries.p0().get(*entity) {
+                        let translation = non_networked_entities.translation[i].into();
+                        let rotation = non_networked_entities.rotation[i];
+                        if translation != current_transform.translation {
+                            let transform = Transform {
+                                rotation,
+                                translation,
+                                ..Default::default()
+                            };
+                            cmds.entity(*entity).insert(transform);
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+pub fn send_one_chat(mut chat_messages: Query<&mut ChatMessage>, player_id: Query<&Player>) {
+    if player_id.get_single().is_err() {
+        return;
+    }
+    println!("Sending message");
+    let message = ChatMessage {
+        client_id: player_id.get_single().unwrap().id,
+        message: "Hello World".to_string(),
+    };
+    for mut chat_message in chat_messages.iter_mut() {
+        *chat_message = message.clone();
+    }
+    println!("Sending message: {:?}", message);
 }
 
 fn sync_input(
@@ -185,6 +227,13 @@ fn sync_player_commands(
     }
 }
 
+fn send_text(mut client: ResMut<RenetClient>, chat_messages: Query<&ChatMessage>) {
+    for chat_message in chat_messages.iter() {
+        let message = bincode::serialize(chat_message).unwrap();
+        client.send_message(ClientChannel::Chat, message);
+    }
+}
+
 pub struct NetSyncPlugin;
 impl Plugin for NetSyncPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
@@ -194,6 +243,8 @@ impl Plugin for NetSyncPlugin {
                 sync_input,
                 sync_player_commands,
                 sync_players,
+                send_text,
+                send_one_chat,
             )
                 .distributive_run_if(bevy_renet::transport::client_connected)
                 .in_set(OnUpdate(GameState::Game)),

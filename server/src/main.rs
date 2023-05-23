@@ -9,7 +9,7 @@ use bevy_renet::{
     RenetServerPlugin,
 };
 use common::{
-    connection_config, ClientChannel, Mob, NetworkedEntities, NonNetworkedEntities, Player,
+    connection_config, ChatMessage, ClientChannel, NetworkedEntities, NonNetworkedEntities, Player,
     PlayerInput, RotationInput, ServerChannel, ServerMessages, PROTOCOL_ID,
 };
 use std::{collections::HashMap, f32::consts::PI, net::UdpSocket, time::SystemTime};
@@ -78,7 +78,11 @@ fn server_update_system(
         match event {
             ServerEvent::ClientConnected { client_id } => {
                 println!("Player {} connected.", client_id);
-                // Initialize other players for this new client
+                if lobby.players.is_empty() {
+                    let host = true;
+                    let message = bincode::serialize(&host).unwrap();
+                    server.send_message(*client_id, ServerChannel::Host, message);
+                }
                 for (entity, player, transform) in players.iter() {
                     let translation: [f32; 3] = transform.translation.into();
                     let message = bincode::serialize(&ServerMessages::PlayerCreate {
@@ -89,15 +93,12 @@ fn server_update_system(
                     .unwrap();
                     server.send_message(*client_id, ServerChannel::ServerMessages, message);
                 }
-
-                // Spawn new player
                 let transform = Transform::from_xyz(
                     (fastrand::f32() - 0.5) * 40.,
                     171.0,
                     (fastrand::f32() - 0.5) * 40.,
                 )
                 .with_rotation(Quat::from_rotation_y(PI));
-
                 let player_entity = commands
                     .spawn(PbrBundle {
                         transform,
@@ -105,7 +106,6 @@ fn server_update_system(
                     })
                     .insert(Player { id: *client_id })
                     .id();
-
                 lobby.players.insert(*client_id, player_entity);
 
                 let translation: [f32; 3] = transform.translation.into();
@@ -132,7 +132,6 @@ fn server_update_system(
     }
 
     for client_id in server.clients_id() {
-        //Aqui no ha recibido mensaje
         while let Some(message) = server.receive_message(client_id, ClientChannel::Input) {
             let input: PlayerInput = bincode::deserialize(&message).unwrap();
             if let Some(player_entity) = lobby.players.get(&client_id) {
@@ -148,6 +147,11 @@ fn server_update_system(
                     player_transform.rotation = rots.rotation;
                 }
             }
+        }
+        while let Some(message) = server.receive_message(client_id, ClientChannel::Chat) {
+            let chat_message: ChatMessage = bincode::deserialize(&message).unwrap();
+            println!("{}: {}", chat_message.client_id, chat_message.message);
+            server.broadcast_message(ServerChannel::ChatChannel, message);
         }
     }
 }
