@@ -8,6 +8,7 @@ pub mod end;
 mod spawn;
 mod styles;
 mod update;
+pub(crate) mod chat;
 pub struct UiPlugin;
 
 impl Plugin for UiPlugin {

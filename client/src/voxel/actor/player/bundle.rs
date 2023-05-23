@@ -40,7 +40,7 @@ impl Default for BasePlayerBundle {
             },
             // physics
             rigid_body: RigidBody::Dynamic,
-            gravity: GravityScale(2.0),
+            gravity: GravityScale(0.0),
             rotation_constraints: LockedAxes::ROTATION_LOCKED,
             colliding_entities: CollidingEntities::default(),
             //density: ColliderMassProperties::Density(1.0),

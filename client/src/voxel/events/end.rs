@@ -12,13 +12,18 @@ pub fn spawn_end_portal(mut commands: Commands, _my_assets: Res<MyAssets>) {
     commands.spawn((
         SceneBundle {
             scene: _my_assets.end_portal.clone_weak(),
-            transform: Transform::from_xyz(0.0, 150.0, 0.0),
+            transform: Transform::from_xyz(0.0, 250.0, 0.0),
             ..Default::default()
         },
-        Collider::cuboid(5.0, 5.0, 5.0),
-        Sensor,
+       
         EndPortal {},
-    ));
+    )).with_children(|endPortal|{
+        endPortal.spawn( 
+            Collider::cuboid(2.0, 2.0, 2.0))
+            .insert(Sensor)
+            .insert(Transform::from_xyz(0.0, 1.0, 0.0));
+        
+    });
 }
 
 pub fn detect_player(
