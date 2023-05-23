@@ -114,7 +114,6 @@ fn handle_player_keyboard_input(
     body_transform.translation += direction.x * right * acceleration
         + direction.z * forward * acceleration
         + direction.y * Vec3::Y * acceleration;
-        
 }
 fn handle_player_change_camera_mode(
     keys: Res<Input<KeyCode>>,
