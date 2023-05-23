@@ -2,7 +2,7 @@ use crate::{
     voxel::{mob::Mob, networking::ControlledPlayer, Attacked, Stats},
     GameState,
 };
-use bevy::{prelude::*, window::PrimaryWindow};
+use bevy::{prelude::*, window::PrimaryWindow, math::vec2};
 use bevy_rapier3d::prelude::{QueryFilter, RapierContext};
 
 // system that listen if an entity is attacked
@@ -22,6 +22,7 @@ pub fn entity_attacked_handler(
     }
 }
 
+
 fn player_melee_attack(
     mut commands: Commands,
     transform_query: Query<&Transform>,
@@ -35,13 +36,7 @@ fn player_melee_attack(
         if button.just_pressed(MouseButton::Left) {
             let player_transform = transform_query.get(player_entity).unwrap();
             let window = windows.single();
-
-            // lol
-            let cursor_position = (window.width() / 2.0, (window.height() / 100.0 * 56.0)).into();
-            // let cursor= window.cursor_position();
-            //println!("half windows{}",cursor_position);
-            //println!("cursor windows{:?}",cursor);
-
+            let Some(cursor_position) = window.cursor_position() else { return; };
             // We will color in read the colliders hovered by the mouse.
             for (camera, camera_transform) in &camera_query {
                 // First, compute a ray from the mouse position.
@@ -54,7 +49,7 @@ fn player_melee_attack(
                     true,
                     QueryFilter::only_dynamic(),
                 );
-               // println!("hit{:?}", hit);
+
                 if let Some((entity, _toi)) = hit {
                     let mob_transform = transform_query.get(entity).unwrap();
 
