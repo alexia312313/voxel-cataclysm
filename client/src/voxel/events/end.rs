@@ -1,16 +1,8 @@
-use std::ops::{AddAssign, Div, Sub};
-
 use bevy::prelude::*;
-use bevy_rapier3d::{
-    na::Rotation,
-    prelude::{Collider, RapierContext, Sensor},
-};
+use bevy_rapier3d::prelude::{Collider, RapierContext, Sensor};
 
 use crate::{
-    voxel::{
-        events::EndPortal, loading::MyAssets, networking::ControlledPlayer,
-        CurrentLocalPlayerChunk, Stats,
-    },
+    voxel::{events::EndPortal, loading::MyAssets, networking::ControlledPlayer, Stats},
     GameState,
 };
 

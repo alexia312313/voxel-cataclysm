@@ -2,7 +2,7 @@ use crate::{
     voxel::{mob::Mob, networking::ControlledPlayer, Attacked, Stats},
     GameState,
 };
-use bevy::{prelude::*, window::PrimaryWindow, math::vec2};
+use bevy::{prelude::*, window::PrimaryWindow};
 use bevy_rapier3d::prelude::{QueryFilter, RapierContext};
 
 // system that listen if an entity is attacked
@@ -21,7 +21,6 @@ pub fn entity_attacked_handler(
         cmds.entity(entity).remove::<Attacked>();
     }
 }
-
 
 fn player_melee_attack(
     mut commands: Commands,
@@ -74,7 +73,6 @@ pub fn despawn_dead_mobs(
     mut player_stats_query: Query<&mut Stats, (With<ControlledPlayer>, Without<Mob>)>,
 ) {
     for (entity, mob_stats) in mob_stats_query.iter_mut() {
-
         if mob_stats.hp <= 0 {
             let mut player_stats = player_stats_query.single_mut();
             cmds.entity(entity).despawn_recursive();
