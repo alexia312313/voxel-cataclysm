@@ -6,7 +6,7 @@ use crate::{
         events::EndPortal,
         loading::MyAssets,
         networking::{ControlledPlayer, ControlledPlayerCollider},
-        Stats,
+        Stats, boss::Boss,
     },
     GameState,
 };
@@ -56,8 +56,8 @@ pub fn spawn_arrow(
     mut commands: Commands,
     _my_assets: Res<MyAssets>,
     keyboard_input: Res<Input<KeyCode>>,
-    portal_q: Query<&Transform, With<EndPortal>>,
-    mut player: Query<(&Transform, &mut Stats), (With<ControlledPlayer>, Without<EndPortal>)>,
+    portal_q: Query<&Transform, With<Boss>>,
+    mut player: Query<(&Transform, &mut Stats), (With<ControlledPlayer>, Without<Boss>)>,
     mut track_arrow: Query<(Entity, &mut Arrow)>,
     time: Res<Time>,
 ) {

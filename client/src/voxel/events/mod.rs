@@ -3,6 +3,8 @@ use bevy::prelude::*;
 
 use self::end::{detect_player_v2, spawn_arrow, spawn_end_portal};
 
+use super::{networking::ControlledPlayer, Stats};
+
 mod end;
 
 pub struct EventsHandlerPlugin;
@@ -10,7 +12,7 @@ pub struct EventsHandlerPlugin;
 impl Plugin for EventsHandlerPlugin {
     fn build(&self, app: &mut App) {
         app.add_system(spawn_end_portal.in_schedule(OnEnter(GameState::Game)))
-            .add_systems((detect_player_v2, spawn_arrow).in_set(OnUpdate(GameState::Game)));
+            .add_systems((detect_player_v2, spawn_arrow,add_score).in_set(OnUpdate(GameState::Game)));
     }
 }
 
@@ -23,4 +25,10 @@ pub struct EndPortalCollider {}
 #[derive(Component)]
 pub struct Arrow {
     timer: Timer,
+}
+
+fn add_score(mut player_q: Query<&mut Stats, With<ControlledPlayer>>) {
+    for mut player in player_q.iter_mut() {
+        player.score += 1;
+    }
 }

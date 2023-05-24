@@ -1,14 +1,18 @@
 use bevy::prelude::*;
 
+use self::boss::BossPlugin;
+
 pub mod animation;
 pub mod mob;
 pub mod player;
+pub mod boss;
 
 pub struct ActorPlugin;
 impl Plugin for ActorPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
         app.add_plugin(player::PlayerPlugin)
             .add_plugin(mob::MobPlugin)
+            .add_plugin(BossPlugin)
             .add_plugin(animation::AnimationsHandlerPlugin);
     }
 }
