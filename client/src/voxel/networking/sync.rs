@@ -279,16 +279,19 @@ fn sync_mob_attacked(
     query_p1: Query<(&Mob, Entity), With<AttackWanted>>,
     query_p2: Query<(&NetworkMob, Entity), With<AttackWanted>>,
     mut client: ResMut<RenetClient>,
+    mut cmds: Commands,
 ) {
     for (id, entity) in query_p1.iter() {
         println!("Mob Attacked: {:?}", id.0);
         let message = bincode::serialize(&id.0).unwrap();
         client.send_message(ClientChannel::MobAttacked, message);
+        cmds.entity(entity).remove::<AttackWanted>();
     }
     for (id, entity) in query_p2.iter() {
         println!("NetworkMob Attacked: {:?}", id.0);
         let message = bincode::serialize(&id.0).unwrap();
         client.send_message(ClientChannel::MobAttacked, message);
+        cmds.entity(entity).remove::<AttackWanted>();
     }
 }
 
