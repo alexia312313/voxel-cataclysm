@@ -10,10 +10,8 @@ pub fn text_input(
     mut chat_messages: ResMut<ChatMessage>,
     player_query: Query<&Player>,
 ) {
-    if !*writing {
-        if keys.just_pressed(KeyCode::Return) {
-            *writing = true;
-        }
+    if !*writing && keys.just_pressed(KeyCode::Return) {
+        *writing = true;
     }
     if *writing {
         for ev in char_evr.iter() {

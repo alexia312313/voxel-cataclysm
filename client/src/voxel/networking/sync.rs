@@ -27,7 +27,7 @@ fn sync_players(
     mut network_mapping: ResMut<NetworkMapping>,
     _my_assets: Res<MyAssets>,
     mut queries: ParamSet<(Query<&Transform>, Query<&ControlledPlayer>)>,
-    mut chat_message: ResMut<ChatMessage>,
+    _chat_message: ResMut<ChatMessage>,
     mut display_message: ResMut<DisplayMessage>,
 ) {
     let client_id = transport.client_id();
@@ -167,8 +167,7 @@ pub fn send_one_chat(
     if player_id.get_single().is_err() {
         return;
     }
-    if chat_messages.message.len() == 0 {
-        return;
+    if chat_messages.message.is_empty() {
     } else {
         let message = ChatMessage {
             client_id: player_id.get_single().unwrap().id,
