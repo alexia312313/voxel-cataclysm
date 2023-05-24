@@ -150,10 +150,7 @@ fn sync_players(
             })
             .insert(NetworkMob(mob.id.clone()));
         }
-        // IF MOB ID == ALGUNAMOBIDGUARDADA PUES MUEVO MOD SOLO
-        // IF MOB ID != ALGUNAMOBIDGUARDADA PUES CREO MOB
     }
-
     while let Some(message) = client.receive_message(ServerChannel::NetworkedEntities) {
         let networked_entities: NetworkedEntities = bincode::deserialize(&message).unwrap();
         for i in 0..networked_entities.entities.len() {
