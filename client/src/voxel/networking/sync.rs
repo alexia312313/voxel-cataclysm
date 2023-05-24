@@ -150,6 +150,10 @@ fn sync_players(
             }
         }
     }
+    while let Some(message) = client.receive_message(ServerChannel::ChatChannel) {
+        let chat_message: ChatMessage = bincode::deserialize(&message).unwrap();
+        println!("Received message: {:?}", chat_message);
+    }
 }
 
 pub fn send_one_chat(
