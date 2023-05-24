@@ -15,8 +15,8 @@ use bevy::{prelude::*, utils::HashMap};
 
 use bevy_renet::renet::{transport::NetcodeClientTransport, RenetClient};
 use common::{
-    ChatMessage, ClientChannel, NetworkedEntities, NonNetworkedEntities, Player, PlayerCommand,
-    ServerChannel, ServerMessages,
+    ChatMessage, ClientChannel, DisplayMessage, NetworkedEntities, NonNetworkedEntities, Player,
+    PlayerCommand, ServerChannel, ServerMessages,
 };
 
 fn sync_players(
@@ -27,6 +27,8 @@ fn sync_players(
     mut network_mapping: ResMut<NetworkMapping>,
     _my_assets: Res<MyAssets>,
     mut queries: ParamSet<(Query<&Transform>, Query<&ControlledPlayer>)>,
+    mut chat_message: ResMut<ChatMessage>,
+    mut display_message: ResMut<DisplayMessage>,
 ) {
     let client_id = transport.client_id();
     while let Some(message) = client.receive_message(ServerChannel::ServerMessages) {
@@ -151,8 +153,9 @@ fn sync_players(
         }
     }
     while let Some(message) = client.receive_message(ServerChannel::ChatChannel) {
-        let chat_message: ChatMessage = bincode::deserialize(&message).unwrap();
-        println!("Received message: {:?}", chat_message);
+        let textmess: ChatMessage = bincode::deserialize(&message).unwrap();
+        println!("Received message: {:?}", textmess.message);
+        display_message.message = textmess.message.clone();
     }
 }
 

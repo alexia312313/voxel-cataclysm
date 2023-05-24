@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use common::ChatMessage;
+use common::DisplayMessage;
 
 use crate::GameState;
 
@@ -14,6 +15,9 @@ impl Plugin for ChatPlugin {
         app
             //systems
             .add_systems((text_input, update_chat_text).in_set(OnUpdate(GameState::Game)))
+            .insert_resource(DisplayMessage {
+                message: "".to_string(),
+            })
             .insert_resource(ChatMessage {
                 message: "".to_string(),
                 client_id: 0,

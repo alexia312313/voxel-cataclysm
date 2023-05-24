@@ -69,6 +69,11 @@ pub struct ChatMessage {
     pub client_id: u64,
 }
 
+#[derive(Resource, Debug, Serialize, Deserialize)]
+pub struct DisplayMessage {
+    pub message: String,
+}
+
 #[derive(Debug, Serialize, Deserialize, Component, Default)]
 pub struct NonNetworkedEntities {
     pub entity: Vec<Entity>,
