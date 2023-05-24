@@ -9,11 +9,11 @@ use crate::{
             bundle::{BasePlayerBundle, MyCamera3dBundle, PlayerColliderBundle, PlayerHeadBundle},
             Body, MobSpawnTimer,
         },
-        Attacked, Stats,
+        AttackWanted, Attacked,
     },
     GameState,
 };
-use bevy::{prelude::*, time, utils::HashMap};
+use bevy::{prelude::*, utils::HashMap};
 use bevy_rapier3d::prelude::{ActiveEvents, Collider, RigidBody};
 use bevy_renet::renet::{transport::NetcodeClientTransport, RenetClient};
 use common::{
@@ -36,6 +36,8 @@ fn sync_players(
         Query<&ControlledPlayer>,
         Query<&Mob>,
         Query<(&mut Transform, &NetworkMob)>,
+        // query of a entity with a (NetworkMob or a Mob)
+        Query<(Entity, &Mob), Or<(With<NetworkMob>, With<Mob>)>>,
     )>,
 ) {
     let client_id = transport.client_id();
@@ -177,10 +179,10 @@ fn sync_players(
     }
     while let Some(message) = client.receive_message(ServerChannel::MobAttacked) {
         let sent_id: String = bincode::deserialize(&message).unwrap();
-        for id in queries.p2().iter().map(|mob| &mob.0) {
+        for (entity, id) in queries.p4().iter() {
             // if id equals mob id he's the one who was attacked
-            if id == &sent_id {
-                println!("Mob {} attacked", id);
+            if &id.0 == &sent_id {
+                cmds.entity(entity).insert(Attacked { damage: 10 });
             }
         }
     }
@@ -233,8 +235,8 @@ fn sync_player_commands(
 }
 
 fn sync_mob_attacked(
-    query_p1: Query<(Entity, &Mob), Added<Attacked>>,
-    query_p2: Query<(Entity, &NetworkMob), Added<Attacked>>,
+    query_p1: Query<(Entity, &Mob), Added<AttackWanted>>,
+    query_p2: Query<(Entity, &NetworkMob), Added<AttackWanted>>,
     mut client: ResMut<RenetClient>,
 ) {
     for (_entity, id) in query_p1.iter() {

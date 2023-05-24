@@ -19,6 +19,9 @@ pub struct Attacked {
 }
 
 #[derive(Component)]
+pub struct AttackWanted;
+
+#[derive(Component)]
 pub struct Stats {
     pub hp: i32,
     pub max_hp: i32,
