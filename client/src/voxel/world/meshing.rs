@@ -15,7 +15,7 @@ use bevy::{
     render::{primitives::Aabb, render_resource::PrimitiveTopology},
     tasks::{AsyncComputeTaskPool, Task},
 };
-use bevy_rapier3d::prelude::{AsyncCollider, ComputedColliderShape};
+
 use futures_lite::future;
 use once_cell::sync::Lazy;
 use std::cell::RefCell;
@@ -93,13 +93,16 @@ fn process_mesh_tasks(
 ) {
     chunk_query.for_each_mut(|(entity, handle, mut mesh_task)| {
         if let Some(mesh) = future::block_on(future::poll_once(&mut mesh_task.0)) {
+            /*
             let indices = mesh.indices().unwrap();
+             
             if !indices.is_empty() {
                 commands.entity(entity).insert((
                     AsyncCollider(ComputedColliderShape::TriMesh),
                     RapierSlowdownWorkaround,
                 ));
             }
+            */
             *meshes.get_mut(handle).unwrap() = mesh;
             commands.entity(entity).remove::<ChunkMeshingTask>();
         }
