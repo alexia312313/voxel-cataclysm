@@ -7,7 +7,6 @@
 use bevy::{prelude::*, window::WindowMode};
 use bevy_rapier3d::{
     prelude::{NoUserData, RapierPhysicsPlugin},
-    render::RapierDebugRenderPlugin,
 };
 use bevy_renet::{transport::NetcodeClientPlugin, RenetClientPlugin};
 use voxel::ui::end::GameOverPlugin;
@@ -43,10 +42,7 @@ fn main() {
     .add_plugin(voxel::events::EventsHandlerPlugin)
     .add_plugin(GameOverPlugin)
     .add_plugin(voxel::ui::dead::DeadPlugin)
-    .add_plugin(voxel::ui::chat::ChatPlugin)
-    .add_plugin(RapierDebugRenderPlugin {
-        ..Default::default()
-    })
+
     .run();
 }
 

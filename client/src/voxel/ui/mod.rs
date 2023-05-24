@@ -3,7 +3,6 @@ use bevy::prelude::*;
 use update::*;
 
 mod build;
-pub(crate) mod chat;
 pub mod dead;
 pub mod end;
 mod spawn;
