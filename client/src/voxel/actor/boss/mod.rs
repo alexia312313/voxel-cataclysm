@@ -1,4 +1,7 @@
-use crate::{voxel::loading::MyAssets, GameState};
+use crate::{
+    voxel::{events::generate_id, loading::MyAssets},
+    GameState,
+};
 use bevy::{prelude::*, utils::HashMap};
 use bevy_rapier3d::prelude::{ActiveEvents, Collider, GravityScale, LockedAxes, RigidBody};
 use rand::prelude::*;
@@ -31,7 +34,7 @@ pub fn setup(mut cmds: Commands, _my_assets: Res<MyAssets>) {
     );
 
     cmds.spawn((
-        Mob,
+        Mob(generate_id(10)),
         Boss,
         Stats {
             hp: 100,
@@ -67,5 +70,5 @@ pub fn setup(mut cmds: Commands, _my_assets: Res<MyAssets>) {
     .insert(ActiveEvents::COLLISION_EVENTS);
 }
 
-#[derive(Component)]
+#[derive(Component, Debug)]
 pub struct Boss;

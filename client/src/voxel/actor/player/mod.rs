@@ -56,6 +56,13 @@ pub struct Weapon;
 #[derive(Component)]
 pub struct Head;
 
+#[derive(Component)]
+pub struct MobSpawnTimer {
+    pub get_timer: Timer,
+    pub current_mobs: u32,
+    pub max_mobs: u32,
+}
+
 #[derive(Component, Debug, Clone, Copy)]
 pub enum CameraMode {
     FirstPerson,

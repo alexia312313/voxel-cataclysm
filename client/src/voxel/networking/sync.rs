@@ -3,21 +3,26 @@ use crate::{
     voxel::{
         animation::Animations,
         loading::MyAssets,
+        mob::Mob,
         networking::{ControlledPlayer, ControlledPlayerCollider, PlayerInfo},
         player::{
             bundle::{BasePlayerBundle, MyCamera3dBundle, PlayerColliderBundle, PlayerHeadBundle},
-            Body,
+            Body, MobSpawnTimer,
         },
+        AttackWanted, Attacked,
     },
     GameState,
 };
 use bevy::{prelude::*, utils::HashMap};
-
+use bevy_rapier3d::prelude::{ActiveEvents, Collider, RigidBody};
 use bevy_renet::renet::{transport::NetcodeClientTransport, RenetClient};
 use common::{
-    ChatMessage, ClientChannel, NetworkedEntities, NonNetworkedEntities, Player, PlayerCommand,
-    ServerChannel, ServerMessages,
+    ChatMessage, ClientChannel, MobSend, NetworkedEntities, Player, PlayerCommand, ServerChannel,
+    ServerMessages,
 };
+
+#[derive(Component)]
+pub struct NetworkMob(pub String);
 
 fn sync_players(
     mut cmds: Commands,
@@ -26,7 +31,14 @@ fn sync_players(
     mut lobby: ResMut<ClientLobby>,
     mut network_mapping: ResMut<NetworkMapping>,
     _my_assets: Res<MyAssets>,
-    mut queries: ParamSet<(Query<&Transform>, Query<&ControlledPlayer>)>,
+    mut queries: ParamSet<(
+        Query<&Transform>,
+        Query<&ControlledPlayer>,
+        Query<&Mob>,
+        Query<(&mut Transform, &NetworkMob)>,
+        Query<(Entity, &Mob)>,
+        Query<(Entity, &NetworkMob)>,
+    )>,
 ) {
     let client_id = transport.client_id();
     while let Some(message) = client.receive_message(ServerChannel::ServerMessages) {
@@ -54,6 +66,11 @@ fn sync_players(
                 if client_id == id {
                     client_entity
                         .insert(ControlledPlayer)
+                        .insert(MobSpawnTimer {
+                            get_timer: Timer::from_seconds(5.0, TimerMode::Once),
+                            current_mobs: 0,
+                            max_mobs: 30,
+                        })
                         .with_children(|player| {
                             player.spawn(Body).insert(SceneBundle {
                                 scene: _my_assets.player.clone(),
@@ -99,7 +116,7 @@ fn sync_players(
             }
         }
     }
-
+    // si peta aqui es culpa de l'Alexia
     while let Some(message) = client.receive_message(ServerChannel::Host) {
         let host = bincode::deserialize(&message).unwrap();
         if host {
@@ -108,7 +125,39 @@ fn sync_players(
             println!("I'm not the host");
         }
     }
-
+    while let Some(message) = client.receive_message(ServerChannel::NonNetworkedEntities) {
+        let mob: MobSend = bincode::deserialize(&message).unwrap();
+        let mut flag = false;
+        //println!("mob {:?}", mob);
+        for id in queries.p2().iter().map(|mob| &mob.0) {
+            // if id equals mob id
+            if id == &mob.id {
+                flag = true;
+                break;
+            }
+        }
+        for (mut transform, id) in queries.p3().iter_mut() {
+            if id.0 == mob.id {
+                transform.translation = mob.translation;
+                flag = true;
+                break;
+            }
+        }
+        if !flag {
+            cmds.spawn((
+                Collider::cuboid(1.0, 1.0, 1.0),
+                SceneBundle {
+                    scene: _my_assets.slime.clone(),
+                    transform: Transform::from_translation(mob.translation)
+                        .looking_to(Vec3::Z, Vec3::Y),
+                    ..default()
+                },
+            ))
+            .insert(RigidBody::Dynamic)
+            .insert(ActiveEvents::COLLISION_EVENTS)
+            .insert(NetworkMob(mob.id.clone()));
+        }
+    }
     while let Some(message) = client.receive_message(ServerChannel::NetworkedEntities) {
         let networked_entities: NetworkedEntities = bincode::deserialize(&message).unwrap();
         for i in 0..networked_entities.entities.len() {
@@ -131,24 +180,20 @@ fn sync_players(
             }
         }
     }
-    while let Some(message) = client.receive_message(ServerChannel::NonNetworkedEntities) {
-        let non_networked_entities: NonNetworkedEntities = bincode::deserialize(&message).unwrap();
-        for i in 0..non_networked_entities.entity.len() {
-            if let Some(entity) = network_mapping.0.get(&non_networked_entities.entity[i]) {
-                if queries.p1().get(*entity).is_err() {
-                    if let Ok(current_transform) = queries.p0().get(*entity) {
-                        let translation = non_networked_entities.translation[i].into();
-                        let rotation = non_networked_entities.rotation[i];
-                        if translation != current_transform.translation {
-                            let transform = Transform {
-                                rotation,
-                                translation,
-                                ..Default::default()
-                            };
-                            cmds.entity(*entity).insert(transform);
-                        }
-                    }
-                }
+    while let Some(message) = client.receive_message(ServerChannel::MobAttacked) {
+        let sent_id: String = bincode::deserialize(&message).unwrap();
+        for (entity, id) in queries.p4().iter() {
+            // if id equals mob id he's the one who was attacked
+            if id.0 == sent_id {
+                println!("Mob {} was attacked", &id.0.clone());
+                cmds.entity(entity).insert(Attacked { damage: 10 });
+            }
+        }
+        for (entity, id) in queries.p5().iter() {
+            // if id equals mob id he's the one who was attacked
+            if id.0 == sent_id {
+                println!("Mob {} was attacked, -10hp", &id.0.clone());
+                cmds.entity(entity).insert(Attacked { damage: 10 });
             }
         }
     }
@@ -200,10 +245,39 @@ fn sync_player_commands(
     }
 }
 
+fn sync_mob_attacked(
+    query_p1: Query<&Mob, Added<AttackWanted>>,
+    query_p2: Query<&NetworkMob, Added<AttackWanted>>,
+    mut client: ResMut<RenetClient>,
+) {
+    for id in query_p1.iter() {
+        println!("Mob Attacked: {:?}", id.0);
+        let message = bincode::serialize(&id.0).unwrap();
+        client.send_message(ClientChannel::MobAttacked, message);
+    }
+    for id in query_p2.iter() {
+        println!("NetworkMob Attacked: {:?}", id.0);
+        let message = bincode::serialize(&id.0).unwrap();
+        client.send_message(ClientChannel::MobAttacked, message);
+    }
+}
+
 fn send_text(mut client: ResMut<RenetClient>, chat_messages: Query<&ChatMessage>) {
     for chat_message in chat_messages.iter() {
         let message = bincode::serialize(chat_message).unwrap();
         client.send_message(ClientChannel::Chat, message);
+    }
+}
+
+fn send_mob(mut client: ResMut<RenetClient>, mob_query: Query<(&Transform, &Mob)>) {
+    for (pos, mob) in mob_query.iter() {
+        //println!("Pos: {:?} Mob:{:?}", pos, mob);
+        let mob_send = MobSend {
+            id: mob.0.clone(),
+            translation: pos.translation,
+        };
+        let message = bincode::serialize(&mob_send).unwrap();
+        client.send_message(ClientChannel::Mobs, message);
     }
 }
 
@@ -218,6 +292,8 @@ impl Plugin for NetSyncPlugin {
                 sync_players,
                 send_text,
                 send_one_chat,
+                send_mob,
+                sync_mob_attacked,
             )
                 .distributive_run_if(bevy_renet::transport::client_connected)
                 .in_set(OnUpdate(GameState::Game)),
