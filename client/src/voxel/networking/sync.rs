@@ -36,7 +36,6 @@ fn sync_players(
         Query<&ControlledPlayer>,
         Query<&Mob>,
         Query<(&mut Transform, &NetworkMob)>,
-        Query<(&mut Transform, Entity, &mut Stats, &Attacked, &Mob)>,
     )>,
 ) {
     let client_id = transport.client_id();
