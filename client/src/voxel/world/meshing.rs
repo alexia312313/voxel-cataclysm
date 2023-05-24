@@ -15,7 +15,7 @@ use bevy::{
     render::{primitives::Aabb, render_resource::PrimitiveTopology},
     tasks::{AsyncComputeTaskPool, Task},
 };
-use bevy_rapier3d::prelude::{AsyncCollider, ComputedColliderShape};
+
 use futures_lite::future;
 use once_cell::sync::Lazy;
 use std::cell::RefCell;
