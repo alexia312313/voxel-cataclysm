@@ -14,7 +14,8 @@ impl Plugin for BossPlugin {
 
 pub fn setup(mut cmds: Commands, _my_assets: Res<MyAssets>) {
 
-    let rndm = (random::<f32>*100.0,200.0,random::<f32>*100)
+    let rndm = (random::<f32>()*200.0,200.0,random::<f32>()*200.0);
+    println!("{:?}",rndm);
     let mut map = HashMap::new();
     map.insert(
         "walk".to_string(),
