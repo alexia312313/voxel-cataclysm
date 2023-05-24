@@ -3,7 +3,7 @@ use crate::{
     voxel::{
         animation::Animations,
         loading::MyAssets,
-        networking::{ControlledPlayer, PlayerInfo, ControlledPlayerCollider},
+        networking::{ControlledPlayer, ControlledPlayerCollider, PlayerInfo},
         player::{
             bundle::{BasePlayerBundle, MyCamera3dBundle, PlayerColliderBundle, PlayerHeadBundle},
             Body,
@@ -60,7 +60,9 @@ fn sync_players(
                                 transform: Transform::IDENTITY.looking_to(Vec3::Z, Vec3::Y),
                                 ..default()
                             });
-                            player.spawn(PlayerColliderBundle::default()).insert(ControlledPlayerCollider);
+                            player
+                                .spawn(PlayerColliderBundle::default())
+                                .insert(ControlledPlayerCollider);
 
                             player
                                 .spawn(PlayerHeadBundle::default())

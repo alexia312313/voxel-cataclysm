@@ -7,13 +7,10 @@ pub fn text_input(
     mut string: Local<String>,
     mut writing: Local<bool>,
 ) {
-    if !*writing {
-        if keys.just_pressed(KeyCode::Return) {
-            *writing = true;
-        }
+    if !*writing && keys.just_pressed(KeyCode::Return) {
+        *writing = true;
     }
     if *writing {
-
         for ev in char_evr.iter() {
             println!("Got char: '{}'", ev.char);
             string.push(ev.char);

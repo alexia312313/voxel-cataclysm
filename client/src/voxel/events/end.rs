@@ -33,8 +33,6 @@ pub fn spawn_end_portal(mut commands: Commands, _my_assets: Res<MyAssets>) {
         });
 }
 
-
-
 pub fn detect_player_v2(
     rapier_context: Res<RapierContext>,
     portal_query: Query<Entity, With<EndPortalCollider>>,

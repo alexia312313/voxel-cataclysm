@@ -95,7 +95,7 @@ fn process_mesh_tasks(
         if let Some(mesh) = future::block_on(future::poll_once(&mut mesh_task.0)) {
             /*
             let indices = mesh.indices().unwrap();
-             
+
             if !indices.is_empty() {
                 commands.entity(entity).insert((
                     AsyncCollider(ComputedColliderShape::TriMesh),

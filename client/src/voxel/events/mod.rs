@@ -1,7 +1,7 @@
 use crate::GameState;
 use bevy::prelude::*;
 
-use self::end::{ spawn_arrow, spawn_end_portal, detect_player_v2};
+use self::end::{detect_player_v2, spawn_arrow, spawn_end_portal};
 
 mod end;
 
@@ -17,10 +17,8 @@ impl Plugin for EventsHandlerPlugin {
 #[derive(Component)]
 pub struct EndPortal {}
 
-
 #[derive(Component)]
 pub struct EndPortalCollider {}
-
 
 #[derive(Component)]
 pub struct Arrow {
