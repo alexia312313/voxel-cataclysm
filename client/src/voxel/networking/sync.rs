@@ -12,13 +12,16 @@ use crate::{
     },
     GameState,
 };
-use bevy::{prelude::*, utils::HashMap};
+use bevy::{prelude::*, transform::commands, utils::HashMap};
 
 use bevy_renet::renet::{transport::NetcodeClientTransport, RenetClient};
 use common::{
-    ChatMessage, ClientChannel, NetworkedEntities, NonNetworkedEntities, Player, PlayerCommand,
-    ServerChannel, ServerMessages,
+    ChatMessage, ClientChannel, MobSend, NetworkedEntities, NonNetworkedEntities, Player,
+    PlayerCommand, ServerChannel, ServerMessages,
 };
+
+#[derive(Component)]
+pub struct NetworkMob(pub String);
 
 fn sync_players(
     mut cmds: Commands,
@@ -27,7 +30,12 @@ fn sync_players(
     mut lobby: ResMut<ClientLobby>,
     mut network_mapping: ResMut<NetworkMapping>,
     _my_assets: Res<MyAssets>,
-    mut queries: ParamSet<(Query<&Transform>, Query<&ControlledPlayer>, Query<&Mob>)>,
+    mut queries: ParamSet<(
+        Query<&Transform>,
+        Query<&ControlledPlayer>,
+        Query<&Mob>,
+        Query<&NetworkMob>,
+    )>,
 ) {
     let client_id = transport.client_id();
     while let Some(message) = client.receive_message(ServerChannel::ServerMessages) {
@@ -102,29 +110,6 @@ fn sync_players(
             }
         }
     }
-
-    while let Some(message) = client.receive_message(ServerChannel::NonNetworkedEntities) {
-        let non_networked_entities: NonNetworkedEntities = bincode::deserialize(&message).unwrap();
-        for i in 0..non_networked_entities.entities.len() {
-            if let Some(entity) = network_mapping.0.get(&non_networked_entities.entities[i]) {
-                // if the entity is the ControlledPlayer, we don't want to apply it
-                if queries.p2().get(*entity).is_err() {
-                    if let Ok(current_transform) = queries.p0().get(*entity) {
-                        let translation = non_networked_entities.translations[i].into();
-                        let rotation = non_networked_entities.rotations[i];
-                        if translation != current_transform.translation {
-                            let transform = Transform {
-                                rotation,
-                                translation,
-                                ..Default::default()
-                            };
-                            cmds.entity(*entity).insert(transform);
-                        }
-                    }
-                }
-            }
-        }
-    }
     // si peta aqui es culpa de l'Alexia
     while let Some(message) = client.receive_message(ServerChannel::Host) {
         let host = bincode::deserialize(&message).unwrap();
@@ -133,6 +118,44 @@ fn sync_players(
         } else {
             println!("I'm not the host");
         }
+    }
+    while let Some(message) = client.receive_message(ServerChannel::NonNetworkedEntities) {
+        let mob: MobSend = bincode::deserialize(&message).unwrap();
+        let mut flag = false;
+        //println!("mob {:?}", mob);
+        for id in queries.p2().iter().map(|mob| &mob.0) {
+            // if id equals mob id
+            if id == &mob.id {
+                flag = true;
+                println!("mob id {:?} == id {:?}", mob.id, id);
+                break;
+            }
+        }
+        for id in queries.p3().iter().map(|mob| &mob.0) {
+            if id == &mob.id {
+                flag = true;
+                println!("mob id {:?} == id {:?}", mob.id, id);
+                break;
+            }
+        }
+        if !flag {
+            println!("NEW MOB {:?}", mob.id);
+            println!("NEW MOB {:?}", mob.id);
+            println!("NEW MOB {:?}", mob.id);
+            println!("NEW MOB {:?}", mob.id);
+            println!("NEW MOB {:?}", mob.id);
+            println!("NEW MOB {:?}", mob.id);
+            println!("NEW MOB {:?}", mob.id);
+            println!("NEW MOB {:?}", mob.id);
+            println!("NEW MOB {:?}", mob.id);
+            println!("NEW MOB {:?}", mob.id);
+            println!("NEW MOB {:?}", mob.id);
+            println!("NEW MOB {:?}", mob.id);
+            println!("NEW MOB {:?}", mob.id);
+            println!("NEW MOB {:?}", mob.id);
+        }
+        // IF MOB ID == ALGUNAMOBIDGUARDADA PUES MUEVO MOD SOLO
+        // IF MOB ID != ALGUNAMOBIDGUARDADA PUES CREO MOB
     }
 
     while let Some(message) = client.receive_message(ServerChannel::NetworkedEntities) {
@@ -144,27 +167,6 @@ fn sync_players(
                     if let Ok(current_transform) = queries.p0().get(*entity) {
                         let translation = networked_entities.translations[i].into();
                         let rotation = networked_entities.rotations[i];
-                        if translation != current_transform.translation {
-                            let transform = Transform {
-                                rotation,
-                                translation,
-                                ..Default::default()
-                            };
-                            cmds.entity(*entity).insert(transform);
-                        }
-                    }
-                }
-            }
-        }
-    }
-    while let Some(message) = client.receive_message(ServerChannel::NonNetworkedEntities) {
-        let non_networked_entities: NonNetworkedEntities = bincode::deserialize(&message).unwrap();
-        for i in 0..non_networked_entities.entities.len() {
-            if let Some(entity) = network_mapping.0.get(&non_networked_entities.entities[i]) {
-                if queries.p1().get(*entity).is_err() {
-                    if let Ok(current_transform) = queries.p0().get(*entity) {
-                        let translation = non_networked_entities.translations[i].into();
-                        let rotation = non_networked_entities.rotations[i];
                         if translation != current_transform.translation {
                             let transform = Transform {
                                 rotation,
@@ -233,6 +235,18 @@ fn send_text(mut client: ResMut<RenetClient>, chat_messages: Query<&ChatMessage>
     }
 }
 
+fn send_mob(mut client: ResMut<RenetClient>, mob_query: Query<(&Transform, &Mob)>) {
+    for (pos, mob) in mob_query.iter() {
+        //println!("Pos: {:?} Mob:{:?}", pos, mob);
+        let mob_send = MobSend {
+            id: mob.0.clone(),
+            translation: pos.translation.clone(),
+        };
+        let message = bincode::serialize(&mob_send).unwrap();
+        client.send_message(ClientChannel::Mobs, message);
+    }
+}
+
 pub struct NetSyncPlugin;
 impl Plugin for NetSyncPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
@@ -244,6 +258,7 @@ impl Plugin for NetSyncPlugin {
                 sync_players,
                 send_text,
                 send_one_chat,
+                send_mob,
             )
                 .distributive_run_if(bevy_renet::transport::client_connected)
                 .in_set(OnUpdate(GameState::Game)),

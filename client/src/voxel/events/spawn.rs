@@ -56,7 +56,7 @@ pub fn spawn_mob(cmds: &mut Commands, _my_assets: &Res<MyAssets>, pos: Vec3) {
     );
 
     cmds.spawn((
-        Mob,
+        Mob(generate_id(10)),
         Stats {
             hp: 20,
             max_hp: 20,
@@ -86,4 +86,18 @@ pub fn spawn_mob(cmds: &mut Commands, _my_assets: &Res<MyAssets>, pos: Vec3) {
     .insert(RigidBody::Dynamic)
     .insert(LockedAxes::ROTATION_LOCKED)
     .insert(ActiveEvents::COLLISION_EVENTS);
+}
+
+fn generate_id(length: usize) -> String {
+    let chars: Vec<char> = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+        .chars()
+        .collect();
+    let mut rng = rand::thread_rng();
+    let id: String = (0..length)
+        .map(|_| {
+            let index = rng.gen_range(0..chars.len());
+            chars[index]
+        })
+        .collect();
+    id
 }

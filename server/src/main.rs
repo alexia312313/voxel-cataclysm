@@ -9,8 +9,9 @@ use bevy_renet::{
     RenetServerPlugin,
 };
 use common::{
-    connection_config, ChatMessage, ClientChannel, Mob, NetworkedEntities, NonNetworkedEntities,
-    Player, PlayerInput, RotationInput, ServerChannel, ServerMessages, PROTOCOL_ID,
+    connection_config, ChatMessage, ClientChannel, Mob, MobSend, NetworkedEntities,
+    NonNetworkedEntities, Player, PlayerInput, RotationInput, ServerChannel, ServerMessages,
+    PROTOCOL_ID,
 };
 use std::{collections::HashMap, f32::consts::PI, net::UdpSocket, time::SystemTime};
 
@@ -57,11 +58,7 @@ fn main() {
         .insert_resource(BotId(0))
         .insert_resource(server)
         .insert_resource(transport)
-        .add_systems((
-            server_update_system,
-            server_network_sync,
-            server_non_network_sync,
-        ))
+        .add_systems((server_update_system, server_network_sync))
         .run();
 }
 
@@ -153,6 +150,11 @@ fn server_update_system(
             println!("{}: {}", chat_message.client_id, chat_message.message);
             server.broadcast_message(ServerChannel::ChatChannel, message);
         }
+        while let Some(message) = server.receive_message(client_id, ClientChannel::Mobs) {
+            let mob: MobSend = bincode::deserialize(&message).unwrap();
+            println!("{}: {}", mob.id, mob.translation);
+            server.broadcast_message(ServerChannel::NonNetworkedEntities, message);
+        }
     }
 }
 
@@ -172,20 +174,4 @@ fn server_network_sync(
 
     let sync_message = bincode::serialize(&networked_entities).unwrap();
     server.broadcast_message(ServerChannel::NetworkedEntities, sync_message);
-}
-
-fn server_non_network_sync(
-    mut server: ResMut<RenetServer>,
-    query: Query<(Entity, &Transform), With<Mob>>,
-) {
-    let mut non_networked_entities = NonNetworkedEntities::default();
-    for (entity, transform) in query.iter() {
-        non_networked_entities.entities.push(entity);
-        non_networked_entities
-            .translations
-            .push(transform.translation.into()); //Vec3
-        non_networked_entities.rotations.push(transform.rotation); //Quat
-    }
-    let sync_message = bincode::serialize(&non_networked_entities).unwrap();
-    server.broadcast_message(ServerChannel::NonNetworkedEntities, sync_message);
 }

@@ -35,6 +35,12 @@ pub enum PlayerCommand {
     BasicAttack { cast_at: Vec3 },
 }
 
+#[derive(Debug, Serialize, Deserialize, Component)]
+pub struct MobSend {
+    pub id: String,
+    pub translation: Vec3,
+}
+
 pub enum ClientChannel {
     Input,
     Command,

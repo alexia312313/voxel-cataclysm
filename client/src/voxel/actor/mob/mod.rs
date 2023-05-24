@@ -10,5 +10,5 @@ impl Plugin for MobPlugin {
     }
 }
 
-#[derive(Component)]
-pub struct Mob;
+#[derive(Component, Debug, Clone)]
+pub struct Mob(pub String);
