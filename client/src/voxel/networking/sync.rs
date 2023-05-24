@@ -31,7 +31,7 @@ fn sync_players(
     transport: Res<NetcodeClientTransport>,
     mut lobby: ResMut<ClientLobby>,
     mut network_mapping: ResMut<NetworkMapping>,
-    _my_assets: Res<MyAssets>,
+    my_assets: Res<MyAssets>,
     mut queries: ParamSet<(
         Query<&Transform>,
         Query<&ControlledPlayer>,
@@ -40,7 +40,6 @@ fn sync_players(
         Query<(Entity, &Mob)>,
         Query<(Entity, &NetworkMob)>,
     )>,
-    _chat_message: ResMut<ChatMessage>,
     mut display_message: ResMut<DisplayMessage>,
 ) {
     let client_id = transport.client_id();
@@ -54,8 +53,8 @@ fn sync_players(
             } => {
                 println!("Player {} connected.", id);
                 let mut map = HashMap::new();
-                map.insert("walk".to_string(), _my_assets.player_animation_walk.clone());
-                map.insert("hit".to_string(), _my_assets.player_animation_hit.clone());
+                map.insert("walk".to_string(), my_assets.player_animation_walk.clone());
+                map.insert("hit".to_string(), my_assets.player_animation_hit.clone());
 
                 let mut client_entity = cmds.spawn((
                     BasePlayerBundle::default(),
@@ -77,7 +76,7 @@ fn sync_players(
                         })
                         .with_children(|player| {
                             player.spawn(Body).insert(SceneBundle {
-                                scene: _my_assets.player.clone(),
+                                scene: my_assets.player.clone(),
                                 transform: Transform::IDENTITY.looking_to(Vec3::Z, Vec3::Y),
                                 ..default()
                             });
@@ -94,7 +93,7 @@ fn sync_players(
                 } else {
                     client_entity.with_children(|player| {
                         player.spawn(SceneBundle {
-                            scene: _my_assets.player.clone(),
+                            scene: my_assets.player.clone(),
                             transform: Transform::IDENTITY.looking_to(Vec3::Z, Vec3::Y),
                             ..default()
                         });
@@ -151,7 +150,7 @@ fn sync_players(
             cmds.spawn((
                 Collider::cuboid(1.0, 1.0, 1.0),
                 SceneBundle {
-                    scene: _my_assets.slime.clone(),
+                    scene: my_assets.slime.clone(),
                     transform: Transform::from_translation(mob.translation)
                         .looking_to(Vec3::Z, Vec3::Y),
                     ..default()
