@@ -1,12 +1,15 @@
 use crate::{
     voxel::{
+        boss::Boss,
+        events::{EndPortal, EndPortalCollider},
+        loading::MyAssets,
         mob::Mob, networking::ControlledPlayer, player::MobSpawnTimer, AttackWanted, Attacked,
-        Stats,
+        networking::ControlledPlayer,
     },
     GameState,
 };
 use bevy::{prelude::*, window::PrimaryWindow};
-use bevy_rapier3d::prelude::{QueryFilter, RapierContext};
+use bevy_rapier3d::prelude::{Collider, QueryFilter, RapierContext, RigidBody, Sensor};
 
 // system that listen if an entity is attacked
 pub fn entity_attacked_handler(
@@ -78,6 +81,8 @@ pub fn despawn_dead_mobs(
         (&mut Stats, &mut MobSpawnTimer),
         (With<ControlledPlayer>, Without<Mob>),
     >,
+    boss: Query<(Entity, &Transform), With<Boss>>,
+    my_assets: Res<MyAssets>,
 ) {
     for (entity, mob_stats) in mob_stats_query.iter_mut() {
         if mob_stats.hp <= 0 {
@@ -85,6 +90,28 @@ pub fn despawn_dead_mobs(
             timer.current_mobs -= 1;
             cmds.entity(entity).despawn_recursive();
             player_stats.score += mob_stats.score;
+            for (boss, tranform) in boss.iter() {
+                let pos = tranform.translation;
+
+                if entity == boss {
+                    cmds.spawn((
+                        SceneBundle {
+                            scene: my_assets.end_portal.clone_weak(),
+                            transform: Transform::from_xyz(pos.x, pos.y, pos.z),
+                            ..Default::default()
+                        },
+                        RigidBody::Fixed,
+                        EndPortal {},
+                    ))
+                    .with_children(|end_portal| {
+                        end_portal
+                            .spawn(Collider::cuboid(3.22, 3.22, 0.24))
+                            .insert(EndPortalCollider {})
+                            .insert(Transform::from_xyz(0.0, 3.18, -0.15))
+                            .insert(Sensor);
+                    });
+                }
+            }
         }
     }
 }

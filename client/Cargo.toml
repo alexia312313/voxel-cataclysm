@@ -30,3 +30,4 @@ bevy_rapier3d.workspace = true
 big-brain.workspace = true
 rand.workspace = true
 common = { path = "../common" }
+rand="0.8.5"

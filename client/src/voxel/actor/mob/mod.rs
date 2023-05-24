@@ -1,4 +1,13 @@
-use bevy::prelude::*;
+use super::Stats;
+use crate::{
+    voxel::{
+        animation::{AnimationController, Animations},
+        loading::MyAssets,
+    },
+    GameState,
+};
+use bevy::{prelude::*, utils::HashMap};
+use bevy_rapier3d::prelude::{ActiveEvents, Collider, GravityScale, LockedAxes, RigidBody};
 
 pub mod brain;
 
@@ -12,3 +21,4 @@ impl Plugin for MobPlugin {
 
 #[derive(Component, Debug, Clone)]
 pub struct Mob(pub String);
+
