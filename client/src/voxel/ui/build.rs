@@ -40,6 +40,7 @@ pub fn build_ui(commands: &mut Commands, asset_server: &Res<AssetServer>) -> Ent
             parent
                 .spawn(NodeBundle {
                     style: CHAT_STYLE,
+                    background_color: BackgroundColor(Color::BLACK),
                     ..default()
                 })
                 .with_children(|parent| {

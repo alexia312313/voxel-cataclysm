@@ -53,7 +53,6 @@ pub const CHAT_STYLE: Style = Style {
     justify_content: JustifyContent::Start,
     align_items: AlignItems::End,
     size: Size::new(Val::Percent(15.0), Val::Percent(5.0)),
-    margin: UiRect::new(Val::Px(0.0), Val::Px(32.0), Val::Px(0.0), Val::Px(0.0)),
     ..Style::DEFAULT
 };
 
