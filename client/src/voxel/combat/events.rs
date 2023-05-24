@@ -1,9 +1,17 @@
 use crate::{
-    voxel::{mob::Mob, networking::ControlledPlayer, Attacked, Stats},
+    voxel::{
+        boss::Boss,
+        events::{EndPortal, EndPortalCollider},
+        loading::MyAssets,
+        mob::Mob,
+        networking::ControlledPlayer,
+        player::MobSpawnTimer,
+        AttackWanted, Attacked, Stats,
+    },
     GameState,
 };
 use bevy::{prelude::*, window::PrimaryWindow};
-use bevy_rapier3d::prelude::{QueryFilter, RapierContext};
+use bevy_rapier3d::prelude::{Collider, QueryFilter, RapierContext, RigidBody, Sensor};
 
 // system that listen if an entity is attacked
 pub fn entity_attacked_handler(
@@ -25,21 +33,25 @@ pub fn entity_attacked_handler(
 fn player_melee_attack(
     mut commands: Commands,
     transform_query: Query<&Transform>,
-    player_query: Query<(Entity, &Stats), With<ControlledPlayer>>,
+    player_query: Query<Entity, With<ControlledPlayer>>,
     rapier_context: Res<RapierContext>,
     windows: Query<&Window, With<PrimaryWindow>>,
     camera_query: Query<(&Camera, &GlobalTransform)>,
     button: Res<Input<MouseButton>>,
 ) {
-    if let Ok((player_entity, stats)) = player_query.get_single() {
+    if let Ok(player_entity) = player_query.get_single() {
         if button.just_pressed(MouseButton::Left) {
             let player_transform = transform_query.get(player_entity).unwrap();
             let window = windows.single();
-            let Some(cursor_position) = window.cursor_position() else { return; };
+            let position = Vec2::new(
+                window.resolution.width() / 2.0,
+                (window.resolution.height() / 2.0) * 1.25,
+            );
             // We will color in read the colliders hovered by the mouse.
             for (camera, camera_transform) in &camera_query {
                 // First, compute a ray from the mouse position.
-                let Some(ray) = camera.viewport_to_world(camera_transform, cursor_position) else { return; };
+                let Some(ray) = camera.viewport_to_world(camera_transform, position) else { return; };
+
                 // Then cast the ray.
                 let hit = rapier_context.cast_ray(
                     ray.origin,
@@ -48,18 +60,15 @@ fn player_melee_attack(
                     true,
                     QueryFilter::only_dynamic(),
                 );
-
                 if let Some((entity, _toi)) = hit {
                     let mob_transform = transform_query.get(entity).unwrap();
-
                     if player_transform
                         .translation
                         .distance(mob_transform.translation)
                         > 5.0
                     {
-                        commands.entity(entity).insert(Attacked {
-                            damage: stats.attack,
-                        });
+                        println!("AttackWanted Added");
+                        commands.entity(entity).insert(AttackWanted);
                     }
                 }
             }
@@ -70,13 +79,41 @@ fn player_melee_attack(
 pub fn despawn_dead_mobs(
     mut cmds: Commands,
     mut mob_stats_query: Query<(Entity, &Stats), With<Mob>>,
-    mut player_stats_query: Query<&mut Stats, (With<ControlledPlayer>, Without<Mob>)>,
+    mut player_stats_query: Query<
+        (&mut Stats, &mut MobSpawnTimer),
+        (With<ControlledPlayer>, Without<Mob>),
+    >,
+    boss: Query<(Entity, &Transform), With<Boss>>,
+    my_assets: Res<MyAssets>,
 ) {
     for (entity, mob_stats) in mob_stats_query.iter_mut() {
         if mob_stats.hp <= 0 {
-            let mut player_stats = player_stats_query.single_mut();
+            let (mut player_stats, mut timer) = player_stats_query.single_mut();
+            timer.current_mobs -= 1;
             cmds.entity(entity).despawn_recursive();
             player_stats.score += mob_stats.score;
+            for (boss, tranform) in boss.iter() {
+                let pos = tranform.translation;
+
+                if entity == boss {
+                    cmds.spawn((
+                        SceneBundle {
+                            scene: my_assets.end_portal.clone_weak(),
+                            transform: Transform::from_xyz(pos.x, pos.y, pos.z),
+                            ..Default::default()
+                        },
+                        RigidBody::Fixed,
+                        EndPortal {},
+                    ))
+                    .with_children(|end_portal| {
+                        end_portal
+                            .spawn(Collider::cuboid(3.22, 3.22, 0.24))
+                            .insert(EndPortalCollider {})
+                            .insert(Transform::from_xyz(0.0, 3.18, -0.15))
+                            .insert(Sensor);
+                    });
+                }
+            }
         }
     }
 }
