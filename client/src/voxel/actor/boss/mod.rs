@@ -18,7 +18,11 @@ impl Plugin for BossPlugin {
 
 pub fn setup(mut cmds: Commands, _my_assets: Res<MyAssets>) {
     let mut rng = thread_rng();
-    let rndm = (rng.gen_range(-200.0..200.0), 200.0,rng.gen_range(-200.0..200.0));
+    let rndm = (
+        rng.gen_range(-200.0..200.0),
+        200.0,
+        rng.gen_range(-200.0..200.0),
+    );
     println!("{:?}", rndm);
     let mut map = HashMap::new();
     map.insert(
