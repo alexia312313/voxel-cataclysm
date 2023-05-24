@@ -17,6 +17,11 @@ impl Plugin for EventsHandlerPlugin {
 #[derive(Component)]
 pub struct EndPortal {}
 
+
+#[derive(Component)]
+pub struct EndPortalCollider {}
+
+
 #[derive(Component)]
 pub struct Arrow {
     timer: Timer,

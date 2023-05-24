@@ -6,7 +6,7 @@ use crate::{
     GameState,
 };
 
-use super::Arrow;
+use super::{Arrow, EndPortalCollider};
 
 pub fn spawn_end_portal(mut commands: Commands, _my_assets: Res<MyAssets>) {
     commands
@@ -22,6 +22,7 @@ pub fn spawn_end_portal(mut commands: Commands, _my_assets: Res<MyAssets>) {
         .with_children(|end_portal| {
             end_portal
                 .spawn(Collider::cuboid(3.22, 3.22, 0.24))
+                .insert(EndPortalCollider{})
                 .insert(Transform::from_xyz(0.0, 3.18, -0.15))
                 .insert(Sensor);
         });
@@ -29,7 +30,7 @@ pub fn spawn_end_portal(mut commands: Commands, _my_assets: Res<MyAssets>) {
 
 pub fn detect_player(
     rapier_context: Res<RapierContext>,
-    portal_query: Query<Entity, With<EndPortal>>,
+    portal_query: Query<Entity, With<EndPortalCollider>>,
     mut game_state_next_state: ResMut<NextState<GameState>>,
 ) {
     for portal in portal_query.iter() {
