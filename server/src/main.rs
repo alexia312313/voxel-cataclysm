@@ -9,7 +9,7 @@ use bevy_renet::{
     RenetServerPlugin,
 };
 use common::{
-    connection_config, ChatMessage, ClientChannel, Mob, NetworkedEntities, NonNetworkedEntities,
+    connection_config, ClientChannel, Mob, MobInfo, NetworkedEntities, NonNetworkedEntities,
     Player, PlayerInput, RotationInput, ServerChannel, ServerMessages, PROTOCOL_ID,
 };
 use std::{collections::HashMap, f32::consts::PI, net::UdpSocket, time::SystemTime};
@@ -24,7 +24,6 @@ struct BotId(u64);
 
 fn new_renet_server() -> (RenetServer, NetcodeServerTransport) {
     let server = RenetServer::new(connection_config());
-
     let public_addr = "127.0.0.1:5000".parse().unwrap();
     let socket = UdpSocket::bind(public_addr).unwrap();
     let server_config = ServerConfig {
@@ -60,7 +59,7 @@ fn main() {
         .add_systems((
             server_update_system,
             server_network_sync,
-            server_non_network_sync,
+            //server_non_network_sync,
         ))
         .run();
 }
@@ -71,7 +70,9 @@ fn server_update_system(
     mut commands: Commands,
     mut lobby: ResMut<ServerLobby>,
     mut server: ResMut<RenetServer>,
-    mut players: Query<(Entity, &Player, &mut Transform)>,
+    mut players: Query<(Entity, &Player)>,
+    mut mobs: Query<(&mut Stats, &Mob, Entity)>,
+    mut transform: Query<&mut Transform>,
 ) {
     for event in server_events.iter() {
         //TODO: ADAPT
@@ -83,9 +84,10 @@ fn server_update_system(
                     let message = bincode::serialize(&host).unwrap();
                     server.send_message(*client_id, ServerChannel::Host, message);
                 }
-                for (entity, player, transform) in players.iter() {
+                for (entity, player) in players.iter() {
+                    let transform = transform.get_mut(entity).unwrap();
                     let translation: [f32; 3] = transform.translation.into();
-                    let message = bincode::serialize(&ServerMessages::PlayerCreate {
+                    let message: Vec<u8> = bincode::serialize(&ServerMessages::PlayerCreate {
                         id: player.id,
                         entity,
                         translation,
@@ -130,12 +132,13 @@ fn server_update_system(
             }
         }
     }
-
     for client_id in server.clients_id() {
         while let Some(message) = server.receive_message(client_id, ClientChannel::Input) {
             let input: PlayerInput = bincode::deserialize(&message).unwrap();
             if let Some(player_entity) = lobby.players.get(&client_id) {
-                if let Ok((_, _, mut player_transform)) = players.get_mut(*player_entity) {
+                if let Ok((e, _)) = players.get_mut(*player_entity) {
+                    let mut player_transform = transform.get_mut(e).unwrap();
+
                     player_transform.translation = input.translation;
                 }
             }
@@ -143,18 +146,37 @@ fn server_update_system(
         while let Some(message) = server.receive_message(client_id, ClientChannel::Rots) {
             let rots: RotationInput = bincode::deserialize(&message).unwrap();
             if let Some(player_entity) = lobby.players.get(&client_id) {
-                if let Ok((_, _, mut player_transform)) = players.get_mut(*player_entity) {
+                if let Ok((e, _)) = players.get_mut(*player_entity) {
+                    let mut player_transform = transform.get_mut(e).unwrap();
+
                     player_transform.rotation = rots.rotation;
                 }
             }
         }
-        while let Some(message) = server.receive_message(client_id, ClientChannel::Chat) {
-            let chat_message: ChatMessage = bincode::deserialize(&message).unwrap();
-            println!("{}: {}", chat_message.client_id, chat_message.message);
-            server.broadcast_message(ServerChannel::ChatChannel, message);
+        while let Some(message) = server.receive_message(client_id, ClientChannel::Mobs) {
+            let mob: MobInfo = bincode::deserialize(&message).unwrap();
+            for (mut stat, id, entity) in mobs.iter_mut() {
+                let mut transform = transform.get_mut(entity).unwrap().clone();
+                if mob.mob_id == id.0 {
+                    if mob.mob_id == id.0 {
+                        transform.translation = mob.translation;
+                        transform.rotation = mob.rotation;
+                        stat.0 = mob.hp;
+                    }
+                    let message = bincode::serialize(&entity).unwrap();
+                    server.broadcast_message(ServerChannel::NonNetworkedEntities, message);
+                }
+            }
+        }
+        while let Some(message) = server.receive_message(client_id, ClientChannel::NewMob) {
+            let mob: Entity = bincode::deserialize(&message).unwrap();
+            println!("New mob: {:?}", mob);
         }
     }
 }
+
+#[derive(Component)]
+pub struct Stats(i32);
 
 #[allow(clippy::type_complexity)]
 fn server_network_sync(
@@ -174,7 +196,7 @@ fn server_network_sync(
     server.broadcast_message(ServerChannel::NetworkedEntities, sync_message);
 }
 
-fn server_non_network_sync(
+/*fn server_non_network_sync(
     mut server: ResMut<RenetServer>,
     query: Query<(Entity, &Transform), With<Mob>>,
 ) {
@@ -188,4 +210,4 @@ fn server_non_network_sync(
     }
     let sync_message = bincode::serialize(&non_networked_entities).unwrap();
     server.broadcast_message(ServerChannel::NonNetworkedEntities, sync_message);
-}
+} */
