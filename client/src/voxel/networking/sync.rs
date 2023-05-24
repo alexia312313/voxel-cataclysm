@@ -9,15 +9,12 @@ use crate::{
             bundle::{BasePlayerBundle, MyCamera3dBundle, PlayerColliderBundle, PlayerHeadBundle},
             Body, MobSpawnTimer,
         },
+        Attacked, Stats,
     },
     GameState,
 };
-use bevy::{
-    prelude::*,
-    transform::{self, commands},
-    utils::HashMap,
-};
-
+use bevy::{prelude::*, time, utils::HashMap};
+use bevy_rapier3d::prelude::{ActiveEvents, Collider, RigidBody};
 use bevy_renet::renet::{transport::NetcodeClientTransport, RenetClient};
 use common::{
     ChatMessage, ClientChannel, MobSend, NetworkedEntities, Player, PlayerCommand, ServerChannel,
@@ -39,6 +36,7 @@ fn sync_players(
         Query<&ControlledPlayer>,
         Query<&Mob>,
         Query<(&mut Transform, &NetworkMob)>,
+        Query<(&mut Transform, Entity, &mut Stats, &Attacked, &Mob)>,
     )>,
 ) {
     let client_id = transport.client_id();
@@ -142,12 +140,17 @@ fn sync_players(
             }
         }
         if !flag {
-            cmds.spawn(SceneBundle {
-                scene: _my_assets.slime.clone(),
-                transform: Transform::from_translation(mob.translation)
-                    .looking_to(Vec3::Z, Vec3::Y),
-                ..default()
-            })
+            cmds.spawn((
+                Collider::cuboid(1.0, 1.0, 1.0),
+                SceneBundle {
+                    scene: _my_assets.slime.clone(),
+                    transform: Transform::from_translation(mob.translation)
+                        .looking_to(Vec3::Z, Vec3::Y),
+                    ..default()
+                },
+            ))
+            .insert(RigidBody::Dynamic)
+            .insert(ActiveEvents::COLLISION_EVENTS)
             .insert(NetworkMob(mob.id.clone()));
         }
     }
@@ -170,6 +173,15 @@ fn sync_players(
                         }
                     }
                 }
+            }
+        }
+    }
+    while let Some(message) = client.receive_message(ServerChannel::MobAttacked) {
+        let sent_id: String = bincode::deserialize(&message).unwrap();
+        for id in queries.p2().iter().map(|mob| &mob.0) {
+            // if id equals mob id he's the one who was attacked
+            if id == &sent_id {
+                println!("Mob {} attacked", id);
             }
         }
     }
@@ -221,6 +233,23 @@ fn sync_player_commands(
     }
 }
 
+fn sync_mob_attacked(
+    query_p1: Query<(Entity, &Mob), Added<Attacked>>,
+    query_p2: Query<(Entity, &NetworkMob), Added<Attacked>>,
+    mut client: ResMut<RenetClient>,
+) {
+    for (_entity, id) in query_p1.iter() {
+        println!("Attacked: {:?}", id.0);
+        let message = bincode::serialize(&id.0).unwrap();
+        client.send_message(ClientChannel::MobAttacked, message);
+    }
+    for (_entity, id) in query_p2.iter() {
+        println!("Attacked: {:?}", id.0);
+        let message = bincode::serialize(&id.0).unwrap();
+        client.send_message(ClientChannel::MobAttacked, message);
+    }
+}
+
 fn send_text(mut client: ResMut<RenetClient>, chat_messages: Query<&ChatMessage>) {
     for chat_message in chat_messages.iter() {
         let message = bincode::serialize(chat_message).unwrap();
@@ -252,6 +281,7 @@ impl Plugin for NetSyncPlugin {
                 send_text,
                 send_one_chat,
                 send_mob,
+                sync_mob_attacked,
             )
                 .distributive_run_if(bevy_renet::transport::client_connected)
                 .in_set(OnUpdate(GameState::Game)),
