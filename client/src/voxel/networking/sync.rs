@@ -36,8 +36,8 @@ fn sync_players(
         Query<&ControlledPlayer>,
         Query<&Mob>,
         Query<(&mut Transform, &NetworkMob)>,
-        // query of a entity with a (NetworkMob or a Mob)
-        Query<(Entity, &Mob), Or<(With<NetworkMob>, With<Mob>)>>,
+        Query<(Entity, &Mob)>,
+        Query<(Entity, &NetworkMob)>,
     )>,
 ) {
     let client_id = transport.client_id();
@@ -134,7 +134,7 @@ fn sync_players(
             }
         }
         for (mut transform, id) in queries.p3().iter_mut() {
-            if &id.0 == &mob.id {
+            if id.0 == mob.id {
                 transform.translation = mob.translation;
                 flag = true;
                 break;
@@ -181,7 +181,15 @@ fn sync_players(
         let sent_id: String = bincode::deserialize(&message).unwrap();
         for (entity, id) in queries.p4().iter() {
             // if id equals mob id he's the one who was attacked
-            if &id.0 == &sent_id {
+            if id.0 == sent_id {
+                println!("Mob {} was attacked", &id.0.clone());
+                cmds.entity(entity).insert(Attacked { damage: 10 });
+            }
+        }
+        for (entity, id) in queries.p5().iter() {
+            // if id equals mob id he's the one who was attacked
+            if id.0 == sent_id {
+                println!("Mob {} was attacked, -10hp", &id.0.clone());
                 cmds.entity(entity).insert(Attacked { damage: 10 });
             }
         }
@@ -235,17 +243,17 @@ fn sync_player_commands(
 }
 
 fn sync_mob_attacked(
-    query_p1: Query<(Entity, &Mob), Added<AttackWanted>>,
-    query_p2: Query<(Entity, &NetworkMob), Added<AttackWanted>>,
+    query_p1: Query<&Mob, Added<AttackWanted>>,
+    query_p2: Query<&NetworkMob, Added<AttackWanted>>,
     mut client: ResMut<RenetClient>,
 ) {
-    for (_entity, id) in query_p1.iter() {
-        println!("Attacked: {:?}", id.0);
+    for id in query_p1.iter() {
+        println!("Mob Attacked: {:?}", id.0);
         let message = bincode::serialize(&id.0).unwrap();
         client.send_message(ClientChannel::MobAttacked, message);
     }
-    for (_entity, id) in query_p2.iter() {
-        println!("Attacked: {:?}", id.0);
+    for id in query_p2.iter() {
+        println!("NetworkMob Attacked: {:?}", id.0);
         let message = bincode::serialize(&id.0).unwrap();
         client.send_message(ClientChannel::MobAttacked, message);
     }
@@ -263,7 +271,7 @@ fn send_mob(mut client: ResMut<RenetClient>, mob_query: Query<(&Transform, &Mob)
         //println!("Pos: {:?} Mob:{:?}", pos, mob);
         let mob_send = MobSend {
             id: mob.0.clone(),
-            translation: pos.translation.clone(),
+            translation: pos.translation,
         };
         let message = bincode::serialize(&mob_send).unwrap();
         client.send_message(ClientChannel::Mobs, message);

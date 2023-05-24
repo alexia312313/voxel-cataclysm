@@ -33,7 +33,7 @@ pub fn detect_player(
                     "The entities {:?} and {:?} have intersecting colliders!",
                     collider1, collider2
                 );
-                game_state_next_state.set(GameState::GameOver);
+                //game_state_next_state.set(GameState::GameOver);
             }
         }
     }

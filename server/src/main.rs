@@ -9,7 +9,7 @@ use bevy_renet::{
     RenetServerPlugin,
 };
 use common::{
-    connection_config, ChatMessage, ClientChannel, MobSend, NetworkedEntities, Player, PlayerInput,
+    connection_config, ChatMessage, ClientChannel, NetworkedEntities, Player, PlayerInput,
     RotationInput, ServerChannel, ServerMessages, PROTOCOL_ID,
 };
 use std::{collections::HashMap, f32::consts::PI, net::UdpSocket, time::SystemTime};

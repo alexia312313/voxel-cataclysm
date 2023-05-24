@@ -28,13 +28,13 @@ pub fn entity_attacked_handler(
 fn player_melee_attack(
     mut commands: Commands,
     transform_query: Query<&Transform>,
-    player_query: Query<(Entity, &Stats), With<ControlledPlayer>>,
+    player_query: Query<Entity, With<ControlledPlayer>>,
     rapier_context: Res<RapierContext>,
     windows: Query<&Window, With<PrimaryWindow>>,
     camera_query: Query<(&Camera, &GlobalTransform)>,
     button: Res<Input<MouseButton>>,
 ) {
-    if let Ok((player_entity, stats)) = player_query.get_single() {
+    if let Ok(player_entity) = player_query.get_single() {
         if button.just_pressed(MouseButton::Left) {
             let player_transform = transform_query.get(player_entity).unwrap();
             let window = windows.single();
@@ -62,6 +62,7 @@ fn player_melee_attack(
                         .distance(mob_transform.translation)
                         > 5.0
                     {
+                        println!("AttackWanted Added");
                         commands.entity(entity).insert(AttackWanted);
                     }
                 }
