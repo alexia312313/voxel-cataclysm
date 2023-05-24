@@ -1,10 +1,9 @@
 use bevy::prelude::*;
-use bevy_rapier3d::prelude::{Collider, RapierContext, RigidBody, Sensor};
+use bevy_rapier3d::prelude::{RapierContext};
 
 use crate::{
     voxel::{
         boss::Boss,
-        events::EndPortal,
         loading::MyAssets,
         networking::{ControlledPlayer, ControlledPlayerCollider},
         Stats,
