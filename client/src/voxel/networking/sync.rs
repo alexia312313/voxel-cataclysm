@@ -14,7 +14,7 @@ use crate::{
     GameState,
 };
 use bevy::{prelude::*, utils::HashMap};
-use bevy_rapier3d::prelude::{ActiveEvents, Collider, RigidBody};
+use bevy_rapier3d::prelude::{ActiveEvents, Collider, GravityScale, RigidBody};
 use bevy_renet::renet::{transport::NetcodeClientTransport, RenetClient};
 use common::{
     ChatMessage, ClientChannel, MobSend, NetworkedEntities, Player, PlayerCommand, ServerChannel,
@@ -154,6 +154,7 @@ fn sync_players(
                 },
             ))
             .insert(RigidBody::Dynamic)
+            .insert(GravityScale(0.0))
             .insert(ActiveEvents::COLLISION_EVENTS)
             .insert(NetworkMob(mob.id.clone()));
         }

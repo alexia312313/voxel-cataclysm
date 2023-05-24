@@ -49,7 +49,6 @@ pub fn walk_animation(
             timer.tick(time.delta());
             // if player finished
             if timer.just_finished() {
-                println!("hit done");
                 *hit_done = false;
             }
         }
