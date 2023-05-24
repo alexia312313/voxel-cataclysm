@@ -54,6 +54,9 @@ fn panic_on_error_system(mut renet_error: EventReader<NetcodeTransportError>) {
 #[derive(Component)]
 pub struct ControlledPlayer;
 
+#[derive(Component)]
+pub struct ControlledPlayerCollider;
+
 #[derive(Default, Resource)]
 struct NetworkMapping(HashMap<Entity, Entity>);
 
