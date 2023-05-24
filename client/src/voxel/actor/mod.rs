@@ -11,7 +11,7 @@ impl Plugin for ActorPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
         app.add_plugin(player::PlayerPlugin)
             .add_plugin(mob::MobPlugin)
-            //.add_plugin(boss::BossPlugin)
+            .add_plugin(boss::BossPlugin)
             .add_plugin(animation::AnimationsHandlerPlugin);
     }
 }

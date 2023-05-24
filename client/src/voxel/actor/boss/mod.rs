@@ -23,8 +23,8 @@ pub fn setup(mut cmds: Commands, _my_assets: Res<MyAssets>) {
         Mob,
         Boss,
         Stats {
-            hp: 2,
-            max_hp: 2,
+            hp: 100,
+            max_hp: 100,
             attack: 10,
             speed: 5.0,
             score: 10,

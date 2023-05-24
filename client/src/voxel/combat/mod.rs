@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-mod events;
+pub mod events;
 pub struct CombatPlugin;
 impl Plugin for CombatPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
