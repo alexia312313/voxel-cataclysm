@@ -58,18 +58,12 @@ pub enum ServerMessages {
     },
 }
 
-#[derive(Resource, Debug)]
-pub struct ChatMessages {
-    pub message: Vec<String>,
-    pub id: Vec<u64>,
-}
-
 #[derive(Debug, Serialize, Deserialize, Component)]
 pub struct Position {
     pub position: Vec3,
 }
 
-#[derive(Debug, Serialize, Deserialize, Component, Clone)]
+#[derive(Resource, Debug, Serialize, Deserialize)]
 pub struct ChatMessage {
     pub message: String,
     pub client_id: u64,

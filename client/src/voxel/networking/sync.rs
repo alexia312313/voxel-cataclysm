@@ -152,19 +152,27 @@ fn sync_players(
     }
 }
 
-pub fn send_one_chat(mut chat_messages: Query<&mut ChatMessage>, player_id: Query<&Player>) {
+pub fn send_one_chat(
+    chat_messages: ResMut<ChatMessage>,
+    player_id: Query<&Player>,
+    mut client: ResMut<RenetClient>,
+) {
     if player_id.get_single().is_err() {
         return;
     }
-    println!("Sending message");
-    let message = ChatMessage {
-        client_id: player_id.get_single().unwrap().id,
-        message: "Hello World".to_string(),
-    };
-    for mut chat_message in chat_messages.iter_mut() {
-        *chat_message = message.clone();
+    if chat_messages.message.len() == 0 {
+        return;
+    } else {
+        let message = ChatMessage {
+            client_id: player_id.get_single().unwrap().id,
+            message: chat_messages.message.clone(),
+        };
+        if !(client.is_disconnected()) {
+            let message = bincode::serialize(&message).unwrap();
+            client.send_message(ClientChannel::Chat, message);
+        }
+        println!("Sending message: {:?}", message);
     }
-    println!("Sending message: {:?}", message);
 }
 
 fn sync_input(
@@ -198,12 +206,17 @@ fn sync_player_commands(
     }
 }
 
-fn send_text(mut client: ResMut<RenetClient>, chat_messages: Query<&ChatMessage>) {
-    for chat_message in chat_messages.iter() {
-        println!("Hem entrat a send message hueheheh");
-        let message = bincode::serialize(chat_message).unwrap();
-        client.send_message(ClientChannel::Chat, message);
+fn send_text(mut client: ResMut<RenetClient>, mut chat_message: ResMut<ChatMessage>) {
+    if chat_message.message.is_empty() {
+        return;
     }
+    let message = bincode::serialize(&(&chat_message.message, &chat_message.client_id)).unwrap();
+    client.send_message(ClientChannel::Chat, message);
+
+    //Reiniciem els valors de chat_message per a que no es repeteixin els missatges
+    //Es una mica chapuzas pero ens queda nomes un dia nois.
+    chat_message.message = String::new();
+    chat_message.client_id = 0;
 }
 
 pub struct NetSyncPlugin;

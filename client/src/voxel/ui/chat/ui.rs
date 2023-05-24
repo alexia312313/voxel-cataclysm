@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use common::{ChatMessages, Player};
+use common::{ChatMessage, Player};
 
 /// prints every char coming in; press enter to echo the full string
 pub fn text_input(
@@ -7,7 +7,7 @@ pub fn text_input(
     keys: Res<Input<KeyCode>>,
     mut string: Local<String>,
     mut writing: Local<bool>,
-    mut chat_messages: ResMut<ChatMessages>,
+    mut chat_messages: ResMut<ChatMessage>,
     player_query: Query<&Player>,
 ) {
     if !*writing {
@@ -25,8 +25,8 @@ pub fn text_input(
                 return;
             }
             println!(" {}", *string);
-            chat_messages.message.push(string.clone());
-            chat_messages.id.push(player_query.get_single().unwrap().id);
+            chat_messages.message = string.to_string();
+            chat_messages.client_id = player_query.get_single().unwrap().id;
             println!("chat_messages: {:?}", chat_messages);
             string.clear();
             *writing = false;
