@@ -4,7 +4,7 @@ use crate::{
         animation::Animations,
         loading::MyAssets,
         mob::Mob,
-        networking::{ControlledPlayer,ControlledPlayerCollider, PlayerInfo},
+        networking::{ControlledPlayer, ControlledPlayerCollider, PlayerInfo},
         player::{
             bundle::{BasePlayerBundle, MyCamera3dBundle, PlayerColliderBundle, PlayerHeadBundle},
             Body, MobSpawnTimer,

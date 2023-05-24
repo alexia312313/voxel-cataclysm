@@ -26,7 +26,7 @@ pub fn detect_player_v2(
                     "The entities {:?} and {:?} have intersecting colliders!",
                     portal, player
                 );
-                //game_state_next_state.set(GameState::GameOver);
+                game_state_next_state.set(GameState::GameOver);
             }
         }
     }

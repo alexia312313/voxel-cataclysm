@@ -88,7 +88,7 @@ pub fn spawn_mob(cmds: &mut Commands, _my_assets: &Res<MyAssets>, pos: Vec3) {
     .insert(ActiveEvents::COLLISION_EVENTS);
 }
 
-fn generate_id(length: usize) -> String {
+pub fn generate_id(length: usize) -> String {
     let chars: Vec<char> = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
         .chars()
         .collect();

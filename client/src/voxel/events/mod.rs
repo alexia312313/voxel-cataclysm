@@ -1,23 +1,23 @@
 use crate::GameState;
 use bevy::prelude::*;
 
-
 use self::{
-    end::{detect_player, detect_player_v2, spawn_arrow, spawn_end_portal},
+    end::{detect_player_v2, spawn_arrow},
     spawn::spawn_mobs,
 };
 
 mod end;
 mod spawn;
 use super::{networking::ControlledPlayer, Stats};
-
+pub use spawn::generate_id;
 
 pub struct EventsHandlerPlugin;
 
 impl Plugin for EventsHandlerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
-            (detect_player_v2, spawn_arrow, add_score, spawn_mobs).in_set(OnUpdate(GameState::Game)),
+            (detect_player_v2, spawn_arrow, add_score, spawn_mobs)
+                .in_set(OnUpdate(GameState::Game)),
         );
     }
 }
