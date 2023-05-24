@@ -47,6 +47,7 @@ pub enum ClientChannel {
     Rots,
     Mobs,
     Chat,
+    MobAttacked,
 }
 
 pub enum ServerChannel {
@@ -55,6 +56,7 @@ pub enum ServerChannel {
     NetworkedEntities,
     NonNetworkedEntities,
     Host,
+    MobAttacked,
 }
 
 #[derive(Debug, Serialize, Deserialize, Component)]
@@ -108,6 +110,7 @@ impl From<ClientChannel> for u8 {
             ClientChannel::Rots => 2,
             ClientChannel::Mobs => 3,
             ClientChannel::Chat => 4,
+            ClientChannel::MobAttacked => 5,
         }
     }
 }
@@ -150,6 +153,13 @@ impl ClientChannel {
                     resend_time: Duration::ZERO,
                 },
             },
+            ChannelConfig {
+                channel_id: Self::MobAttacked.into(),
+                max_memory_usage_bytes: 5 * 1024 * 1024,
+                send_type: SendType::ReliableOrdered {
+                    resend_time: Duration::ZERO,
+                },
+            },
         ]
     }
 }
@@ -162,6 +172,7 @@ impl From<ServerChannel> for u8 {
             ServerChannel::NonNetworkedEntities => 2,
             ServerChannel::Host => 3,
             ServerChannel::ChatChannel => 4,
+            ServerChannel::MobAttacked => 5,
         }
     }
 }
@@ -193,6 +204,11 @@ impl ServerChannel {
             },
             ChannelConfig {
                 channel_id: Self::Host.into(),
+                max_memory_usage_bytes: 10 * 1024 * 1024,
+                send_type: SendType::Unreliable,
+            },
+            ChannelConfig {
+                channel_id: Self::MobAttacked.into(),
                 max_memory_usage_bytes: 10 * 1024 * 1024,
                 send_type: SendType::Unreliable,
             },

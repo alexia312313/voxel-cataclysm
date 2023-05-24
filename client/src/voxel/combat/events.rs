@@ -6,6 +6,7 @@ use bevy::{prelude::*, window::PrimaryWindow};
 use bevy_rapier3d::prelude::{QueryFilter, RapierContext};
 
 // system that listen if an entity is attacked
+/*
 pub fn entity_attacked_handler(
     mut cmds: Commands,
     time: Res<Time>,
@@ -21,6 +22,7 @@ pub fn entity_attacked_handler(
         cmds.entity(entity).remove::<Attacked>();
     }
 }
+ */
 
 fn player_melee_attack(
     mut commands: Commands,
@@ -52,10 +54,8 @@ fn player_melee_attack(
                     true,
                     QueryFilter::only_dynamic(),
                 );
-
                 if let Some((entity, _toi)) = hit {
                     let mob_transform = transform_query.get(entity).unwrap();
-
                     if player_transform
                         .translation
                         .distance(mob_transform.translation)
@@ -94,7 +94,7 @@ impl Plugin for EventHandlerPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
         app.add_systems(
             (
-                entity_attacked_handler,
+                //entity_attacked_handler,
                 despawn_dead_mobs,
                 player_melee_attack,
                 check_hp,

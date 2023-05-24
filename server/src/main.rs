@@ -150,9 +150,10 @@ fn server_update_system(
             server.broadcast_message(ServerChannel::ChatChannel, message);
         }
         while let Some(message) = server.receive_message(client_id, ClientChannel::Mobs) {
-            let mob: MobSend = bincode::deserialize(&message).unwrap();
-            println!("{}: {}", mob.id, mob.translation);
             server.broadcast_message(ServerChannel::NonNetworkedEntities, message);
+        }
+        while let Some(message) = server.receive_message(client_id, ClientChannel::MobAttacked) {
+            server.broadcast_message(ServerChannel::MobAttacked, message);
         }
     }
 }
