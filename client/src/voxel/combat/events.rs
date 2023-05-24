@@ -52,7 +52,6 @@ fn player_melee_attack(
                     true,
                     QueryFilter::only_dynamic(),
                 );
-
                 if let Some((entity, _toi)) = hit {
                     let mob_transform = transform_query.get(entity).unwrap();
 

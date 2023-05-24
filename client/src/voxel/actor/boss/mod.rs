@@ -1,15 +1,9 @@
-use super::{Stats, mob::brain};
-use crate::{
-    voxel::{
-        animation::{AnimationController, Animations},
-        loading::MyAssets,
-    },
-    GameState,
-};
 use bevy::{prelude::*, utils::HashMap};
-use bevy_rapier3d::prelude::{ActiveEvents, Collider, LockedAxes, RigidBody, GravityScale};
+use bevy_rapier3d::prelude::{Collider, GravityScale, RigidBody, LockedAxes, ActiveEvents};
 
+use crate::{GameState, voxel::loading::MyAssets};
 
+use super::{mob::Mob, Stats, animation::{AnimationController, Animations}};
 pub struct BossPlugin;
 
 impl Plugin for BossPlugin {
@@ -31,18 +25,18 @@ pub fn setup(mut cmds: Commands, _my_assets: Res<MyAssets>) {
         Stats {
             hp: 2,
             max_hp: 2,
-            attack: 20,
+            attack: 10,
             speed: 5.0,
-            score: 100,
+            score: 10,
         },
         VisibilityBundle {
             visibility: Visibility::Visible,
             ..default()
         },
         TransformBundle {
-            local: Transform::from_xyz(10.0, 400.0, 2.0)
-            .looking_to(Vec3::Z, Vec3::Y)
-            .with_scale((10.0,10.0,10.0).into()),
+            local: Transform::from_xyz(10.0, 170.0, 2.0)
+                .looking_to(Vec3::Z, Vec3::Y)
+                .with_scale((10.0, 10.0, 10.0).into()),
             ..default()
         },
         Collider::cuboid(1.0, 1.0, 1.0),
@@ -61,9 +55,6 @@ pub fn setup(mut cmds: Commands, _my_assets: Res<MyAssets>) {
     .insert(LockedAxes::ROTATION_LOCKED)
     .insert(ActiveEvents::COLLISION_EVENTS);
 }
-
-#[derive(Component)]
-pub struct Mob;
 
 #[derive(Component)]
 pub struct Boss;
