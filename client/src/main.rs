@@ -5,9 +5,7 @@
 )]
 
 use bevy::{prelude::*, window::WindowMode};
-use bevy_rapier3d::{
-    prelude::{NoUserData, RapierPhysicsPlugin},
-};
+use bevy_rapier3d::prelude::{NoUserData, RapierPhysicsPlugin};
 use bevy_renet::{transport::NetcodeClientPlugin, RenetClientPlugin};
 use voxel::ui::end::GameOverPlugin;
 
