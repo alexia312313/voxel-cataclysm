@@ -1,6 +1,6 @@
 use bevy::{prelude::*, utils::HashMap};
 use bevy_rapier3d::prelude::{Collider, GravityScale, RigidBody, LockedAxes, ActiveEvents};
-
+use rand::prelude::*;
 use crate::{GameState, voxel::loading::MyAssets};
 
 use super::{mob::Mob, Stats, animation::{AnimationController, Animations}};
@@ -13,6 +13,8 @@ impl Plugin for BossPlugin {
 }
 
 pub fn setup(mut cmds: Commands, _my_assets: Res<MyAssets>) {
+
+    let rndm = (random::<f32>*100.0,200.0,random::<f32>*100)
     let mut map = HashMap::new();
     map.insert(
         "walk".to_string(),
@@ -34,7 +36,7 @@ pub fn setup(mut cmds: Commands, _my_assets: Res<MyAssets>) {
             ..default()
         },
         TransformBundle {
-            local: Transform::from_xyz(10.0, 170.0, 2.0)
+            local: Transform::from_xyz(rndm.0,rndm.1,rndm.2)
                 .looking_to(Vec3::Z, Vec3::Y)
                 .with_scale((10.0, 10.0, 10.0).into()),
             ..default()
