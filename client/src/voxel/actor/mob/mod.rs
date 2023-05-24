@@ -45,7 +45,7 @@ pub fn setup(mut cmds: Commands, _my_assets: Res<MyAssets>) {
             ..default()
         },
         Collider::cuboid(1.0, 1.0, 1.0),
-        GravityScale(0.0),
+        GravityScale(2.0),
     ))
     .with_children(|mob| {
         mob.spawn(SceneBundle {

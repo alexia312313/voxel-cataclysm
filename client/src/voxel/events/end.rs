@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_rapier3d::prelude::{RapierContext};
+use bevy_rapier3d::prelude::RapierContext;
 
 use crate::{
     voxel::{

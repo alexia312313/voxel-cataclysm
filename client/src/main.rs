@@ -43,9 +43,6 @@ fn main() {
     .add_plugin(voxel::events::EventsHandlerPlugin)
     .add_plugin(GameOverPlugin)
     .add_plugin(voxel::ui::dead::DeadPlugin)
-    .add_plugin(RapierDebugRenderPlugin {
-        ..Default::default()
-    })
     .run();
 }
 
