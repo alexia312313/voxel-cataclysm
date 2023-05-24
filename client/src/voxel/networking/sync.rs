@@ -17,8 +17,8 @@ use bevy::{prelude::*, utils::HashMap};
 use bevy_rapier3d::prelude::{ActiveEvents, Collider, GravityScale, RigidBody};
 use bevy_renet::renet::{transport::NetcodeClientTransport, RenetClient};
 use common::{
-    ChatMessage, ClientChannel, MobSend, NetworkedEntities, Player, PlayerCommand, ServerChannel,
-    ServerMessages,
+    ChatMessage, ClientChannel, DisplayMessage, NetworkedEntities, NonNetworkedEntities, Player,
+    PlayerCommand, ServerChannel, ServerMessages,
 };
 
 #[derive(Component)]
@@ -39,6 +39,8 @@ fn sync_players(
         Query<(Entity, &Mob)>,
         Query<(Entity, &NetworkMob)>,
     )>,
+      _chat_message: ResMut<ChatMessage>,
+    mut display_message: ResMut<DisplayMessage>,
 ) {
     let client_id = transport.client_id();
     while let Some(message) = client.receive_message(ServerChannel::ServerMessages) {
@@ -66,6 +68,7 @@ fn sync_players(
                 if client_id == id {
                     client_entity
                         .insert(ControlledPlayer)
+                        .insert(Player { id })
                         .insert(MobSpawnTimer {
                             get_timer: Timer::from_seconds(5.0, TimerMode::Once),
                             current_mobs: 0,
@@ -198,21 +201,33 @@ fn sync_players(
             }
         }
     }
+    while let Some(message) = client.receive_message(ServerChannel::ChatChannel) {
+        let textmess: ChatMessage = bincode::deserialize(&message).unwrap();
+        println!("Received message: {:?}", textmess.message);
+        display_message.message = textmess.message.clone();
+    }
 }
 
-pub fn send_one_chat(mut chat_messages: Query<&mut ChatMessage>, player_id: Query<&Player>) {
+pub fn send_one_chat(
+    chat_messages: ResMut<ChatMessage>,
+    player_id: Query<&Player>,
+    mut client: ResMut<RenetClient>,
+) {
     if player_id.get_single().is_err() {
         return;
     }
-    println!("Sending message");
-    let message = ChatMessage {
-        client_id: player_id.get_single().unwrap().id,
-        message: "Hello World".to_string(),
-    };
-    for mut chat_message in chat_messages.iter_mut() {
-        *chat_message = message.clone();
+    if chat_messages.message.is_empty() {
+    } else {
+        let message = ChatMessage {
+            client_id: player_id.get_single().unwrap().id,
+            message: chat_messages.message.clone(),
+        };
+        if !(client.is_disconnected()) {
+            let message = bincode::serialize(&message).unwrap();
+            client.send_message(ClientChannel::Chat, message);
+        }
+        println!("Sending message: {:?}", message);
     }
-    println!("Sending message: {:?}", message);
 }
 
 fn sync_input(
@@ -246,6 +261,20 @@ fn sync_player_commands(
     }
 }
 
+
+fn send_text(mut client: ResMut<RenetClient>, mut chat_message: ResMut<ChatMessage>) {
+    if chat_message.message.is_empty() {
+        return;
+       }
+    let message = bincode::serialize(&(&chat_message.message, &chat_message.client_id)).unwrap();
+    client.send_message(ClientChannel::Chat, message);
+
+    //Reiniciem els valors de chat_message per a que no es repeteixin els missatges
+    //Es una mica chapuzas pero ens queda nomes un dia nois.
+    chat_message.message = String::new();
+    chat_message.client_id = 0;
+}
+
 fn sync_mob_attacked(
     query_p1: Query<&Mob, Added<AttackWanted>>,
     query_p2: Query<&NetworkMob, Added<AttackWanted>>,
@@ -260,13 +289,6 @@ fn sync_mob_attacked(
         println!("NetworkMob Attacked: {:?}", id.0);
         let message = bincode::serialize(&id.0).unwrap();
         client.send_message(ClientChannel::MobAttacked, message);
-    }
-}
-
-fn send_text(mut client: ResMut<RenetClient>, chat_messages: Query<&ChatMessage>) {
-    for chat_message in chat_messages.iter() {
-        let message = bincode::serialize(chat_message).unwrap();
-        client.send_message(ClientChannel::Chat, message);
     }
 }
 
