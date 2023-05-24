@@ -7,7 +7,7 @@ use crate::{
     GameState,
 };
 use bevy::{prelude::*, utils::HashMap};
-use bevy_rapier3d::prelude::{ActiveEvents, Collider, LockedAxes, RigidBody};
+use bevy_rapier3d::prelude::{ActiveEvents, Collider, LockedAxes, RigidBody, GravityScale};
 
 
 pub struct BossPlugin;
@@ -29,8 +29,8 @@ pub fn setup(mut cmds: Commands, _my_assets: Res<MyAssets>) {
         Mob,
         Boss,
         Stats {
-            hp: 100,
-            max_hp: 100,
+            hp: 2,
+            max_hp: 2,
             attack: 20,
             speed: 5.0,
             score: 100,
@@ -40,10 +40,13 @@ pub fn setup(mut cmds: Commands, _my_assets: Res<MyAssets>) {
             ..default()
         },
         TransformBundle {
-            local: Transform::from_xyz(10.0, 400.0, 2.0).looking_to(Vec3::Z, Vec3::Y).with_scale((5.0,5.0,5.0).into()),
+            local: Transform::from_xyz(10.0, 400.0, 2.0)
+            .looking_to(Vec3::Z, Vec3::Y)
+            .with_scale((10.0,10.0,10.0).into()),
             ..default()
         },
-        Collider::cuboid(5.0, 5.0, 5.0),
+        Collider::cuboid(1.0, 1.0, 1.0),
+        GravityScale(0.0),
     ))
     .with_children(|mob| {
         mob.spawn(SceneBundle {
