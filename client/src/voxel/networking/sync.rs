@@ -140,19 +140,6 @@ fn sync_players(
         }
         if !flag {
             println!("NEW MOB {:?}", mob.id);
-            println!("NEW MOB {:?}", mob.id);
-            println!("NEW MOB {:?}", mob.id);
-            println!("NEW MOB {:?}", mob.id);
-            println!("NEW MOB {:?}", mob.id);
-            println!("NEW MOB {:?}", mob.id);
-            println!("NEW MOB {:?}", mob.id);
-            println!("NEW MOB {:?}", mob.id);
-            println!("NEW MOB {:?}", mob.id);
-            println!("NEW MOB {:?}", mob.id);
-            println!("NEW MOB {:?}", mob.id);
-            println!("NEW MOB {:?}", mob.id);
-            println!("NEW MOB {:?}", mob.id);
-            println!("NEW MOB {:?}", mob.id);
         }
         // IF MOB ID == ALGUNAMOBIDGUARDADA PUES MUEVO MOD SOLO
         // IF MOB ID != ALGUNAMOBIDGUARDADA PUES CREO MOB
