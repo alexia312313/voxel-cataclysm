@@ -52,7 +52,7 @@ pub const CHAT_STYLE: Style = Style {
     flex_direction: FlexDirection::Row,
     justify_content: JustifyContent::Start,
     align_items: AlignItems::End,
-    size: Size::new(Val::Percent(15.0), Val::Percent(5.0)),
+    size: Size::new(Val::Percent(100.0), Val::Percent(5.0)),
     ..Style::DEFAULT
 };
 
