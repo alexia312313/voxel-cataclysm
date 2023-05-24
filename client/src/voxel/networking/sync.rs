@@ -12,12 +12,16 @@ use crate::{
     },
     GameState,
 };
-use bevy::{prelude::*, transform::commands, utils::HashMap};
+use bevy::{
+    prelude::*,
+    transform::{self, commands},
+    utils::HashMap,
+};
 
 use bevy_renet::renet::{transport::NetcodeClientTransport, RenetClient};
 use common::{
-    ChatMessage, ClientChannel, MobSend, NetworkedEntities, NonNetworkedEntities, Player,
-    PlayerCommand, ServerChannel, ServerMessages,
+    ChatMessage, ClientChannel, MobSend, NetworkedEntities, Player, PlayerCommand, ServerChannel,
+    ServerMessages,
 };
 
 #[derive(Component)]
@@ -34,7 +38,7 @@ fn sync_players(
         Query<&Transform>,
         Query<&ControlledPlayer>,
         Query<&Mob>,
-        Query<&NetworkMob>,
+        Query<(&mut Transform, &NetworkMob)>,
     )>,
 ) {
     let client_id = transport.client_id();
@@ -127,19 +131,24 @@ fn sync_players(
             // if id equals mob id
             if id == &mob.id {
                 flag = true;
-                println!("mob id {:?} == id {:?}", mob.id, id);
                 break;
             }
         }
-        for id in queries.p3().iter().map(|mob| &mob.0) {
-            if id == &mob.id {
+        for (mut transform, id) in queries.p3().iter_mut() {
+            if &id.0 == &mob.id {
+                transform.translation = mob.translation;
                 flag = true;
-                println!("mob id {:?} == id {:?}", mob.id, id);
                 break;
             }
         }
         if !flag {
-            println!("NEW MOB {:?}", mob.id);
+            cmds.spawn(SceneBundle {
+                scene: _my_assets.slime.clone(),
+                transform: Transform::from_translation(mob.translation)
+                    .looking_to(Vec3::Z, Vec3::Y),
+                ..default()
+            })
+            .insert(NetworkMob(mob.id.clone()));
         }
         // IF MOB ID == ALGUNAMOBIDGUARDADA PUES MUEVO MOD SOLO
         // IF MOB ID != ALGUNAMOBIDGUARDADA PUES CREO MOB
