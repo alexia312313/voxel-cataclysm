@@ -1,21 +1,23 @@
-use bevy::{prelude::*, time, utils::HashMap};
+use bevy::{prelude::*, time, transform::commands, utils::HashMap};
 use bevy_rapier3d::prelude::{ActiveEvents, Collider, LockedAxes, RigidBody};
+use bevy_renet::renet::RenetClient;
 use rand::Rng;
 
 use crate::voxel::{
     animation::{AnimationController, Animations},
     loading::MyAssets,
-    mob::Mob,
     networking::ControlledPlayer,
     player::MobSpawnTimer,
     Stats,
 };
+use common::{ClientChannel, Mob};
 
 pub fn spawn_mobs(
     mut cmds: Commands,
     my_assets: Res<MyAssets>,
     mut query: Query<(&Transform, &mut MobSpawnTimer), With<ControlledPlayer>>,
     time: Res<time::Time>,
+    mut client: ResMut<RenetClient>,
 ) {
     // random number from 100 to 200
     let mut rng = rand::thread_rng();
@@ -40,7 +42,7 @@ pub fn spawn_mobs(
                     player_pos.z + random_number,
                 );
                 println!("Mob Spawned at {:?}", mob_pos);
-                spawn_mob(&mut cmds, &my_assets, mob_pos);
+                spawn_mob(&mut cmds, &my_assets, mob_pos, &mut client);
                 timer.current_mobs += 1;
                 timer.get_timer.reset();
             }
@@ -48,15 +50,22 @@ pub fn spawn_mobs(
     }
 }
 
-pub fn spawn_mob(cmds: &mut Commands, _my_assets: &Res<MyAssets>, pos: Vec3) {
+pub fn spawn_mob(
+    cmds: &mut Commands,
+    _my_assets: &Res<MyAssets>,
+    pos: Vec3,
+    client: &mut ResMut<RenetClient>,
+) {
     let mut map = HashMap::new();
     map.insert(
         "walk".to_string(),
         _my_assets.slime_animation_walking.clone(),
     );
 
+    let id = generate_id(10);
+
     cmds.spawn((
-        Mob,
+        Mob(id.clone()),
         Stats {
             hp: 20,
             max_hp: 20,
@@ -86,4 +95,32 @@ pub fn spawn_mob(cmds: &mut Commands, _my_assets: &Res<MyAssets>, pos: Vec3) {
     .insert(RigidBody::Dynamic)
     .insert(LockedAxes::ROTATION_LOCKED)
     .insert(ActiveEvents::COLLISION_EVENTS);
+
+    let translation: Vec3 = pos;
+    let rotation = Quat::IDENTITY;
+    let mut transform = Transform::from_translation(translation);
+    transform.rotation = rotation;
+    let mob_entity = cmds
+        .spawn(PbrBundle {
+            transform,
+            ..Default::default()
+        })
+        .insert(Mob(id))
+        .id();
+    let message = bincode::serialize(&mob_entity).unwrap();
+    client.send_message(ClientChannel::NewMob, message)
+}
+
+fn generate_id(length: usize) -> String {
+    let chars: Vec<char> = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+        .chars()
+        .collect();
+    let mut rng = rand::thread_rng();
+    let id: String = (0..length)
+        .map(|_| {
+            let index = rng.gen_range(0..chars.len());
+            chars[index]
+        })
+        .collect();
+    id
 }

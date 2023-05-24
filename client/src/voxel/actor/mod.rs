@@ -18,7 +18,7 @@ pub struct Attacked {
     pub damage: i32,
 }
 
-#[derive(Component)]
+#[derive(Component, Debug)]
 pub struct Stats {
     pub hp: i32,
     pub max_hp: i32,

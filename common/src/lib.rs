@@ -14,7 +14,7 @@ pub struct Player {
 }
 
 #[derive(Debug, Component)]
-pub struct Mob;
+pub struct Mob(pub String);
 
 pub struct Host {
     pub host: bool,
@@ -30,6 +30,14 @@ pub struct RotationInput {
     pub rotation: Quat,
 }
 
+#[derive(Debug, Default, Clone, Serialize, Deserialize, Component, Resource)]
+pub struct MobInfo {
+    pub translation: Vec3,
+    pub rotation: Quat,
+    pub hp: i32,
+    pub mob_id: String,
+}
+
 #[derive(Debug, Serialize, Deserialize, Component)]
 pub enum PlayerCommand {
     BasicAttack { cast_at: Vec3 },
@@ -41,10 +49,10 @@ pub enum ClientChannel {
     Rots,
     Mobs,
     Chat,
+    NewMob,
 }
 
 pub enum ServerChannel {
-    ChatChannel,
     ServerMessages,
     NetworkedEntities,
     NonNetworkedEntities,
@@ -80,11 +88,9 @@ pub struct ChatMessage {
     pub client_id: u64,
 }
 
-#[derive(Debug, Serialize, Deserialize, Component, Default)]
+#[derive(Debug, Serialize, Deserialize, Component, Default, Resource)]
 pub struct NonNetworkedEntities {
     pub entities: Vec<Entity>,
-    pub translations: Vec<[f32; 3]>,
-    pub rotations: Vec<Quat>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Default)]
@@ -102,6 +108,7 @@ impl From<ClientChannel> for u8 {
             ClientChannel::Rots => 2,
             ClientChannel::Mobs => 3,
             ClientChannel::Chat => 4,
+            ClientChannel::NewMob => 5,
         }
     }
 }
@@ -138,7 +145,7 @@ impl ClientChannel {
                 },
             },
             ChannelConfig {
-                channel_id: Self::Chat.into(),
+                channel_id: Self::NewMob.into(),
                 max_memory_usage_bytes: 5 * 1024 * 1024,
                 send_type: SendType::ReliableOrdered {
                     resend_time: Duration::ZERO,
@@ -155,7 +162,6 @@ impl From<ServerChannel> for u8 {
             ServerChannel::ServerMessages => 1,
             ServerChannel::NonNetworkedEntities => 2,
             ServerChannel::Host => 3,
-            ServerChannel::ChatChannel => 4,
         }
     }
 }
@@ -177,11 +183,6 @@ impl ServerChannel {
             },
             ChannelConfig {
                 channel_id: Self::NonNetworkedEntities.into(),
-                max_memory_usage_bytes: 10 * 1024 * 1024,
-                send_type: SendType::Unreliable,
-            },
-            ChannelConfig {
-                channel_id: Self::ChatChannel.into(),
                 max_memory_usage_bytes: 10 * 1024 * 1024,
                 send_type: SendType::Unreliable,
             },

@@ -19,8 +19,8 @@ impl Plugin for NetworkingPlugin {
             .insert_resource(client)
             .insert_resource(transport)
             .insert_resource(NetworkMapping::default())
-            .add_plugin(sync::NetSyncPlugin)
-            .add_system(panic_on_error_system.in_set(OnUpdate(GameState::Game)));
+            .add_plugin(sync::NetSyncPlugin);
+        //.add_system(panic_on_error_system.in_set(OnUpdate(GameState::Game)));
     }
 }
 
@@ -44,12 +44,13 @@ fn new_renet_client() -> (RenetClient, NetcodeClientTransport) {
 
     (client, transport)
 }
+/*
 // If any error is found we just panic
 fn panic_on_error_system(mut renet_error: EventReader<NetcodeTransportError>) {
     for e in renet_error.iter() {
         panic!("{}", e);
     }
-}
+}*/
 
 #[derive(Component)]
 pub struct ControlledPlayer;

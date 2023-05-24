@@ -1,9 +1,10 @@
 use crate::{
-    voxel::{mob::Mob, networking::ControlledPlayer, player::MobSpawnTimer, Attacked, Stats},
+    voxel::{networking::ControlledPlayer, player::MobSpawnTimer, Attacked, Stats},
     GameState,
 };
 use bevy::{prelude::*, window::PrimaryWindow};
 use bevy_rapier3d::prelude::{QueryFilter, RapierContext};
+use common::Mob;
 
 // system that listen if an entity is attacked
 pub fn entity_attacked_handler(

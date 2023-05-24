@@ -9,6 +9,3 @@ impl Plugin for MobPlugin {
         app.add_plugin(brain::BrainHandlerPlugin);
     }
 }
-
-#[derive(Component)]
-pub struct Mob;

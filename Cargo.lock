@@ -3544,6 +3544,7 @@ dependencies = [
  "bincode",
  "common",
  "fastrand",
+ "rand 0.8.5",
  "serde",
 ]
 

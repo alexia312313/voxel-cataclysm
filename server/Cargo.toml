@@ -13,4 +13,5 @@ bevy_rapier3d.workspace = true
 serde.workspace = true
 bincode.workspace = true
 fastrand.workspace = true
+rand.workspace = true
 common = { path = "../common" }

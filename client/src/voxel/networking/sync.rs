@@ -3,12 +3,12 @@ use crate::{
     voxel::{
         animation::Animations,
         loading::MyAssets,
-        mob::Mob,
         networking::{ControlledPlayer, PlayerInfo},
         player::{
             bundle::{BasePlayerBundle, MyCamera3dBundle, PlayerColliderBundle, PlayerHeadBundle},
             Body, MobSpawnTimer,
         },
+        Stats,
     },
     GameState,
 };
@@ -16,8 +16,8 @@ use bevy::{prelude::*, utils::HashMap};
 
 use bevy_renet::renet::{transport::NetcodeClientTransport, RenetClient};
 use common::{
-    ChatMessage, ClientChannel, NetworkedEntities, NonNetworkedEntities, Player, PlayerCommand,
-    ServerChannel, ServerMessages,
+    ChatMessage, ClientChannel, Mob, NetworkedEntities, NonNetworkedEntities, Player,
+    PlayerCommand, ServerChannel, ServerMessages,
 };
 
 fn sync_players(
@@ -102,29 +102,6 @@ fn sync_players(
             }
         }
     }
-
-    while let Some(message) = client.receive_message(ServerChannel::NonNetworkedEntities) {
-        let non_networked_entities: NonNetworkedEntities = bincode::deserialize(&message).unwrap();
-        for i in 0..non_networked_entities.entities.len() {
-            if let Some(entity) = network_mapping.0.get(&non_networked_entities.entities[i]) {
-                // if the entity is the ControlledPlayer, we don't want to apply it
-                if queries.p2().get(*entity).is_err() {
-                    if let Ok(current_transform) = queries.p0().get(*entity) {
-                        let translation = non_networked_entities.translations[i].into();
-                        let rotation = non_networked_entities.rotations[i];
-                        if translation != current_transform.translation {
-                            let transform = Transform {
-                                rotation,
-                                translation,
-                                ..Default::default()
-                            };
-                            cmds.entity(*entity).insert(transform);
-                        }
-                    }
-                }
-            }
-        }
-    }
     // si peta aqui es culpa de l'Alexia
     while let Some(message) = client.receive_message(ServerChannel::Host) {
         let host = bincode::deserialize(&message).unwrap();
@@ -157,26 +134,9 @@ fn sync_players(
             }
         }
     }
+    // si peta aqui es culpa de l'Alexia
     while let Some(message) = client.receive_message(ServerChannel::NonNetworkedEntities) {
-        let non_networked_entities: NonNetworkedEntities = bincode::deserialize(&message).unwrap();
-        for i in 0..non_networked_entities.entities.len() {
-            if let Some(entity) = network_mapping.0.get(&non_networked_entities.entities[i]) {
-                if queries.p1().get(*entity).is_err() {
-                    if let Ok(current_transform) = queries.p0().get(*entity) {
-                        let translation = non_networked_entities.translations[i].into();
-                        let rotation = non_networked_entities.rotations[i];
-                        if translation != current_transform.translation {
-                            let transform = Transform {
-                                rotation,
-                                translation,
-                                ..Default::default()
-                            };
-                            cmds.entity(*entity).insert(transform);
-                        }
-                    }
-                }
-            }
-        }
+        let non_entity: NonNetworkedEntities = bincode::deserialize(&message).unwrap();
     }
 }
 
@@ -226,10 +186,14 @@ fn sync_player_commands(
     }
 }
 
-fn send_text(mut client: ResMut<RenetClient>, chat_messages: Query<&ChatMessage>) {
-    for chat_message in chat_messages.iter() {
-        let message = bincode::serialize(chat_message).unwrap();
-        client.send_message(ClientChannel::Chat, message);
+fn sync_mobs(
+    mut client: ResMut<RenetClient>,
+    entity_query: Query<(&Stats, &Transform), With<Mob>>,
+) {
+    for (stats, transform) in entity_query.iter() {
+        let message =
+            bincode::serialize(&(transform.translation, transform.rotation, stats.hp)).unwrap();
+        client.send_message(ClientChannel::Mobs, message);
     }
 }
 
@@ -240,9 +204,9 @@ impl Plugin for NetSyncPlugin {
             (
                 sync_rotation,
                 sync_input,
+                sync_mobs,
                 sync_player_commands,
                 sync_players,
-                send_text,
                 send_one_chat,
             )
                 .distributive_run_if(bevy_renet::transport::client_connected)

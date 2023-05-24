@@ -2,9 +2,9 @@
 // The Thinker is the actual "brain" behind all the AI. Every entity you want
 // to have AI behavior should have one *or more* Thinkers attached to it.
 use super::{actions::Attack, components::Aggro, scorers::Aggroed};
-use crate::voxel::mob::Mob;
 use bevy::prelude::*;
 use big_brain::{prelude::FirstToScore, thinker::Thinker};
+use common::Mob;
 
 pub fn init_entities(mut cmd: Commands, query: Query<Entity, Added<Mob>>) {
     for entity in query.iter() {
