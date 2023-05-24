@@ -14,8 +14,6 @@ use crate::{
 
 use super::{Arrow, EndPortalCollider};
 
-
-
 pub fn detect_player_v2(
     rapier_context: Res<RapierContext>,
     portal_query: Query<Entity, With<EndPortalCollider>>,

@@ -1,6 +1,5 @@
 use bevy::prelude::*;
 
-
 pub mod animation;
 pub mod boss;
 pub mod mob;

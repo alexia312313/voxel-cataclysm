@@ -11,10 +11,9 @@ pub struct EventsHandlerPlugin;
 
 impl Plugin for EventsHandlerPlugin {
     fn build(&self, app: &mut App) {
-        app
-            .add_systems(
-                (detect_player_v2, spawn_arrow, add_score).in_set(OnUpdate(GameState::Game)),
-            );
+        app.add_systems(
+            (detect_player_v2, spawn_arrow, add_score).in_set(OnUpdate(GameState::Game)),
+        );
     }
 }
 
