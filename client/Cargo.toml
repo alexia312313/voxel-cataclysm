@@ -29,3 +29,4 @@ bevy_asset_loader.workspace = true
 bevy_rapier3d.workspace = true
 big-brain.workspace = true
 common = { path = "../common" }
+rand="0.8.5"

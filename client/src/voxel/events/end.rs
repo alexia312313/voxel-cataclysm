@@ -1,37 +1,17 @@
 use bevy::prelude::*;
-use bevy_rapier3d::prelude::{Collider, RapierContext, RigidBody, Sensor};
+use bevy_rapier3d::prelude::RapierContext;
 
 use crate::{
     voxel::{
-        events::EndPortal,
+        boss::Boss,
         loading::MyAssets,
         networking::{ControlledPlayer, ControlledPlayerCollider},
-        Stats, boss::Boss,
+        Stats,
     },
     GameState,
 };
 
 use super::{Arrow, EndPortalCollider};
-
-pub fn spawn_end_portal(mut commands: Commands, _my_assets: Res<MyAssets>) {
-    commands
-        .spawn((
-            SceneBundle {
-                scene: _my_assets.end_portal.clone_weak(),
-                transform: Transform::from_xyz(0.0, 220.0, 0.0),
-                ..Default::default()
-            },
-            RigidBody::Fixed,
-            EndPortal {},
-        ))
-        .with_children(|end_portal| {
-            end_portal
-                .spawn(Collider::cuboid(3.22, 3.22, 0.24))
-                .insert(EndPortalCollider {})
-                .insert(Transform::from_xyz(0.0, 3.18, -0.15))
-                .insert(Sensor);
-        });
-}
 
 pub fn detect_player_v2(
     rapier_context: Res<RapierContext>,

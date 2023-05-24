@@ -1,18 +1,19 @@
 use crate::GameState;
 use bevy::prelude::*;
 
-use self::end::{detect_player_v2, spawn_arrow, spawn_end_portal};
+use self::end::{detect_player_v2, spawn_arrow};
 
 use super::{networking::ControlledPlayer, Stats};
 
-mod end;
+pub mod end;
 
 pub struct EventsHandlerPlugin;
 
 impl Plugin for EventsHandlerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(spawn_end_portal.in_schedule(OnEnter(GameState::Game)))
-            .add_systems((detect_player_v2, spawn_arrow,add_score).in_set(OnUpdate(GameState::Game)));
+        app.add_systems(
+            (detect_player_v2, spawn_arrow, add_score).in_set(OnUpdate(GameState::Game)),
+        );
     }
 }
 

@@ -7,7 +7,7 @@ use crate::{
     GameState,
 };
 use bevy::{prelude::*, utils::HashMap};
-use bevy_rapier3d::prelude::{ActiveEvents, Collider, LockedAxes, RigidBody};
+use bevy_rapier3d::prelude::{ActiveEvents, Collider, GravityScale, LockedAxes, RigidBody};
 
 pub mod brain;
 
@@ -45,6 +45,7 @@ pub fn setup(mut cmds: Commands, _my_assets: Res<MyAssets>) {
             ..default()
         },
         Collider::cuboid(1.0, 1.0, 1.0),
+        GravityScale(2.0),
     ))
     .with_children(|mob| {
         mob.spawn(SceneBundle {
