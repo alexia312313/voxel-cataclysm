@@ -17,13 +17,14 @@ use bevy::{prelude::*, utils::HashMap};
 use bevy_rapier3d::prelude::{ActiveEvents, Collider, GravityScale, RigidBody};
 use bevy_renet::renet::{transport::NetcodeClientTransport, RenetClient};
 use common::{
-    ChatMessage, ClientChannel, DisplayMessage, NetworkedEntities, NonNetworkedEntities, Player,
-    PlayerCommand, ServerChannel, ServerMessages,
+    ChatMessage, ClientChannel, DisplayMessage, MobSend, NetworkedEntities, Player, PlayerCommand,
+    ServerChannel, ServerMessages,
 };
 
 #[derive(Component)]
 pub struct NetworkMob(pub String);
 
+#[allow(clippy::too_many_arguments)]
 fn sync_players(
     mut cmds: Commands,
     mut client: ResMut<RenetClient>,
@@ -39,7 +40,7 @@ fn sync_players(
         Query<(Entity, &Mob)>,
         Query<(Entity, &NetworkMob)>,
     )>,
-      _chat_message: ResMut<ChatMessage>,
+    _chat_message: ResMut<ChatMessage>,
     mut display_message: ResMut<DisplayMessage>,
 ) {
     let client_id = transport.client_id();
@@ -261,11 +262,10 @@ fn sync_player_commands(
     }
 }
 
-
 fn send_text(mut client: ResMut<RenetClient>, mut chat_message: ResMut<ChatMessage>) {
     if chat_message.message.is_empty() {
         return;
-       }
+    }
     let message = bincode::serialize(&(&chat_message.message, &chat_message.client_id)).unwrap();
     client.send_message(ClientChannel::Chat, message);
 
@@ -276,16 +276,16 @@ fn send_text(mut client: ResMut<RenetClient>, mut chat_message: ResMut<ChatMessa
 }
 
 fn sync_mob_attacked(
-    query_p1: Query<&Mob, Added<AttackWanted>>,
-    query_p2: Query<&NetworkMob, Added<AttackWanted>>,
+    query_p1: Query<(&Mob, Entity), With<AttackWanted>>,
+    query_p2: Query<(&NetworkMob, Entity), With<AttackWanted>>,
     mut client: ResMut<RenetClient>,
 ) {
-    for id in query_p1.iter() {
+    for (id, entity) in query_p1.iter() {
         println!("Mob Attacked: {:?}", id.0);
         let message = bincode::serialize(&id.0).unwrap();
         client.send_message(ClientChannel::MobAttacked, message);
     }
-    for id in query_p2.iter() {
+    for (id, entity) in query_p2.iter() {
         println!("NetworkMob Attacked: {:?}", id.0);
         let message = bincode::serialize(&id.0).unwrap();
         client.send_message(ClientChannel::MobAttacked, message);
