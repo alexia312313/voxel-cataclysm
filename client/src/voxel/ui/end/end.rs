@@ -135,6 +135,7 @@ pub fn spawn_end_screen(
     asset_server: Res<AssetServer>,
     window_query: Query<&Window, With<PrimaryWindow>>,
     time: Res<Time>,
+    audio:Res<Audio>,
 ) {
     let elapsed_t = time.elapsed_seconds_wrapped();
     commands.spawn(ElapsedTime { elapsed: elapsed_t });
@@ -142,7 +143,8 @@ pub fn spawn_end_screen(
     //build_ui_crosshair(&mut commands, &asset_server);
 
     let window = window_query.get_single().unwrap();
-
+    let sound = asset_server.load("audio/fireworks.ogg");
+    audio.play(sound);
     commands.spawn((
         Camera2dBundle {
             transform: Transform::from_xyz(window.width() / 2.0, window.height() / 2.0, 0.0),
