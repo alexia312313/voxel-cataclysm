@@ -40,11 +40,16 @@ pub fn spawn_arrow(
     mut player: Query<(&Transform, &mut Stats), (With<ControlledPlayer>, Without<Boss>)>,
     mut track_arrow: Query<(Entity, &mut Arrow)>,
     time: Res<Time>,
+    audio:Res<Audio>,
+    asset_server: Res<AssetServer>
+
 ) {
     if keyboard_input.just_pressed(KeyCode::P) {
         for portal in portal_q.iter() {
             for (pos, mut stats) in player.iter_mut() {
                 if stats.score > 99 {
+                    let sound = asset_server.load("audio/01_chest_open_1.ogg");
+                    audio.play(sound);
                     stats.score -= 100;
                     let portal_pos = portal.translation;
                     let translation = pos.translation;
