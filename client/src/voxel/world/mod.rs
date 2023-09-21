@@ -33,7 +33,7 @@ impl Plugin for VoxelWorldPlugin {
             .add_plugin(super::render::ChunkMaterialPlugin)
             .add_plugin(materials::VoxelWorldBaseMaterialsPlugin)
             .add_plugin(chunks_anim::ChunkAppearanceAnimatorPlugin)
-            .add_plugin(bevy_atmosphere::plugin::AtmospherePlugin)
+            //.add_plugin(bevy_atmosphere::plugin::AtmospherePlugin)
             .add_plugin(sky::InteractiveSkyboxPlugin);
     }
 }

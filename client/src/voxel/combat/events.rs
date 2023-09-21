@@ -50,7 +50,9 @@ fn player_melee_attack(
             // We will color in read the colliders hovered by the mouse.
             for (camera, camera_transform) in &camera_query {
                 // First, compute a ray from the mouse position.
-                let Some(ray) = camera.viewport_to_world(camera_transform, position) else { return; };
+                let Some(ray) = camera.viewport_to_world(camera_transform, position) else {
+                    return;
+                };
 
                 // Then cast the ray.
                 let hit = rapier_context.cast_ray(
