@@ -6,9 +6,10 @@ characteristics (made by us):
 * online
 * a very basic AI that makes the enemy follow you and stop following you if you exhaust their rage (if you move away)
 * enemies that you can kill
-* final screen
+* end screen & event
 * physics
 * ui
+* audio
 * player with moving camera and animations for walking and hitting
 * custom models made in blender/blockbench
 

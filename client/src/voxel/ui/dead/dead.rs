@@ -16,7 +16,10 @@ pub fn spawn_dead_screen(
     asset_server: Res<AssetServer>,
     window_query: Query<&Window, With<PrimaryWindow>>,
     time: Res<Time>,
+    audio: Res<Audio>,
 ) {
+    let sound = asset_server.load("audio/pain.ogg");
+    audio.play(sound);
     let elapsed_t = time.elapsed_seconds_wrapped();
     commands.spawn(ElapsedTime { elapsed: elapsed_t });
     build_dead_screen(&mut commands, &asset_server);

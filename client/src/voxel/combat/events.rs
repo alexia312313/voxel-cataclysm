@@ -1,3 +1,4 @@
+#![allow(clippy::too_many_arguments)]
 use crate::{
     voxel::{
         boss::Boss,
@@ -18,6 +19,8 @@ pub fn entity_attacked_handler(
     mut cmds: Commands,
     time: Res<Time>,
     mut query: Query<(Entity, &mut Transform, &mut Stats, &Attacked)>,
+    audio: Res<Audio>,
+    asset_server: Res<AssetServer>,
 ) {
     for (entity, mut transform, mut stats, attacked) in query.iter_mut() {
         // move back
@@ -25,6 +28,8 @@ pub fn entity_attacked_handler(
         transform.translation += move_back * time.delta_seconds() * 100.0;
         // apply damage
         stats.hp -= attacked.damage;
+        let sound = asset_server.load("audio/17_orc_atk_sword_1.ogg");
+        audio.play(sound);
         // reset attacked component
         cmds.entity(entity).remove::<Attacked>();
     }
@@ -38,6 +43,8 @@ fn player_melee_attack(
     windows: Query<&Window, With<PrimaryWindow>>,
     camera_query: Query<(&Camera, &GlobalTransform)>,
     button: Res<Input<MouseButton>>,
+    audio: Res<Audio>,
+    asset_server: Res<AssetServer>,
 ) {
     if let Ok(player_entity) = player_query.get_single() {
         if button.just_pressed(MouseButton::Left) {
@@ -69,6 +76,9 @@ fn player_melee_attack(
                         .distance(mob_transform.translation)
                         > 5.0
                     {
+                        let sound = asset_server.load("audio/07_human_atk_sword_1.ogg");
+                        audio.play(sound);
+
                         println!("AttackWanted Added");
                         commands.entity(entity).insert(AttackWanted);
                     }
