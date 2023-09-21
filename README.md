@@ -10,6 +10,7 @@ characteristics (made by us):
 * physics
 * ui
 * player with moving camera and animations for walking and hitting
+* custom models made in blender/blockbench
 
 
 ![image](https://github.com/alexiadltg/voxel-cataclysm/assets/60660439/5a96ed98-d682-420c-a782-bfdb75eb5e2b)
