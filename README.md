@@ -1,30 +1,5 @@
-# `vx_bevy`
+# Voxel Cataclysm
 
-> **Note**
-> This respository won't receive further updates to newer bevy versions. Thus current code may require modifications to port to newer bevy versions.
-
-
-A minecraft-esque voxel engine rendering prototype made using the Bevy game engine.
-
-Chunk are rendered using a triangle mesh per chunk. Chunks are greedily meshed.
-
-Meshing and generation tasks are using bevy's `AsyncComputeTaskPool` to dispatch tasks across frame to prevent frame stuttering.
-
-Performance is okayish (~100fps on a 1060 + 8th gen intel on release mode) with default render distance (16 chunks) altough mesh stitching could allow this to go even higher up.
-
-Also don't go under the world.
-
-## Screenshots
-
-![assets/screenshots/screenshot_5.png](assets/screenshots/screenshot_5.png)
-![assets/screenshots/screenshot.png](assets/screenshots/screenshot.png)
-![assets/screenshots/screenshot2.png](assets/screenshots/screenshot2.png)
-![assets/screenshots/screenshot_4.png](assets/screenshots/screenshot_4.png)
-
+![image](https://github.com/alexiadltg/voxel-cataclysm/assets/60660439/034187f3-8e33-49fc-83d6-428e422606b0)
 
 https://user-images.githubusercontent.com/20256717/180202640-6135373b-4c58-482c-820f-3660a8755e2d.mp4
-
-
-## Acknowledgments
-
-This uses the awesome [block-mesh](https://github.com/bonsairobo/block-mesh-rs) crate which handles greedy meshing.
